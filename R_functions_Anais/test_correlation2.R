@@ -1,4 +1,5 @@
 kernel='Quadratic'
+LArray<- riskProfileObj$LArray
 LMeans <- matrix(0,ncol=ifelse(kernel=="SQexponential",3,4),nrow=dim(LArray)[2])
 #LMean <- c()
 
@@ -25,6 +26,7 @@ for(i in 1:nT){
   }
 }
 
+library(MASS)
 y_quad1=mvrnorm(100,mu,Sigma_quad1)
 y_quad2=mvrnorm(100,mu,Sigma_quad2)
 y_quad3=mvrnorm(100,mu,Sigma_quad3)

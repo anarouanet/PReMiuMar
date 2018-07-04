@@ -109,7 +109,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 	// Set the proposal parameters
 	pReMiuMPropParams proposalParams(options.nSweeps(),dataset.nCovariates(),
-										dataset.nFixedEffects(),dataset.nCategoriesY());
+										dataset.nFixedEffects(),dataset.nCategoriesY(),dataset.kernelType());
 	pReMiuMSampler.proposalParams(proposalParams);
 
 	// The gibbs update for the active V

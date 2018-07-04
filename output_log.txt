@@ -1,0 +1,77 @@
+Date and time: 2018-06-12 10:4601
+
+Data file path: output_input.txt
+
+Output file path: output
+
+Predict file path: No predictions run.
+
+Seed: 678
+
+Number of sweeps: 10000
+Burn in sweeps: 10000
+Output filter: 1
+Proposal Type: gibbsForVActive, Acceptance Rate: 1
+Proposal Type: updateForPhiActive, Acceptance Rate: 1
+Proposal Type: gibbsForGammaActive, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForThetaActive, Acceptance Rate: 0.44294
+Proposal Type: gibbsForMVNTauActive, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForLabels123, Acceptance Rate: 0.0036
+Proposal Type: gibbsForU, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForAlpha, Acceptance Rate: 0.44075
+Proposal Type: gibbsForVInActive, Acceptance Rate: 1
+Proposal Type: gibbsForPhiInActive, Acceptance Rate: 1
+Proposal Type: gibbsForGammaInActive, Acceptance Rate: 1
+Proposal Type: gibbsForThetaInActive, Acceptance Rate: 1
+Proposal Type: gibbsForMVNMuInActive, Acceptance Rate: 1
+Proposal Type: gibbsForMVNTauInActive, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForRhoOmega, Acceptance Rate: 0.423934
+Proposal Type: gibbsForZ, Acceptance Rate: 1
+Number of subjects: 100
+Number of prediction subjects: 0
+Prediction type: RaoBlackwell
+Sampler type: SliceDependent
+Number of initial clusters: 20
+Covariates: 
+	Variable1 (categorical)
+	Variable2 (categorical)
+	Variable3 (categorical)
+	Variable4 (categorical)
+No fixed effects
+Model for Y: MVN
+Extra Y variance: False
+Include response: True
+Update alpha: True
+Compute allocation entropy: False
+Model for X: Discrete
+Variable selection: BinaryCluster
+
+Hyperparameters:
+shapeAlpha: 2
+rateAlpha: 1
+aPhi[j]: 1 1 1 1 
+muTheta: 0
+sigmaTheta: 2.5
+dofTheta: 7
+aRho: 0.5
+bRho: 0.5
+atomRho: 0.5
+MVNmu0: 
+2.53454
+2.49267
+2.45891
+2.54273
+MVNTau0:
+0.0263483         0         0         0
+        0 0.0227471         0         0
+        0         0 0.0286298         0
+        0         0         0 0.0249555
+MVNR0: 
+ 0.705235 -0.738038  0.386292 -0.262303
+-0.738038   1.22917 -0.882174   0.34652
+ 0.386292 -0.882174   1.28349 -0.753799
+-0.262303   0.34652 -0.753799  0.700357
+MVNkappa0: 0.01
+MVNnu0: 4
+
+20000 sweeps done in 21 seconds

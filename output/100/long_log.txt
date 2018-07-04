@@ -1,0 +1,71 @@
+Date and time: 2017-12-07 11:1019
+
+Data file path: output/long_input.txt
+
+Output file path: output/long
+
+Predict file path: No predictions run.
+
+Seed: 1512645019
+
+Number of sweeps: 5000
+Burn in sweeps: 500
+Output filter: 1
+Proposal Type: gibbsForVActive, Acceptance Rate: 1
+Proposal Type: updateForPhiActive, Acceptance Rate: 1
+Proposal Type: gibbsForMuActive, Acceptance Rate: 1
+Proposal Type: gibbsForTauActive, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForThetaActive, Acceptance Rate: 0.372932
+Proposal Type: metropolisHastingsForL, Acceptance Rate: 0.440265
+Proposal Type: metropolisHastingsForLabels123, Acceptance Rate: 0.974364
+Proposal Type: gibbsForU, Acceptance Rate: 1
+Proposal Type: metropolisHastingsForAlpha, Acceptance Rate: 0.453455
+Proposal Type: gibbsForVInActive, Acceptance Rate: 1
+Proposal Type: gibbsForPhiInActive, Acceptance Rate: 1
+Proposal Type: gibbsForMuInActive, Acceptance Rate: 1
+Proposal Type: gibbsForTauInActive, Acceptance Rate: 1
+Proposal Type: gibbsForThetaInActive, Acceptance Rate: 1
+Proposal Type: gibbsForLInActive, Acceptance Rate: 1
+Proposal Type: gibbsForZ, Acceptance Rate: 1
+Number of subjects: 100
+Number of prediction subjects: 0
+Prediction type: RaoBlackwell
+Sampler type: SliceDependent
+Number of initial clusters: 20
+Covariates: 
+Number of discrete covariates: 1
+Number of continuous covariates: 2
+	APOE4 (categorical)
+	AGE
+	PTEDUCAT
+No fixed effects
+Model for Y: Longitudinal
+Extra Y variance: False
+Include response: True
+Update alpha: True
+Compute allocation entropy: False
+Model for X: Mixed
+Variable selection: None
+
+Hyperparameters:
+shapeAlpha: 2
+rateAlpha: 1
+aPhi[j]: 1 
+mu0: 
+75.7636
+16.5152
+Tau0:
+ 0.0009352          0
+         0 0.00694444
+R0: 
+  0.0119506 0.000913812
+0.000913812   0.0675028
+kappa0: 2
+nu0: 0.01
+muTheta: 0
+sigmaTheta: 2.5
+dofTheta: 7
+muL: 0 0 0 
+sigmaL: 1 1 1 
+
+5500 sweeps done in 21223 seconds

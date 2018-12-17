@@ -1,5 +1,5 @@
 plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,whichClusters=NULL,whichCovariates=NULL,
-         useProfileStar=F,riskLim=NULL,nSweeps1){
+         useProfileStar=F,riskLim=NULL,bycol=FALSE){
 
   riskProfClusObj=NULL
   clusObjRunInfoObj=NULL
@@ -32,6 +32,8 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
   meanNu=NULL
   lowerNu=NULL
   upperNu=NULL
+  sampleGPmean=FALSE
+
   library("PReMiuM")
   library("grid")
   library("ggplot2")
@@ -39,7 +41,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
   for (i in 1:length(riskProfClusObj)) assign(names(riskProfClusObj)[i],riskProfClusObj[[i]])
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
 
-  assign(names(clusObjRunInfoObj)[4],min(nSweeps1,clusObjRunInfoObj[[4]]))
+  #assign(names(clusObjRunInfoObj)[4],min(nSweeps1,clusObjRunInfoObj[[4]]))
 
 
 
@@ -195,7 +197,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     }
     # Sort into ascending mean size
     meanSortIndex<-order(orderStat,decreasing=F)
-    meanSortIndex<-1:4
+    meanSortIndex<-seq(1:max(meanSortIndex))
   }
   if(includeResponse){
     # Reorder the risk matrix
@@ -215,6 +217,10 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     if (yModel=="Longitudinal"){
       LDim<-dim(LArray)
       LArray<-array(LArray[,meanSortIndex,],dim=LDim)
+      if(sampleGPmean){
+        GPmeanDim<-dim(GPmeanArray)
+        GPmeanArray<-array(GPmeanArray[,meanSortIndex,],dim=GPmeanDim)
+      }
     }
     if (yModel=="MVN"){
       MVNmuDim<-dim(MVNmuArray)
@@ -261,10 +267,23 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     if (yModel=="Longitudinal"){
       # Recompute the means and now also credible intervals
       LMeans <- matrix(0,ncol=3,nrow=dim(LArray)[2])
-      LMean <- c()
+      #LMean <- c()
       for(i in 1:3){
         LMeans[,i]<-apply(LArray[,,i],2,mean,trim=0.005)
-        LMean[i]<-sum(LMeans*clusterSizes)/sum(clusterSizes)
+        #LMean[i]<-sum(LMeans*clusterSizes)/sum(clusterSizes)
+      }
+      if(sampleGPmean){
+        GPmeanMeans <- matrix(0,ncol=nTimes_unique,nrow=dim(GPmeanArray)[2])
+        GPmeanMeans_sup <- matrix(0,ncol=nTimes_unique,nrow=dim(GPmeanArray)[2])
+        GPmeanMeans_inf <- matrix(0,ncol=nTimes_unique,nrow=dim(GPmeanArray)[2])
+        #GPmeanMean <- c()
+
+        for(i in 1:nTimes_unique){
+          GPmeanMeans[,i]<-apply(GPmeanArray[,,i],2,mean,trim=0.005)
+          #GPmeanMean[i]<-sum(GPmeanMeans*clusterSizes)/sum(clusterSizes)
+          GPmeanMeans_sup[,i] <- apply(GPmeanArray[,,i],2,quantile,0.95)
+          GPmeanMeans_inf[,i] <- apply(GPmeanArray[,,i],2,quantile,0.05)
+        }
       }
     }
     if (yModel=="MVN"){
@@ -783,12 +802,35 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     palette <- rainbow(max(whichClusters))
     times_c <- list()
     yData_c <- list()
-    #browser()
+#browser()
 
     for(c in whichClusters){
       times_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
       yData_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) yData[tMat[x,1]:tMat[x,2]]))
-      params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,])
+
+      if(sampleGPmean==2){#sampleGPmean
+        tTimes <- unique(times)[order(unique(times))]
+
+        mu <- GPmeanMeans[c,]
+        sigma <- exp(LMeans[c,3]/2)
+        inf <- GPmeanMeans_inf[c,]
+        sup <- GPmeanMeans_sup[c,]
+        GPDF <- rbind(GPDF,data.frame("time"=tTimes,"mu"=mu+longMean,
+                                      "cluster"=rep(c,times=length(tTimes)),
+                                      "inf"=inf+longMean,
+                                      "sup"=sup+longMean,
+                                      "sigma"=rep(sigma,length(tTimes)),
+                                      "fillColor"=riskColor[c]))
+
+      }else{
+        params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,])
+        GPDF <- rbind(GPDF,data.frame("time"=tTimes,"mu"=params$mu+longMean,
+                                      "cluster"=rep(c,times=length(tTimes)),
+                                      "sigma"=1.645*sqrt(diag(params$GPSigma)),
+                                      "inf"=params$mu+longMean-1.645*sqrt(diag(params$GPSigma)),
+                                      "sup"=params$mu+longMean+1.645*sqrt(diag(params$GPSigma)),
+                                      "fillColor"=riskColor[c]))
+      }
 
 #       dev.off()
 #       par(mfrow=c(1,1))
@@ -802,33 +844,34 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 #       }
 #       lines(params$mu+longMean~tTimes,lwd=3,col=c)
 # c=c+1
-
-
-      GPDF <- rbind(GPDF,data.frame("time"=tTimes*100+55,"mu"=params$mu+longMean,
-                                    "cluster"=rep(c,times=length(tTimes)),
-                                    "sigma"=1.645*sqrt(diag(params$GPSigma)),
-                                    "fillColor"=riskColor[c]))
-
     }
+
     rownames(GPDF)<-seq(1,nrow(GPDF),1)
     plotObj <- ggplot(GPDF)
     for(i in 1:nSubjects){
-      df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]]*100+55,y=yData[tMat[i,1]:tMat[i,2]]+longMean))
-      plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+      df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean,cluster=rep(clustering[i],tMat[i,2]-tMat[i,1]+1)))
+      if(bycol){
+      #  if(clustering[i]==2)
+          plotObj <- plotObj + geom_line(data=df,aes(x,y,colour=as.factor(cluster)),alpha = 0.3)#colour='azure4')
+      }else{
+        plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+      }
     }
     plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
-    plotObj <- plotObj + geom_line(aes(x=time,y=mu+sigma,group=cluster,colour=as.factor(cluster)))
-    plotObj <- plotObj + geom_line(aes(x=time,y=mu-sigma,group=cluster,colour=as.factor(cluster)))
+    plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+    plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
     plotObj <- plotObj + labs(color="Cluster")
-    plotObj <- plotObj + labs(y="Normalised MMSE\n")+theme(axis.title.y=element_text(size=30,angle=90))
-    plotObj <- plotObj + labs(x="\nAge")+theme(axis.title.x=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(0,max(GPDF$mu+GPDF$sigma)))#c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + labs(y="Outcome\n")+theme(axis.title.y=element_text(size=30,angle=90))
+    plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=30))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf,yData),max(GPDF$sup,yData)))
     plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
                                axis.line.y = element_line(colour="black",size=2))
     plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=25))
     plotObj <- plotObj + theme(plot.title=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(0,max(GPDF$mu+GPDF$sigma)))#min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+#   plotObj <- plotObj + coord_cartesian(ylim = c(0,max(GPDF$mu+GPDF$sigma)))#min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+#   plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+
     print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
     dev.off()
 
@@ -840,18 +883,18 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     pushViewport(viewport(layout = plotLayout))
     plotObj <- ggplot(GPDF)
     plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
-    plotObj <- plotObj + geom_line(aes(x=time,y=mu+sigma,group=cluster,colour=as.factor(cluster)))
-    plotObj <- plotObj + geom_line(aes(x=time,y=mu-sigma,group=cluster,colour=as.factor(cluster)))
-    plotObj <- plotObj + labs(color="Clusters")
-    plotObj <- plotObj + labs(y="Normalised MMSE\n")+theme(axis.title.y=element_text(size=40,angle=90))
-    plotObj <- plotObj + labs(x="\nAge")+theme(axis.title.x=element_text(size=40))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+    plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+    plotObj <- plotObj + labs(color="Cluster")
+    plotObj <- plotObj + labs(y="Outcome\n")+theme(axis.title.y=element_text(size=40,angle=90))
+    plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=40))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
     plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
                                axis.line.y = element_line(colour="black",size=2))
     plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=30))
     plotObj <- plotObj + theme(plot.title=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    #plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
     print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
     dev.off()
   }

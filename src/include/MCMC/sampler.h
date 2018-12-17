@@ -524,6 +524,7 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 
 	// Define a uniform random number generator
 	randomUniform unifRand(0,1);
+  std::fstream fout("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 
 	// This is the main sampler
 	// We loop over the sweeps
@@ -535,6 +536,7 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 		}
 		// Update the missing data (this will only do anything if the
 		// _model.hasMissingData flag is true)
+
 		updateMissingData();
 
 		// At each sweep we loop over the proposals
@@ -542,24 +544,29 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 		for(it=_proposalVec.begin(); it<_proposalVec.end(); it++){
 
 			// Only use this proposal if it is due to be tried at this sweep
-			if(sweep >= it->proposalFirstSweep() && sweep % it->proposalFrequency()==0){
+			if(sweep >= it->proposalFirstSweep() && sweep % it->proposalFrequency()==0 ){
 				// Only try this proposal with probability as defined
 				if(unifRand(_rndGenerator)<it->proposalWeight()){
 					// Update the chain state
 					it->updateParameters(_chain,_model,_rndGenerator);
-					//Rprintf("%s\n",it->proposalName().c_str());
+					//Rprintf("prop ",it->proposalName().c_str(),"\n");
+					//fout << it->proposalName()<<endl;
 				}
 			}
 		}
-
 		// At the end of the sweep make sure the log posterior is up to date.
+		fout<< "sweep 1"<<sweep<<endl;
+
 		_chain.currentState().logPosterior(_model.logPosterior(_chain.currentState().parameters()));
+		fout<< "sweep 2"<<endl;
 
 		// Now write the output (this is controlled by the user defined function
 		writeOutput(sweep);
-
+		fout<< "sweep 3"<<endl;
 	}
+	fout << "avant writeAcceptanceRates"<<endl;
 	writeAcceptanceRates();
+	fout << "apres writeAcceptanceRates"<<endl;
 
 }
 

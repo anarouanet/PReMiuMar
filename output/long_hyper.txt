@@ -1,6 +1,0 @@
-muL_signal=0
-sigmaL_signal=1
-muL_lengthscale=0
-sigmaL_lengthscale=1
-muL_noise=0
-sigmaL_noise=1

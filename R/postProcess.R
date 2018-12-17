@@ -31,7 +31,7 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
                    varSelectType="None", entropy,reportBurnIn=FALSE, run=TRUE, discreteCovs, continuousCovs,
                    whichLabelSwitch="123", includeCAR=FALSE, neighboursFile="Neighbours.txt",
-                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,kernel="SQexponential"){
+                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,kernel="SQexponential", sampleGPmean= FALSE){
 
   # suppress scientific notation
   options(scipen=999)
@@ -308,6 +308,25 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
     longData$outcome <- longData$outcome - meanLongData
     write(t(cbind(longData$time,longData$outcome)),fileName,append=T,ncolumns=(dim(longData)[2]-1))
   }
+  all_times<-c()
+  if(!is.null(longData)){
+    ##//AR correspondance times to sample GPmean
+    write(length(unique(longData$time)),fileName,append=T,ncolumns=1)
+
+    all_times <- unique(longData$time)
+    all_times <- all_times[order(all_times)]
+    times_corr <- vector(length=length(longData$time))
+
+    count=0
+    for(i in 1:nSubjects){
+      for(j in 1:(timeindices[i,2]-timeindices[i,1]+1)){
+        times_corr[count + j] <- min(which(all_times == longData$time[count + j]))-1
+      }
+      count <- count + j
+    }
+    write(t(all_times),fileName,append=T,ncolumns=1)
+    write(t(times_corr),fileName,append=T,ncolumns=1)
+  }
 
   # other checks to ensure that there are no errors when calling the program
   if (xModel!="Discrete"&xModel!="Normal"&xModel!="Mixed") stop("This xModel is not defined.")
@@ -485,9 +504,12 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
   if (includeCAR) inputString<-paste(inputString," --includeCAR", " --neighbours=", neighboursFile ,sep="")
   if (useNormInvWishPrior) inputString<-paste(inputString," --useNormInvWishPrior", sep="")
   if (!missing(kernel)) inputString<-paste(inputString," --kernel=",  kernel ,sep="")
+  if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sep="")
 
+  print('avant')
   if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
-
+  print('apres')
+  browser()
 
   # define directory path and fileStem
   outputSplit <- strsplit(output,split="/")
@@ -595,14 +617,14 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
               "useNormInvWishPrior"=useNIWP,
               "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
               "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
-              "kernel"=kernel))
+              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "nTimes_unique"=length(all_times)))
 }
 
 
 
 # Function to take the output from the C++ run and return an average dissimilarity
 # matrix
-calcDissimilarityMatrix<-function(runInfoObj,onlyLS=FALSE){
+dissimObj <-calcDissimilarityMatrix<-function(runInfoObj,onlyLS=FALSE){
 
   directoryPath=NULL
   fileStem=NULL
@@ -1315,7 +1337,7 @@ calcAvgRiskAndProfile<-function(clusObj,includeFixedEffects=F,proportionalHazard
 
 # Plot output values
 plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,whichClusters=NULL,whichCovariates=NULL,
-                          useProfileStar=F,riskLim=NULL){
+                          useProfileStar=F,riskLim=NULL,extrapolation=TRUE){
 
   riskProfClusObj=NULL
   clusObjRunInfoObj=NULL
@@ -2097,17 +2119,22 @@ plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,wh
     yData_c <- list()
 
     for(c in whichClusters){
-      print(c)
       times_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
       yData_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) yData[tMat[x,1]:tMat[x,2]]))
       params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,],kernel)
-if(c==1)
-  browser()
-      GPDF <- rbind(GPDF,data.frame("time"=tTimes,"mu"=params$mu+longMean,
+
+      GPDF2 <- data.frame("time"=tTimes,"mu"=params$mu+longMean,
                                     "cluster"=rep(c,times=length(tTimes)),
                                     "sigma"=1.645*sqrt(diag(params$GPSigma)),
-                                    "fillColor"=riskColor[c]))
+                                    "fillColor"=riskColor[c])
 
+      observed_times_c<-c(min(times_c),max(times_c))
+      if(extrapolation==F & length(which(tTimes<observed_times_c[1]|tTimes>observed_times_c[2] ))>0){
+        GPDF2$mu[which(tTimes<observed_times_c[1]|tTimes>observed_times_c[2])]<-NA
+        GPDF2$sigma[which(tTimes<observed_times_c[1]|tTimes>observed_times_c[2] )]<-NA
+      }
+
+      GPDF <- rbind(GPDF,GPDF2)
     }
     rownames(GPDF)<-seq(1,nrow(GPDF),1)
     plotObj <- ggplot(GPDF)
@@ -2116,19 +2143,20 @@ if(c==1)
       df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean))
       plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
     }
+
     plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
     plotObj <- plotObj + geom_line(aes(x=time,y=mu+sigma,group=cluster,colour=as.factor(cluster)))
     plotObj <- plotObj + geom_line(aes(x=time,y=mu-sigma,group=cluster,colour=as.factor(cluster)))
     plotObj <- plotObj + labs(color="Cluster")
     plotObj <- plotObj + labs(y="Score\n")+theme(axis.title.y=element_text(size=30,angle=90))
     plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma,na.rm=T),max(GPDF$mu+GPDF$sigma,na.rm=T)))
     plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
                                axis.line.y = element_line(colour="black",size=2))
     plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=25))
     plotObj <- plotObj + theme(plot.title=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma,na.rm=T),max(GPDF$mu+GPDF$sigma,na.rm=T)))
     print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
     dev.off()
 
@@ -2145,13 +2173,13 @@ if(c==1)
     plotObj <- plotObj + labs(color="Cluster")
     plotObj <- plotObj + labs(y="Score\n")+theme(axis.title.y=element_text(size=30,angle=90))
     plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma,na.rm=T),max(GPDF$mu+GPDF$sigma,na.rm=T)))
     plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
                                axis.line.y = element_line(colour="black",size=2))
     plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=25))
     plotObj <- plotObj + theme(plot.title=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$mu-GPDF$sigma,na.rm=T),max(GPDF$mu+GPDF$sigma,na.rm=T)))
     print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
     dev.off()
   }
@@ -2314,7 +2342,6 @@ GPfun <- function(t0,ts,y,Lp,kernelType){
   GPSigma <- (GPSigma+t(GPSigma))/2
   return(list(mu=mu,GPSigma=GPSigma))
 }
-
 
 
 # Calculate predictions, and if possible assess predictive performance

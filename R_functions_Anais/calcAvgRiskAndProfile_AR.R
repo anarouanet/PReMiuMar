@@ -25,6 +25,7 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
   wMat=NULL
   yMat=NULL
   weibullFixedShape=NULL
+  sampleGPmean=FALSE
 
   library("PReMiuM")
   for (i in 1:length(clusObj)) assign(names(clusObj)[i],clusObj[[i]])
@@ -103,6 +104,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
     }else if(yModel=="Longitudinal"){
       LFileName <- file.path(directoryPath,paste(fileStem,'_L.txt',sep=''))
       LFile<-file(LFileName,open="r")
+      if(sampleGPmean){
+        GPmeanFileName <- file.path(directoryPath,paste(fileStem,'_meanGP.txt',sep=''))
+        GPmeanFile<-file(GPmeanFileName,open="r")
+      }
     }else if(yModel=="MVN"){
       MVNmuFileName <- file.path(directoryPath,paste(fileStem,'_MVNmu.txt',sep=''))
       MVNmuFile<-file(MVNmuFileName,open="r")
@@ -123,8 +128,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
   }
 
   # Restrict to sweeps after burn in
-  firstLine<-ifelse(reportBurnIn,nBurn/nFilter+2,1)
-  lastLine<-(nSweeps+ifelse(reportBurnIn,nBurn+1,0))/nFilter
+  firstLine<-floor(ifelse(reportBurnIn,nBurn/nFilter+2,1)) #AR
+  lastLine<-floor((nSweeps+ifelse(reportBurnIn,nBurn+1,0))/nFilter) #AR
   nSamples<-lastLine-firstLine+1
 
   # Make a list of the subjects in each of the optimal clusters
@@ -141,6 +146,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       nuArray<-array(0,dim=c(nSamples,nClusters))
     } else if(yModel=="Longitudinal"){
       LArray<-array(0,dim=c(nSamples,nClusters,3))
+      if(sampleGPmean)
+        GPmeanArray<-array(0,dim=c(nSamples,nClusters,nTimes_unique))
       riskArray<-array(0,dim=c(nSamples,nClusters,3))
     } else if(yModel=="MVN"){
       MVNmuArray<-array(0,dim=c(nSamples,nClusters,nOutcomes))
@@ -232,6 +239,11 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
         } else if (yModel=="Longitudinal"){
           currLVector<-scan(LFile,what=double(),skip=skipVal,n=3*currMaxNClusters,quiet=T)
           currL<-matrix(currLVector,nrow=currMaxNClusters,ncol=3,byrow=T)
+          if(sampleGPmean){
+            GPmeanVector<-scan(GPmeanFile,what=double(),skip=skipVal,n=nTimes_unique*currMaxNClusters,quiet=T)
+            currGPmean<-matrix(GPmeanVector,nrow=currMaxNClusters,ncol=nTimes_unique,byrow=T)
+          }
+
         } else if (yModel=="MVN"){
           currMVNmuVector<-scan(MVNmuFile,what=double(),skip=skipVal,n=nOutcomes*currMaxNClusters,quiet=T)
           currMVNmu<-matrix(currMVNmuVector,nrow=currMaxNClusters,ncol=nOutcomes,byrow=T)
@@ -253,8 +265,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       # Calculate the average risk (over subjects) for each cluster
 
       for(c in 1:nClusters){
-        currLambdaVector<-currTheta[currZ[optAlloc[[c]]],]
-        currLambda<-matrix(currLambdaVector,ncol=nCategoriesY)
+        if(yModel!="Longitudinal"){
+          currLambdaVector<-currTheta[currZ[optAlloc[[c]]],]
+          currLambda<-matrix(currLambdaVector,ncol=nCategoriesY)
+        }
         if(includeFixedEffects&&nFixedEffects>0){
           if (yModel=="Categorical"){
             for (i in 1:length(optAlloc[[c]])){
@@ -291,6 +305,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           IDs <- unique(longMat$ID)
           currIDs <- IDs[optAlloc[[c]]]
           currRisk<-matrix(longMat$outcome[longMat$ID%in%currIDs] + longMean)
+          if(sampleGPmean)
+            GPmeanArray[sweep-firstLine+1,c,]<-apply(matrix(currGPmean[currZ[optAlloc[[c]]],],ncol=nTimes_unique),2,mean)
         }else if(yModel=="MVN"){##//RJ current MVN
           MVNmuArray[sweep-firstLine+1,c,]<-apply(matrix(currMVNmu[currZ[optAlloc[[c]]],],ncol=nOutcomes),2,mean)
           MVNSigmaArray[sweep-firstLine+1,c,]<-apply(matrix(currMVNSigma[currZ[optAlloc[[c]]],],ncol=(nOutcomes+1)*nOutcomes/2),2,mean)
@@ -298,8 +314,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           if(!all(!is.na(MVNmuArray[sweep-firstLine+1,c,])))
             browser()
         }
-        riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)
-        thetaArray[sweep-firstLine+1,c,]<-apply(as.matrix(currTheta[currZ[optAlloc[[c]]],],ncol=nCategoriesY),2,mean)
+        if(yModel!="Longitudinal"){
+          riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)
+          thetaArray[sweep-firstLine+1,c,]<-apply(as.matrix(currTheta[currZ[optAlloc[[c]]],],ncol=nCategoriesY),2,mean)
+        }
         if(yModel=="Survival"&&!weibullFixedShape){
           nuArray[sweep-firstLine+1,c]<-mean(currNuVector)
         }
@@ -335,8 +353,7 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       for(c in 1:nClusters){
         phiArray[sweep-firstLine+1,c,,]<-t(apply(array(currPhi[currZ[optAlloc[[c]]],,],
                                                        dim=c(length(optAlloc[[c]]),
-                                                             dim(currPhi)[2],dim(currPhi)[3])),2:3,mean))
-
+                                                       dim(currPhi)[2],dim(currPhi)[3])),2:3,mean))
         if(varSelect){
           phiStarArray[sweep-firstLine+1,c,,]<-t(apply(array(currGamma[currZ[optAlloc[[c]]],,],
                                                              dim=c(length(optAlloc[[c]]),dim(currGamma)[2],
@@ -513,6 +530,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
     if (yModel=="Longitudinal") {
       out$LArray<-LArray
       close(LFile)
+      if(sampleGPmean){
+        out$GPmeanArray<-GPmeanArray
+        close(GPmeanFile)
+      }
     }
     if (yModel=="MVN") {
       out$MVNmuArray<-MVNmuArray

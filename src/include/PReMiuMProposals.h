@@ -390,6 +390,9 @@ public:
   vector<unsigned int> nAcceptL() const{
     return _nAcceptL;
   }
+  unsigned int nAcceptL(const unsigned int& j) const{
+    return _nAcceptL[j];
+  }
   double LAcceptRate(const unsigned int& j) const{
     if(_nTryL[j]>0){
       return (double)_nAcceptL[j]/(double)_nTryL[j];
@@ -402,6 +405,9 @@ public:
   }
   vector<unsigned int> nLocalAcceptL() const{
     return _nLocalAcceptL;
+  }
+  unsigned int nLocalAcceptL(const unsigned int& j) const{
+    return _nLocalAcceptL[j];
   }
   double LLocalAcceptRate(const unsigned int& j) const{
     return (double)_nLocalAcceptL[j]/(double)_LUpdateFreq;
@@ -923,11 +929,13 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
   sumCPlus1ToMaxMembers[maxZ]=0;
   for(int c=maxZ-1;c>=0;c--){
     sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
-  }
+}
+
 
   double tmp=0.0;
   double alpha = currentParams.alpha();
   double dPitmanYor = currentParams.dPitmanYor();
+
   for(unsigned int c=0;c<=maxZ;c++){
     double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
     currentParams.v(c,vVal);
@@ -935,7 +943,6 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
     currentParams.logPsi(c,tmp+log(vVal));
     tmp += log(1-vVal);
   }
-
 }
 
 // Moves for updating the Theta which are active i.e. Theta_c where c<=Z_max
@@ -1419,10 +1426,8 @@ void gibbsForGammaActive(mcmcChain<pReMiuMParams>& chain,
       }
       // Otherwise switching but nothing to do here as we had already done the
       // switch in the calculations
-
     }
   }
-
 }
 
 
@@ -1435,9 +1440,10 @@ void metropolisHastingsForThetaActive(mcmcChain<pReMiuMParams>& chain,
                                                       pReMiuMPropParams& propParams,
                                                       baseGeneratorType& rndGenerator){
 
+  const string outcomeType = model.dataset().outcomeType();
+
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
-  const string outcomeType = model.dataset().outcomeType();
   unsigned int nCategoriesY = currentParams.nCategoriesY();
 
   // Find the number of clusters
@@ -1451,6 +1457,7 @@ void metropolisHastingsForThetaActive(mcmcChain<pReMiuMParams>& chain,
   double thetaTargetRate = propParams.thetaAcceptTarget();
   unsigned int thetaUpdateFreq = propParams.thetaUpdateFreq();
 
+
   double currentCondLogPost = logCondPostThetaBeta(currentParams,model);
 
   for(unsigned int c=0;c<=maxZ;c++){
@@ -1460,6 +1467,7 @@ void metropolisHastingsForThetaActive(mcmcChain<pReMiuMParams>& chain,
       double& stdDev = propParams.thetaStdDev();
       double thetaOrig = currentParams.theta(c,k);
       double thetaProp = thetaOrig +stdDev*normRand(rndGenerator);
+
       currentParams.theta(c,k,thetaProp);
       double propCondLogPost = logCondPostThetaBeta(currentParams,model);
       double logAcceptRatio = propCondLogPost - currentCondLogPost;
@@ -1492,8 +1500,6 @@ void metropolisHastingsForThetaActive(mcmcChain<pReMiuMParams>& chain,
       }
     }
   }
-
-
 }
 
 
@@ -1503,6 +1509,7 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
                                     const mcmcModel<pReMiuMParams,pReMiuMOptions,pReMiuMData>& model,
                                     pReMiuMPropParams& propParams,
                                     baseGeneratorType& rndGenerator){
+  std::fstream foutL("Labels123.txt", std::ios::in | std::ios::out | std::ios::app);
 
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
@@ -1544,12 +1551,16 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
                            (double)currentParams.workNXInCluster(c1))
     *(currentParams.logPsi(c1)-currentParams.logPsi(c2));
 
-  if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+  double uii=unifRand(rndGenerator);
+  foutL << " Move1 "<< c1 << " vs "<< c2 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl;
+  foutL<< currentParams.workNXInCluster(c1)<< " logpsi "<< currentParams.logPsi(c1)<< endl;
+  foutL<< currentParams.workNXInCluster(c2)<< " logpsi "<< currentParams.logPsi(c2)<< endl;
+
+  if(uii<exp(logAcceptRatio)){
     //		nAccept++;
     // Switch the labels
     currentParams.switchLabels(c1,c2,covariateType,outcomeType,varSelectType);
   }
-
   // Move 2 - swap labels of 2 randomly selected neighbouring clusters,
   //			also swapping the v at the same time
   //	nTry++;
@@ -1559,7 +1570,10 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
     log(1-currentParams.v(c1+1))
     - (double)currentParams.workNXInCluster(c1+1)*log(1-currentParams.v(c1));
 
-  if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+  uii=unifRand(rndGenerator);
+  foutL << " Move2 "<< c1 << " vs "<< c1+1 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl;
+
+  if(uii<exp(logAcceptRatio)){
     nAccept++;
 
     // Switch the labels
@@ -1610,7 +1624,10 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
   logAcceptRatio+=(double)(currentParams.workNXInCluster(c1+1))*log(const1);
   logAcceptRatio+=(double)(currentParams.workNXInCluster(c1))*log(const2);
 
-  if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+  uii=unifRand(rndGenerator);
+  foutL << " Move3 "<< c1 << " vs "<< c1+1 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl<<endl;
+
+  if(uii<exp(logAcceptRatio)){
     //		nAccept++;
     currentParams.switchLabels(c1,c1+1,covariateType,outcomeType,varSelectType);
     double currPsiC1 = exp(currentParams.logPsi(c1));
@@ -1919,13 +1936,15 @@ void metropolisHastingsForAlpha(mcmcChain<pReMiuMParams>& chain,
   logAcceptRatio += logPdfGamma(alphaProp,hyperParams.shapeAlpha(),hyperParams.rateAlpha());
   logAcceptRatio -= logPdfGamma(alphaCurrent,hyperParams.shapeAlpha(),hyperParams.rateAlpha());
 
+
   // Add the proposal contribution
   logAcceptRatio += logPdfTruncatedNormal(alphaCurrent,alphaProp,stdDev,"L",0,0);
   logAcceptRatio -= logPdfTruncatedNormal(alphaProp,alphaCurrent,stdDev,"L",0,0);
 
   propParams.alphaAddTry();
   nTry++;
-  if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+  double uni = unifRand(rndGenerator);
+  if(uni <exp(logAcceptRatio)){
     nAccept++;
     propParams.alphaAddAccept();
     // If the move was accepted update the state
@@ -1952,9 +1971,7 @@ void metropolisHastingsForAlpha(mcmcChain<pReMiuMParams>& chain,
       }
       propParams.alphaLocalReset();
     }
-
   }
-
 }
 
 // Gibbs move for v which are inactive. Only update to maxNClusters, which
@@ -1972,7 +1989,7 @@ void gibbsForVInActive(mcmcChain<pReMiuMParams>& chain,
   string covariateType = model.options().covariateType();
   string outcomeType = model.options().outcomeType();
   string kernelType = model.options().kernelType(); //AR
-
+  unsigned int  nTimes_unique = model.dataset().nTimes_unique(); //AR
   nTry++;
   nAccept++;
 
@@ -2037,13 +2054,11 @@ void gibbsForVInActive(mcmcChain<pReMiuMParams>& chain,
         cumPsi.push_back(cumPsi[c-1]+exp(logPsi));
       }
     }
-    currentParams.maxNClusters(maxNClusters,covariateType,outcomeType,kernelType);
-
+    currentParams.maxNClusters(maxNClusters,covariateType,outcomeType,kernelType,nTimes_unique);
   }
 
   currentParams.v(vNew);
   currentParams.logPsi(logPsiNew);
-
 }
 
 /*********** BLOCK 3 p(Theta^I|.) **********************************/
@@ -2373,8 +2388,6 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   pReMiuMParams& currentParams = currentState.parameters();
   pReMiuMHyperParams hyperParams = currentParams.hyperParams();
   string kernelType =model.dataset().kernelType();
-  const pReMiuMData& dataset = model.dataset();
-  unsigned int nCategoriesY=dataset.nCategoriesY();
   const string outcomeType = model.dataset().outcomeType();
 
   // Find the number of clusters
@@ -2397,6 +2410,21 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
       currentParams.L(c,l,L);
     }
   }
+
+  if(model.options().sampleGPmean()){ //AR model.options().sampleGPmean()
+
+    unsigned int nTimes_unique = model.dataset().nTimes_unique();
+    VectorXd Fval(nTimes_unique);
+
+    for(unsigned int c=maxZ+1;c<maxNClusters;c++){
+      Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
+
+      for(unsigned int j=0;j<nTimes_unique;j++){
+        currentParams.meanGP(c,j, Fval(j));
+      }
+      //currentParams.L(c,2,-1.5);//AR change
+    }
+  }
 }
 
 // Gibbs for nu inactive (for survival case)
@@ -2411,13 +2439,7 @@ void gibbsForNuInActive(mcmcChain<pReMiuMParams>& chain,
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
   pReMiuMHyperParams hyperParams = currentParams.hyperParams();
-  const pReMiuMData& dataset = model.dataset();
-  unsigned int nCategoriesY=dataset.nCategoriesY();
   const string outcomeType = model.dataset().outcomeType();
-
-
-  unsigned int nSubjects = currentParams.nSubjects();
-  unsigned int nCovariates = currentParams.nCovariates();
 
   // Find the number of clusters
   unsigned int maxZ = currentParams.workMaxZi();
@@ -2436,7 +2458,7 @@ void gibbsForNuInActive(mcmcChain<pReMiuMParams>& chain,
 /*********** BLOCK 4 p(Theta^N|.) **********************************/
 // N=Non-cluster, and Theta contains: beta, rho, omega, lambda, tau_epsilon, uCAR and TauCAR
 
-// Adaptive Metropolis-Hastings for beta
+// Adaptive Metropolis-Hastings for beta - fixed effects
 void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
                                unsigned int& nTry,unsigned int& nAccept,
                                const mcmcModel<pReMiuMParams,
@@ -2871,51 +2893,123 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
   // Define a normal random number generator
   randomNormal normRand(0,1);
 
-  double LTargetRate = propParams.LAcceptTarget();
-  unsigned int LUpdateFreq = propParams.LUpdateFreq();
+  double LTargetRate = propParams.LAcceptTarget(); //0.44
+  unsigned int LUpdateFreq = propParams.LUpdateFreq(); //25
 
   double currentCondLogPost = 0.0;
   for(unsigned int c=0;c<=maxZ;c++){
-    currentCondLogPost = logCondPostL(currentParams,model,c);
-    unsigned int nL;
-    if(model.dataset().kernelType().compare("SQexponential")==0){
-      nL=3;
-    }else{
-      nL=4;
-    }
-    for (unsigned int l=0;l<nL;l++){
-      nTry++;
-      propParams.LAddTry(l);
-      double& stdDev = propParams.LStdDev(l);
-      double LOrig = currentParams.L(c,l);
-      double LProp = LOrig+stdDev*normRand(rndGenerator);
-      currentParams.L(c,l,LProp);
-      double propCondLogPost = logCondPostL(currentParams,model,c);
-      double logAcceptRatio = propCondLogPost - currentCondLogPost;
-      if(unifRand(rndGenerator)<exp(logAcceptRatio)){
-        nAccept++;
-        propParams.LAddAccept(l);
-        currentCondLogPost = propCondLogPost;
-      }else{
-        currentParams.L(c,l,LOrig);
-      }
-      // Update the std dev of the proposal
-      if(propParams.nTryL(l)%LUpdateFreq==0){
-        //if(propParams.LLocalAcceptRate(l)>LTargetRate)
-        //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
-        //else
-        //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
-        stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
-          pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
-        propParams.LAnyUpdates(true);
-        if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
-          propParams.LStdDevReset(l);
+
+    unsigned int nL=4;
+    if(model.dataset().kernelType().compare("SQexponential")==0)
+      nL-=1;
+
+    if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
+      for (unsigned int l=0;l<nL;l++){ //AR change nL-1
+
+        if(l == 2){
+          currentCondLogPost = logCondPostL(currentParams,model,c); // p(L_k)p(Y^k|L_k,f_k,k)
+        }else{
+          currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
         }
-        propParams.LLocalReset(l);
+
+        nTry++;
+        propParams.LAddTry(l);
+        double& stdDev = propParams.LStdDev(l);
+        double LOrig = currentParams.L(c,l);
+        double LProp = LOrig+stdDev*normRand(rndGenerator);
+        currentParams.L(c,l,LProp);
+        double propCondLogPost = 0;
+        double logAcceptRatio = 0;
+
+        if(l == 2){
+          propCondLogPost = logCondPostL(currentParams,model,c); // p(L_2)p(Y^k|L_2k,f_k,k)
+        }else{
+          propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
+        }
+        logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+        double uni = unifRand(rndGenerator);
+        if(uni<exp(logAcceptRatio)){
+          nAccept++;
+          propParams.LAddAccept(l);
+          currentCondLogPost = propCondLogPost;
+        }else{
+          currentParams.L(c,l,LOrig);
+        }
+
+        // Update the std dev of the proposal
+        if(propParams.nTryL(l)%LUpdateFreq==0){
+          //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+          //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+          //else
+          //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+          stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+            pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+          propParams.LAnyUpdates(true);
+          if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+            propParams.LStdDevReset(l);
+          }
+          propParams.LLocalReset(l);
+        }
+      }
+      //currentParams.L(c,2,0.1);//AR change
+      //currentParams.L(c,2,-1.5);//AR change
+
+      //AR sample meanGP
+      //if(model.options().sampleGPmean()){ //AR change
+        unsigned int nTimes_unique = model.dataset().nTimes_unique();
+        VectorXd Fval(nTimes_unique);
+
+        for(unsigned int c=0;c<=maxZ;c++){
+          Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
+
+          for(unsigned int j=0;j<nTimes_unique;j++){
+            currentParams.meanGP(c,j, Fval(j));
+          }
+        }
+      //}
+
+    }else{
+      currentCondLogPost = logCondPostL(currentParams,model,c);
+
+      for (unsigned int l=0;l<nL;l++){
+        nTry++;
+        propParams.LAddTry(l);
+        double& stdDev = propParams.LStdDev(l);
+        double LOrig = currentParams.L(c,l);
+        double ui1= normRand(rndGenerator);
+        double LProp = LOrig+stdDev*ui1;
+        currentParams.L(c,l,LProp);
+        double propCondLogPost = logCondPostL(currentParams,model,c);
+        double logAcceptRatio = propCondLogPost - currentCondLogPost;
+        double uii= unifRand(rndGenerator);
+        if(uii<exp(logAcceptRatio)){
+          nAccept++;
+          propParams.LAddAccept(l);
+          currentCondLogPost = propCondLogPost;
+        }else{
+          currentParams.L(c,l,LOrig);
+        }
+
+        // Update the std dev of the proposal
+        if(propParams.nTryL(l)%LUpdateFreq==0){
+          //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+          //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+          //else
+          //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+          stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+            pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+          propParams.LAnyUpdates(true);
+          if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+            propParams.LStdDevReset(l);
+          }
+          propParams.LLocalReset(l);
+        }
       }
     }
   }
-
 }
 
 // Gibbs update for the precision of spatial random term
@@ -3303,7 +3397,11 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
       }else if(outcomeType.compare("Survival")==0){
         logPYiGivenZiWi = &logPYiGivenZiWiSurvival;
       }else if(outcomeType.compare("Longitudinal")==0){//RJ set logPYiGivenZiWi
-        logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal;
+        if(model.options().sampleGPmean()){//AR change
+          logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_meanGP; //AR
+        }else{
+          logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal;
+        }
       }else if(outcomeType.compare("MVN")==0){
         logPYiGivenZiWi = &logPYiGivenZiWiMVN;
       }
@@ -3321,8 +3419,8 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   //RJ for Longitudinal: save cluster marginal likelihoods, update only when membership changes
   vector<double> clusterMarginal, numerator, denominator;
   clusterMarginal.resize(maxNClusters);
-  numerator.resize(maxNClusters);
-  denominator.resize(maxNClusters);
+  numerator.resize(maxNClusters,0);
+  denominator.resize(maxNClusters,0);
   int origZi;
 
 
@@ -3342,15 +3440,12 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   int ind_grid=0;
   int grid_size=1;
   vector<double> grid(grid_size,0);
-  double minui=*std::min_element(std::begin(u), std::end(u) );
+  //double minui=*std::min_element(std::begin(u), std::end(u) );
 
-    std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
-fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
-
-
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
   for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){//nSubjects+nPredictSubjects;i++){
 
-        vector<double> logPyXz(maxNClusters,0.0);
+    vector<double> logPyXz(maxNClusters,0.0);
     // We calculate p(Z=c|y,X) \propto p(y,X,Z=c)
     // p(y,X,z=c) = p(y|Z=c)p(X|z=c)p(z=c)
     double maxLogPyXz = -(numeric_limits<double>::max());
@@ -3376,28 +3471,23 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
         //save original cluster label
         origZi = currentParams.z(i);
 
+        if(i==0 && outcomeType.compare("Longitudinal")==0 && ind_grid==1){ //grid construction
+          fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
 
-        if(i==0 && outcomeType.compare("Longitudinal")==0){ //grid construction
-          if(ind_grid==1){
-            double min_grid=*std::min_element(std::begin(times), std::end(times));
-            double pas_grid=(*std::max_element(std::begin(times), std::end(times) )-*std::min_element(std::begin(times), std::end(times)))/(grid_size-1);
+          double min_grid=*std::min_element(std::begin(times), std::end(times));
+          double pas_grid=(*std::max_element(std::begin(times), std::end(times) )-*std::min_element(std::begin(times), std::end(times)))/(grid_size-1);
 
-            for(unsigned int i2=0;i2<grid_size;i2++){
-              grid[i2]= min_grid+i2*pas_grid;
-            }
+          for(unsigned int i2=0;i2<grid_size;i2++){
+            grid[i2]= min_grid+i2*pas_grid;
           }
         }
 
         for(unsigned int c=0;c<maxNClusters;c++){
 
-
-          //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          // &&
-//&&  minui <=testBound[c]
-          if(i==0 && outcomeType.compare("Longitudinal")==0 &&  minui <=testBound[c]){//for first person, calculate all marginals
-            if(Ana!=1){
+          if( !model.options().sampleGPmean() && i==0 && outcomeType.compare("Longitudinal")==0 ){//for first person, calculate all marginals
+            if(Ana!=1)
               clusterMarginal[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
-              }
+
             if(Ana==2)
               temp=clusterMarginal[c];
 
@@ -3442,59 +3532,76 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
 
           if(u[i]<testBound[c]){
 
+
             if(outcomeType.compare("Longitudinal")==0){//RJ marginal likelihood without i
 
-              if(origZi == c){
-                //if point currently in cluster:
-                //marginal(cluster with gene) = clusterMarginal[c]
-                numerator[c] = clusterMarginal[c];
+              if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
+                logPyXz[c] += logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
+                logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
 
-                //get marginal(cluster without gene)
-                if(Ana!=1){
-                  denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
-                  if(Ana==2)
-                    temp=denominator[c];
+                //AR to remove
+                sizek[c]=0;
+
+                // set sizes based on cluster occupation
+                for(unsigned int i2=0;i2<nSubjects;i2++){
+                  if(currentParams.z(i2) == c){
+                    sizek[c] = sizek[c] + tStop[i2] - tStart[i2] + 1;
+                  }
                 }
 
-                if(Ana>0){
-                  denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
-                }
-
-                if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
-                  fout << i << " c "<< c << " denominator" << denominator[c]<< " temp" << temp << endl;
-                }
 
               }else{
-                //take cluster marginal for denominator
-                denominator[c] = clusterMarginal[c];
 
-                if(Ana!=1){
-                  //move point for numerator
-                  currentParams.z(i,c,covariateType);//RJ marginal likelihood with i
+                if(origZi == c){
+                  //if point currently in cluster:
+                  //marginal(cluster with gene) = clusterMarginal[c]
+                  numerator[c] = clusterMarginal[c];
 
-                 // numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
-                  numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
+                  //get marginal(cluster without gene)
+                  if(Ana!=1){
+                    denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
+                    if(Ana==2)
+                      temp=denominator[c];
+                  }
+
+                  if(Ana>0){
+                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
+                  }
+
+                  if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
+                    fout << i << " c "<< c << " denominator" << denominator[c]<< " temp" << temp << endl;
+                  }
+                }else{
+                  //take cluster marginal for denominator
+                  denominator[c] = clusterMarginal[c];
+
+                  if(Ana!=1){
+                    //move point for numerator
+                    currentParams.z(i,c,covariateType);//RJ marginal likelihood with i
+
+                    // numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
+                    numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
 
                     //fout << "i  " << i << " c "<< c << " logPyXz[c] "<<logPyXz[c]<<" numerator[c] "<< numerator[c]<< " zi "<< currentParams.z(i) <<endl;
-                  currentParams.z(i,origZi,covariateType);//RJ set cluster to original
-                  if(Ana==2)
-                    temp=numerator[c];
-                }
+                    currentParams.z(i,origZi,covariateType);//RJ set cluster to original
+                    if(Ana==2)
+                      temp=numerator[c];
+                  }
 
-                if(Ana>0){
-                  numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
-                }
+                  if(Ana>0){
+                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
+                  }
 
-                if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
-                  fout << i << " c "<< c << " numerator" << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c[c].rows()<< " sizek "<< sizek[c] << endl;
+                  if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
+                    fout << i << " c "<< c << " numerator" << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c[c].rows()<< " sizek "<< sizek[c] << endl;
+                  }
                 }
+                logPyXz[c]+= numerator[c] - denominator[c];
               }
-              logPyXz[c]+= numerator[c] - denominator[c];
             }else{
               logPyXz[c]+=logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
             }
           }
-
         }
       }
     }
@@ -3512,6 +3619,10 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
       }else{
         logPyXz[c]=-(numeric_limits<double>::max());
       }
+      //AR
+      if(isinf(logPyXz[c]))
+        logPyXz[c] = -(numeric_limits<double>::max());
+
       if(logPyXz[c]>maxLogPyXz){
         maxLogPyXz=logPyXz[c];
       }
@@ -3556,6 +3667,8 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
         }
       }
     }
+
+
     if(includeResponse&&i>=nSubjects){
       if (predictType.compare("random")==0){
         // choose which component of the mixture we are sampling from
@@ -3586,14 +3699,13 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
     if(zi>maxZ){
       maxZ=zi;
     }
-
     currentParams.z(i,zi,covariateType);
     //AR Compute again sizek, yk and timeskfor z(i) and currentParams.z(i)
-    if(outcomeType.compare("Longitudinal")==0 && zi!=origZi){
+    if(outcomeType.compare("Longitudinal")==0 && zi!=origZi && !model.options().sampleGPmean() ){//AR change !model.options().sampleGPmean()
 
-        //RJ update clusterMarginals if a subject has swapped clusters
-        clusterMarginal[zi] = numerator[zi];
-        clusterMarginal[origZi] = denominator[origZi];
+      //RJ update clusterMarginals if a subject has swapped clusters
+      clusterMarginal[zi] = numerator[zi];
+      clusterMarginal[origZi] = denominator[origZi];
 
       if(Ana>0 ){
         sizek[origZi] =sizek[origZi] -(tStop[i] - tStart[i] + 1) ;
@@ -3641,13 +3753,8 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
         }
 
         det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
-        //clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
-
-       // if( (abs(numerator[zi]- clusterMarginal[zi])>pow(1.0, -5.0))){
-        //  fout << i << " zi "<< zi << " clusterMarginal[zi]" << clusterMarginal[zi]<< " numerator[zi] " << numerator[zi] <<   endl;
-        //}
+      }
     }
-  }
 
     if(computeEntropy){
       currentParams.workEntropy(i,entropyVal);
@@ -3662,6 +3769,7 @@ fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
       }
     }
   }
+
   currentParams.workNXInCluster(nMembers);
   currentParams.workMaxZi(maxZ);
 }
@@ -3678,7 +3786,6 @@ void updateMissingPReMiuMData(baseGeneratorType& rndGenerator,
   unsigned int nContinuousCovs = dataset.nContinuousCovs();
   vector<unsigned int> nCategories = params.nCategories();
   string covariateType = options.covariateType();
-  unsigned int& nPredictSubjects=dataset.nPredictSubjects();
 
   // Define a uniform random number generator
   randomUniform unifRand(0,1);
@@ -3793,11 +3900,7 @@ void updateMissingPReMiuMData(baseGeneratorType& rndGenerator,
         params.workLogPXiGivenZi(i,logVal);
       }
     }
-
-
   }
-
-
 }
 
 

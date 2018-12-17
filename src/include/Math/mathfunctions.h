@@ -90,34 +90,39 @@ double logit(const double& lambda){
 	}
 }
 //RJ GP covariance function
-void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const unsigned int dimBlock, const string& kernel){
+void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const unsigned int dimBlock, const string& kernel, const unsigned int error){
 	double a;
   	int i,j;
   	int nTimes = times.size();
+  	Mat.setZero(Mat.rows(),Mat.cols());
 
   	if(kernel.compare("SQexponential")==0){
-  	  double eL0 = exp(L[0]);
-  	  double eL1 = exp(L[1])*2.0;
-  	  double eL2 = exp(L[2]);
 
-  	  if(dimBlock<0){
-  	    int nBlocks = nTimes/dimBlock;
-  	    MatrixXd unit;
-  	    unit.resize(dimBlock,dimBlock);
-  	    unit.fill(0.0);
+  	double eL0 = exp(L[0]);
+  	double eL1 = exp(L[1])*2.0;
+  	double eL2 = exp(L[2]);
+	  if(error==0)
+	    eL2 = 0;
 
-  	    for(i=1;i<dimBlock;i++){
-  	      for(j=0;j<i;j++){
-  	        a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
-  	        unit(i,j)=eL0*std::exp(a);
-  	      }
-  	    }
-  	    unit = unit + unit.transpose() + eL0*MatrixXd::Identity(dimBlock, dimBlock);
-  	    Mat = unit.replicate(nBlocks,nBlocks);
-  	    for(i=0;i<nTimes;i++) Mat(i,i) = Mat(i,i) + eL2;
-  	  }else{
 
-  	    for(i=1;i<nTimes;i++){
+  	  // if(dimBlock<0){
+  	  //   int nBlocks = nTimes/dimBlock;
+  	  //   MatrixXd unit;
+  	  //   unit.resize(dimBlock,dimBlock);
+  	  //   unit.fill(0.0);
+  	  //
+  	  //   for(i=1;i<dimBlock;i++){
+  	  //     for(j=0;j<i;j++){
+  	  //       a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
+  	  //       unit(i,j)=eL0*std::exp(a);
+  	  //     }
+  	  //   }
+  	  //   unit = unit + unit.transpose() + eL0*MatrixXd::Identity(dimBlock, dimBlock);
+  	  //   Mat = unit.replicate(nBlocks,nBlocks);
+  	  //   for(i=0;i<nTimes;i++) Mat(i,i) = Mat(i,i) + eL2;
+  	  // }else{
+
+  	    for(i=0 ;i<nTimes;i++){
   	      for(j=0;j<i;j++){
   	        a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
   	        Mat(i,j)=eL0*std::exp(a);
@@ -125,16 +130,19 @@ void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const 
   	    }
   	    Mat = Mat + Mat.transpose();
   	    for(int i=0;i<nTimes;i++)
-  	      Mat(i,i) = Mat(i,i) + eL0+eL2;
-  	  }
+  	      Mat(i,i) = eL0+eL2;
+
+
   	}else{
   	  //[sigma_b^2 + sigma_v^2(t-l)(t-l)]^2
   	  double eL0 = exp(L[0]); //sigma_b^2
   	  double eL1 = exp(L[1]); //sigma_v^2
   	  double eL2 = exp(L[2]); // sigma_e^2
-  	  double eL3 = exp(L[3]); // l
+  	  if(error==0)
+  	    eL2=0;
+  	   double eL3 = exp(L[3]); // l
 
-  	  for(i=1;i<nTimes;i++){
+  	  for(i=0 ;i<nTimes;i++){
   	    for(j=0;j<i;j++){
   	      a=eL0+eL1*(times[i]-eL3)*(times[j]-eL3);
   	      Mat(i,j)=a*a;
@@ -309,12 +317,10 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<doub
 
 double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat,std::vector<double> times){
 
-  int dimSigma = M0.rows();
-  double log_DetPrecMat;
+  double log_DetPrecMat=0.0;
   MatrixXd kno;
   MatrixXd Knew;
 
-  double a;
   int i,j;
   int nTimes = Mat.rows();
 
@@ -424,12 +430,10 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
 
 double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat,std::vector<double> times, MatrixXd& M0_inv){
 
-  int dimSigma = M0.rows();
-  double log_DetPrecMat;
+  double log_DetPrecMat=0.0;
   MatrixXd kno;
   MatrixXd Knew;
 
-  double a;
   int i,j;
   int nTimes = Mat.rows();
 
@@ -545,6 +549,8 @@ double GP_cov_star(MatrixXd& Mat,std::vector<double> L,std::vector<double> times
   	int i,j;
   	int nTimes = times.size();
   	int nStar = timestar.size();
+  	Mat.setZero(Mat.rows(),Mat.cols());
+
   	for(i=0;i<nTimes;i++){
     	for(j=0;j<nStar;j++){
     	  if(kernel.compare("SQexponential")==0){
@@ -558,5 +564,6 @@ double GP_cov_star(MatrixXd& Mat,std::vector<double> L,std::vector<double> times
   	}
   	return 0;
 }
+
 
 #endif /*MATHFUNCTIONS_H_*/

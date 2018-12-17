@@ -74,6 +74,7 @@ class pReMiuMOptions{
 			// Profile regression variables
 			_outcomeType="Bernoulli";
 			_kernelType="SQexponential"; //AR
+			_sampleGPmean=false; //AR
 			_covariateType="Discrete";
 			_includeResponse = true;
 			_whichLabelSwitch = "123";
@@ -247,7 +248,15 @@ class pReMiuMOptions{
 
 		/// \brief Set whether we are including the response
 		void includeResponse(const bool& incResp){
-			_includeResponse=incResp;
+		  _includeResponse=incResp;
+		}
+
+		void sampleGPmean(const bool& incResp){//AR
+			_sampleGPmean=incResp;
+		}
+
+		bool sampleGPmean() const{
+		  return _sampleGPmean;
 		}
 
 		/// \brief Return which label switch moves are implemented
@@ -393,6 +402,7 @@ class pReMiuMOptions{
 			_kernelType=options.kernelType();//AR
 			_covariateType=options.covariateType();
 			_includeResponse=options.includeResponse();
+			_sampleGPmean=options.sampleGPmean();//AR
 			_whichLabelSwitch=options.whichLabelSwitch();
 			_fixedAlpha=options.fixedAlpha();
 			_dPitmanYor=options.dPitmanYor();
@@ -441,6 +451,8 @@ class pReMiuMOptions{
 		string _covariateType;
 		// This notes whether we are including the response
 		bool _includeResponse;
+		// This notes whether we are sampling the GP mean if yModel == Longitudinal
+		bool _sampleGPmean;
 		// This notes which label switching moves are run
 		string _whichLabelSwitch;
 		// This has a fixed value of alpha (if negative we update alpha)

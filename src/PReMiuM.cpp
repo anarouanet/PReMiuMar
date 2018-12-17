@@ -163,13 +163,13 @@ RcppExport SEXP profRegr(SEXP inputString) {
 			// Gibbs update for gamma
 			pReMiuMSampler.addProposal("gibbsForGammaActive",1.0,1,firstSweep,&gibbsForGammaActive);
 		}
-
 	}
 
 
 	if(options.includeResponse()){
 		// The Metropolis Hastings update for the active theta
-		pReMiuMSampler.addProposal("metropolisHastingsForThetaActive",1.0,1,1,&metropolisHastingsForThetaActive);
+		if(options.outcomeType().compare("Longitudinal")!=0) //AR
+		  pReMiuMSampler.addProposal("metropolisHastingsForThetaActive",1.0,1,1,&metropolisHastingsForThetaActive);
 
 		// Adaptive MH for beta
 		if(dataset.nFixedEffects()>0){
@@ -283,7 +283,9 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 	if(options.includeResponse()){
 		// The Metropolis Hastings update for the inactive theta
-		pReMiuMSampler.addProposal("gibbsForThetaInActive",1.0,1,1,&gibbsForThetaInActive);
+		if(options.outcomeType().compare("Longitudinal")!=0) //AR
+		  pReMiuMSampler.addProposal("gibbsForThetaInActive",1.0,1,1,&gibbsForThetaInActive);
+
 		if(options.outcomeType().compare("Survival")==0&&!options.weibullFixedShape()) {
 			pReMiuMSampler.addProposal("gibbsForNuInActive",1.0,1,1,&gibbsForNuInActive);
 		}
@@ -329,7 +331,9 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	pReMiuMSampler.writeLogFile();
 
 	/* ---------- Initialise the chain ---- */
+
 	pReMiuMSampler.initialiseChain();
+
 	pReMiuMHyperParams hyperParams = pReMiuMSampler.chain().currentState().parameters().hyperParams();
 	unsigned int nClusInit = pReMiuMSampler.chain().currentState().parameters().workNClusInit();
 

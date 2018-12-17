@@ -48,7 +48,7 @@ class pReMiuMData{
 
 	public:
 		/// \brief Default constructor //RJ add _nTimes
-		pReMiuMData(): _nTimes(0),  _nSubjects(0), _nCovariates(0), _nFixedEffects(0), _nCategoriesY(0), _nPredictSubjects(0) {};
+		pReMiuMData():  _nSubjects(0), _nTimes(0), _nTimes_unique(0), _nCovariates(0), _nFixedEffects(0), _nCategoriesY(0), _nPredictSubjects(0) {};
 
 		/// \brief Default destructor
 		~pReMiuMData(){};
@@ -83,6 +83,20 @@ class pReMiuMData{
 		}
 		unsigned int sizeT() const{
 			return _nTimes;
+		}
+
+		//AR handling functions for _nTimes_unique
+		unsigned int nTimes_unique() const{
+		  return _nTimes_unique;
+		}
+		unsigned int& nTimes_unique(){
+		  return _nTimes_unique;
+		}
+		void nTimes_unique(const unsigned int& nT){
+		  _nTimes_unique = nT;
+		}
+		unsigned int sizeT_unique() const{
+		  return _nTimes_unique;
 		}
 
 		/// \brief Return the number of covariates
@@ -356,6 +370,44 @@ class pReMiuMData{
 			}
 			return _times[i];
 		}
+
+		//AR handling functions for _times_unique
+		vector<double>& times_unique() {
+		  return _times_unique;
+		}
+		const vector<double>& times_unique() const{
+		  return _times_unique;
+		}
+		void times_unique(const vector<double>& timepoints){
+		  _times_unique.clear();
+		  _times_unique.resize(timepoints.size());
+		  _times_unique.insert(_times_unique.begin(),timepoints.begin(),timepoints.end());
+		}
+		double times_unique(const unsigned int& i)const{
+		  if(i>_nTimes_unique){
+		    throw std::range_error("t subscript i out of range.\n");
+		  }
+		  return _times_unique[i];
+		}
+
+		//AR handling functions for _times_corr
+		vector<double>& times_corr() {
+		  return _times_corr;
+		}
+		const vector<double>& times_corr() const{
+		  return _times_corr;
+		}
+		void times_corr(const vector<double>& timepoints){
+		  _times_corr.clear();
+		  _times_corr.resize(timepoints.size());
+		  _times_corr.insert(_times_corr.begin(),timepoints.begin(),timepoints.end());
+		}
+		double times_corr(const unsigned int& i)const{
+		  if(i>_nTimes){
+		    throw std::range_error("t subscript i out of range.\n");
+		  }
+		  return _times_corr[i];
+		}
 		vector<int>& tStart() {
 			return _tStart;
 		}
@@ -591,7 +643,8 @@ class pReMiuMData{
 		unsigned int _nSubjects;
 		//RJ declare _nTimes
 		unsigned int _nTimes;
-
+		//AR declare _nTimes_unique
+		unsigned int _nTimes_unique;
 		/// \brief The number of covariates
 		unsigned int _nCovariates;
 
@@ -633,6 +686,8 @@ class pReMiuMData{
 		vector<double> _continuousY;
 		//RJ declare _times, _tStart, _tStop
 		vector<double> _times;
+		vector<double> _times_corr; //AR
+		vector<double> _times_unique; //AR
 		vector<int> _tStart;
 		vector<int> _tStop;
 

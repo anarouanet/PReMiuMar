@@ -42,6 +42,7 @@
 #include<Eigen/Core>
 #include<Eigen/Cholesky>
 #include<Eigen/LU>
+#include <Eigen/Dense>
 
 #include<Math/mathfunctions.h>
 
@@ -160,6 +161,45 @@ double logPdfNIW(const unsigned int& d, const MatrixXd& Lambda0, const double& l
 	return logPmuSigma;
 }
 
+//AR logPdfMultivariateNormal p(fk|Lk,k)
+double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double>& L, const vector<double>& times, const string& kernelType){
+  VectorXd y(muGP.size());
+  std::fstream foutC("compare.txt", std::ios::in | std::ios::out | std::ios::app);
+
+  for(unsigned int i=0;i<muGP.size();i++)
+    y(i)=muGP[i];
+
+  MatrixXd precMat(muGP.size(),muGP.size());
+
+  GP_cov(precMat,L,times,0,kernelType,0);
+  double logDetPrecMat=0 ;//=log(precMat.determinant());
+  LLT<MatrixXd> lltOfA(precMat); // compute the Cholesky decomposition of A
+  MatrixXd Llt = lltOfA.matrixL();
+
+  for(unsigned int i=0;i<muGP.size();i++)
+    logDetPrecMat += 2*log(Llt(i,i));
+   // logDetPrecMat=  2*log(Llt.determinant());
+
+   MatrixXd precMat1=precMat.inverse();
+  //double dmvnorm = -0.5*y.transpose()*precMat*y - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+  double bb=y.transpose()*precMat1*y;
+  double dmvnorm = -0.5*bb - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+
+  if(bb < 0){
+    //LLT<MatrixXd> llt;
+    //llt.compute(precMat);
+    //MatrixXd Sigma= llt.solve(MatrixXd::Identity(precMat.rows(), precMat.rows())).transpose()*Llt.solve(MatrixXd::Identity(precMat.rows(), precMat.rows()));
+
+    //MatrixXd Sigma = precMat+0.01*MatrixXd::Identity(precMat.rows(), precMat.rows());
+    //MatrixXd precMat2=PartialPivLU(precMat);
+    //double bb2=y.transpose()*precMat2*y;
+    //dmvnorm = -0.5*bb2 - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+    foutC << "bb "<< bb<<" dmvnorm "<<  dmvnorm<< " sizek " << precMat1<<endl;
+    dmvnorm = -pow(10,10);
+  }
+  return dmvnorm;
+}
+
 double logPdfWishart(const unsigned int& dimA, const MatrixXd& A, const double& logDetA, const MatrixXd& inverseR, const double& logDetR, const double& kappa){
 	MatrixXd work = inverseR*A;
 	return -0.5*(kappa*logDetR-(kappa-(double)dimA-1)*logDetA+work.trace())
@@ -185,6 +225,5 @@ double logPdfIntrinsicCAR(const vector<double>& x, const vector<vector<unsigned 
 
 	return 0.5*(n-1)*log(precision)-0.5*precision*xtPx;
 }
-
 
 #endif /*DISTRIBUTION_H_*/

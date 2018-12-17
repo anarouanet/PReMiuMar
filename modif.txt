@@ -1,0 +1,45 @@
+    // Note we should pre-process variables to standardise the fixed effects to
+    // have 0 mean and standard dev of 0.5
+
+
+
+27/11/18:
+
+(computation clusterMarginal[c] if minui<testbound[c])
+(update thetabeta if longitudinal)
+
+in gibbsForZ: if isinf(logPyXz), logPyXz= -(numeric_limits<double>::max());
+in logPYiGivenZiWiLongitudinal: if isinf(logDetPrecMat), Sigma=Sigma+0.01
+
+in initialisePReMiuM: if Longitudinal,  params.beta=0;
+in RcppExport profRegr: if !Longitudinal, metropolisHastingsForThetaActive & gibbsForThetaInActive
+in pReMiuMLogPost: if Longitudinal, prior doesn't account for t-scale prior theta
+
+set the error prior small!
+
+
+double logPYiGivenZiWiMVN(const pReMiuMParams& params, const pReMiuMData& dataset,
+                          const unsigned int& nFixedEffects,const int& zi,
+                          const unsigned int& i){
+
+  unsigned int nSubjects = dataset.nSubjects();
+  unsigned int nTimes = dataset.nTimes();
+  unsigned int nOutcomes = nTimes/nSubjects;
+  VectorXd yi = VectorXd::Zero(nOutcomes);
+  VectorXd mu = params.MVNmu(zi);
+  MatrixXd workSqrtMVNTau = params.workSqrtMVNTau(zi);
+  double workLogDetMVNTau = params.workLogDetMVNTau(zi);
+  for(unsigned int j=0;j<nOutcomes;j++){
+    yi(j)=dataset.continuousY(i*nOutcomes+j);
+    for(unsigned int k=0;k<nFixedEffects;k++){
+      mu(j)+=params.beta(k,0)*dataset.W(i,k);
+    }
+  }
+
+  return logPdfMultivarNormal(nOutcomes,yi,mu,workSqrtMVNTau,workLogDetMVNTau);
+}
+
+12/12/18:
+eigenvalue = 0 if  eigenvalue < 0 in Sample_mean
+sample GP mean after L in metropolisHastingsForL and gibbsForLInActive.
+test 

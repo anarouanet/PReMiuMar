@@ -13,6 +13,7 @@
 using std::string;
 using std::ifstream;
 using std::vector;
+using std::endl;
 
 SEXP calcDisSimMat(SEXP fileName, SEXP nSweeps, SEXP nBurn, SEXP nFilter,SEXP nSubjects,SEXP nPredictSubjects,SEXP onlyLS){
 
@@ -78,7 +79,7 @@ SEXP calcDisSimMat(SEXP fileName, SEXP nSweeps, SEXP nBurn, SEXP nFilter,SEXP nS
     	}
     }
 
-    // Computing the optimal partition for least squares method 
+    // Computing the optimal partition for least squares method
     // Could make these steps optional as only relevant for R option useLS=T
     // Cheaper (for large datasets) to re-read everything in again, instead
     // of storing things
@@ -124,7 +125,7 @@ SEXP calcDisSimMat(SEXP fileName, SEXP nSweeps, SEXP nBurn, SEXP nFilter,SEXP nS
 		return Rcpp::List::create(Rcpp::Named("lsOptSweep")=minIndex);
 	} else {
 		return Rcpp::List::create(Rcpp::Named("lsOptSweep")=minIndex,
-			Rcpp::Named("disSimMat")=Rcpp::wrap<vector<double> >(disSimMat));	
+			Rcpp::Named("disSimMat")=Rcpp::wrap<vector<double> >(disSimMat));
 	}
 }
 
@@ -181,7 +182,7 @@ SEXP pYGivenZW(SEXP betaIn,SEXP thetaIn,SEXP zAlloc,SEXP sigmaBeta,
 	outputTheta = outputTheta*0.5*(dofT+1);
 
 	double out = -(output-outputTheta+con)/nSj;
-	if (nFE>0) {	
+	if (nFE>0) {
 		// contribution from beta
 		double paramsBetaTmp = 1/pow(sigmaB,2);
 		double outputBeta = 0.0;
@@ -255,7 +256,7 @@ SEXP pZpX(SEXP nClusters, SEXP nCategories,SEXP aPhi, SEXP n,SEXP nCovariates,SE
 		unsigned int index = 0;
 		for (unsigned int k=0;k<nCov;k++){
 			out = out-LogGamma(nCat[k]*aP[k]+nn[c]);
-		} 
+		}
 		for (unsigned int j=0;j<nCov;j++){
 			for (unsigned int kj=0;kj<nCat[j];kj++){
 				for (unsigned int zi=0;zi<nSj;zi++){
@@ -263,16 +264,16 @@ SEXP pZpX(SEXP nClusters, SEXP nCategories,SEXP aPhi, SEXP n,SEXP nCovariates,SE
 						if (xM[j*nSj+zi]==kj){
 							nCatK[c*sumNCat+index]++;
 						}
-					}			
+					}
 				}
 				nCatK[c*sumNCat+index] = nCatK[c*sumNCat+index] + aP[j];
 				index = index+1;
 			}
-			
-		}		
+
+		}
 	}
 	for (unsigned int i=0; i< nCatK.size();i++){
-		out = out + LogGamma(nCatK[i]); 
+		out = out + LogGamma(nCatK[i]);
 	}
 	out = out + nC * log(a) + LogGamma(nSj+1) + LogGamma(a)-LogGamma(a+nSj);
 
@@ -300,7 +301,7 @@ double Gamma
 	{
 		std::stringstream os;
         os << "Invalid input argument " << x <<  ". Argument must be positive.";
-        throw std::invalid_argument( os.str() ); 
+        throw std::invalid_argument( os.str() );
 	}
 
     // Split the function domain into three intervals:
@@ -320,12 +321,12 @@ double Gamma
 
     ///////////////////////////////////////////////////////////////////////////
     // Second interval: [0.001, 12)
-    
+
 	if (x < 12.0)
     {
         // The algorithm directly approximates gamma over (1,2) and uses
         // reduction identities to reduce other arguments to this interval.
-		
+
 		double y = x;
         int n = 0;
         bool arg_was_less_than_one = (y < 1.0);
@@ -420,7 +421,7 @@ double LogGamma
 	{
 		std::stringstream os;
         os << "Invalid input argument " << x <<  ". Argument must be positive.";
-        throw std::invalid_argument( os.str() ); 
+        throw std::invalid_argument( os.str() );
 	}
 
     if (x < 12.0)
@@ -454,7 +455,7 @@ double LogGamma
     double series = sum/x;
 
     static const double halfLogTwoPi = 0.91893853320467274178032973640562;
-    double logGamma = (x - 0.5)*log(x) - x + halfLogTwoPi + series;    
+    double logGamma = (x - 0.5)*log(x) - x + halfLogTwoPi + series;
 	return logGamma;
 }
 

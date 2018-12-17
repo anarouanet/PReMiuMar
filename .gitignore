@@ -10,3 +10,4 @@ src/*.dll
 output/
 *.pdf
 *.png
+*.Rproj

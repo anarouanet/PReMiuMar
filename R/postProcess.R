@@ -506,10 +506,7 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
   if (!missing(kernel)) inputString<-paste(inputString," --kernel=",  kernel ,sep="")
   if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sep="")
 
-  print('avant')
   if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
-  print('apres')
-  browser()
 
   # define directory path and fileStem
   outputSplit <- strsplit(output,split="/")

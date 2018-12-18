@@ -524,7 +524,6 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 
 	// Define a uniform random number generator
 	randomUniform unifRand(0,1);
-  std::fstream fout("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 
 	// This is the main sampler
 	// We loop over the sweeps
@@ -555,18 +554,12 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 			}
 		}
 		// At the end of the sweep make sure the log posterior is up to date.
-		fout<< "sweep 1"<<sweep<<endl;
-
 		_chain.currentState().logPosterior(_model.logPosterior(_chain.currentState().parameters()));
-		fout<< "sweep 2"<<endl;
 
 		// Now write the output (this is controlled by the user defined function
 		writeOutput(sweep);
-		fout<< "sweep 3"<<endl;
 	}
-	fout << "avant writeAcceptanceRates"<<endl;
 	writeAcceptanceRates();
-	fout << "apres writeAcceptanceRates"<<endl;
 
 }
 

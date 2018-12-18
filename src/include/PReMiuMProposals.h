@@ -2331,13 +2331,9 @@ void gibbsForGammaInActive(mcmcChain<pReMiuMParams>& chain,
       if(unifRand(rndGenerator)<probSwitch){
         // Switching
         currentParams.gamma(c,j,proposedGamma,covariateType);
-
       }
-
-
     }
   }
-
 }
 
 // Gibbs for theta

@@ -1769,12 +1769,11 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropParams,pReMiuMData>& sampler,
 								const unsigned int& sweep){
 
-  std::fstream fout("Compare.txt", std::ios::in | std::ios::out | std::ios::app);
-
 	bool reportBurnIn = sampler.reportBurnIn();
 	unsigned int nBurn = sampler.nBurn();
 	unsigned int nFilter = sampler.nFilter();
 	vector<ofstream*>& outFiles = sampler.outFiles();
+	std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
 	// Check if we need to do anything
 	if((reportBurnIn||((!reportBurnIn)&&sweep>nBurn))&&(sweep%nFilter==0)){
@@ -1867,12 +1866,10 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				if(outcomeType.compare("Longitudinal")==0){
 					fileName = fileStem + "_L.txt";
 					outFiles.push_back(new ofstream(fileName.c_str()));
-					fout<< "print L"<<endl;
 					if(sampler.model().options().sampleGPmean()){//AR
 					  fileName = fileStem + "_meanGP.txt";
 					  outFiles.push_back(new ofstream(fileName.c_str()));
 					}
-					fout<< "print L end "<<endl;
 
 				}
 				if(outcomeType.compare("MVN")==0){
@@ -1971,7 +1968,8 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			}
 			if(outcomeType.compare("Longitudinal")==0){//RJ
 				LInd=r++;
-			  meanGPInd=r++;//AR
+			  if(sampler.model().options().sampleGPmean())
+			    meanGPInd=r++;//AR
 			}
 			if(outcomeType.compare("MVN")==0){//RJ
 				MVNmuInd=r++;
@@ -2191,8 +2189,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 					}
 				}
 				if(outcomeType.compare("Longitudinal")==0){
-				  fout<< "print L2"<<endl;
-
 				//RJ Print parameter L for each cluster
 					for(unsigned int c=0;c<maxNClusters;c++){
 					  unsigned int nL;
@@ -2203,16 +2199,16 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 					  }
 						for(unsigned int l=0;l<nL;l++){
 							*(outFiles[LInd]) << params.L(c,l);
-							if(c<maxNClusters-1 || l<(nL-1)){
+							if(c<(maxNClusters-1) || l<(nL-1)){
 								*(outFiles[LInd]) << " ";
 							}else{
 								*(outFiles[LInd]) << endl;
 							}
 						}
-						if( sampler.model().options().sampleGPmean()){ //AR
+						if(sampler.model().options().sampleGPmean()){ //AR
 						  for(unsigned int l=0;l<dataset.nTimes_unique();l++){
 						    *(outFiles[meanGPInd]) << params.meanGP(c,l)<< " ";
-						    if(c<maxNClusters-1 || l<(dataset.nTimes_unique()-1)){
+						    if(c<(maxNClusters-1) || l<(dataset.nTimes_unique()-1)){
 						      *(outFiles[meanGPInd]) << " ";
 						    }else{
 						      *(outFiles[meanGPInd]) << endl;
@@ -2220,8 +2216,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 						  }
 						}
 					}
-					fout<< "print L2 end"<<endl;
-
 				}
 				if(outcomeType.compare("MVN")==0){
 				//RJ Print MVN parameters for each cluster
@@ -2375,9 +2369,11 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				proposalParams.alphaAnyUpdates(false);
 			}
 		}
-
 		if(varSelectType.compare("None")!=0){
-			// Print variable selection related quantities
+		  fout << " varSelectType "<<varSelectType<< endl;
+		  fout<<"omega "<< params.omega(0)<< endl;
+		  fout<<"rho "<< params.rho(0)<< endl;
+		  // Print variable selection related quantities
 			for(unsigned int j=0;j<nCovariates;j++){
 				*(outFiles[omegaInd]) << params.omega(j);
 				*(outFiles[rhoInd]) << params.rho(j);
@@ -2439,6 +2435,8 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				}
 				if(varSelectType.compare("BinaryCluster")==0){
 					for(unsigned int c=0;c<maxNClusters;c++){
+					  fout << "gamma "<<params.gamma(c,j)<< " gammaInd "<<gammaInd<<endl;
+
 						*(outFiles[gammaInd]) << params.gamma(c,j);
 						if(c<maxNClusters-1||j<nCovariates-1){
 							*(outFiles[gammaInd]) << " ";
@@ -2449,7 +2447,7 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				}
 			}
 
-
+fout << "fin1"<<sweep<<endl;
 			anyUpdates = proposalParams.rhoAnyUpdates();
 			if(anyUpdates){
 				for(unsigned int j=0;j<nCovariates;j++){
@@ -2468,6 +2466,7 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 
 
 	}
+	fout << "fin2"<< sweep<<endl;
 
 }
 

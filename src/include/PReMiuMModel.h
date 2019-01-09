@@ -2586,6 +2586,7 @@ double logPYiGivenZiWiPoissonSpatial(const pReMiuMParams& params, const pReMiuMD
 double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMData& dataset,
                                    const unsigned int& nFixedEffects, const int& c,
                                    const unsigned int& ii){
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   unsigned int nSubjects=dataset.nSubjects();
   const string kernelType = dataset.kernelType(); //AR
@@ -2598,8 +2599,8 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
   VectorXd meanVec;
   MatrixXd Sigma;
   MatrixXd precMat;
-  double logDetPrecMat;
-  unsigned int sizek = 0;
+  double logDetPrecMat =0.0;
+  int sizek = 0;
   double dmvnorm = 0.0;
   int counter = 0;
   // set sizes based on cluster occupation
@@ -2664,15 +2665,25 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       MatrixXd L = lltOfA.matrixL();
       logDetPrecMat=  2*log(L.determinant());
 
-      if(isinf(logDetPrecMat)){
-        MatrixXd Sigma2 = Sigma+0.0001*MatrixXd::Identity(Sigma.rows(), Sigma.rows());
-        //precMat = Sigma2.inverse();
-        LLT<MatrixXd> lltOfA(Sigma2 ); // compute the Cholesky decomposition of A
-        MatrixXd L2 = lltOfA.matrixL();
-        logDetPrecMat=  2*log(L2.determinant());
-      }
+      // if(isinf(logDetPrecMat)){
+      //   MatrixXd Sigma2 = Sigma+0.0001*MatrixXd::Identity(Sigma.rows(), Sigma.rows());
+      //   //precMat = Sigma2.inverse();
+      //   LLT<MatrixXd> lltOfA(Sigma2 ); // compute the Cholesky decomposition of A
+      //   MatrixXd L2 = lltOfA.matrixL();
+      //   logDetPrecMat=  2*log(L2.determinant());
+      // }
       //logDetPrecMat = -log(precMat.determinant());//log(Sigma.determinant());
       dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+     fout << " dmvnorm "<< dmvnorm<< " logdet "<<logDetPrecMat << " prod "<< yk.transpose()*precMat*yk << " sizek "<<sizek <<endl;
+      if(sizek ==21){
+        fout << " yk "<< endl<< yk<< endl << " times "<<endl;
+        for(unsigned int j=0; j<timesk.size(); j++)
+          fout << timesk[j]<< " ";
+        fout << endl << " params.L(c) "<<endl;
+        for(unsigned int j=0; j<3; j++)
+          fout << params.L(c)[j]<< " ";
+        fout << endl<< " Sigma "<<endl<< Sigma << endl;//<<" precMat "<<endl<< precMat << endl<<endl;
+      }
     }
   }
   return dmvnorm;
@@ -2681,7 +2692,8 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
 //AR Compute logPYiGivenZiWiLongitudinal from covariance matrix and det
 double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& logDetSigma, const pReMiuMParams& params, const pReMiuMData& dataset,
                                        const unsigned int& nFixedEffects, const unsigned int& c, unsigned int size_k,
-                                       const  unsigned int& ii){
+                                       const  unsigned int& ii// subject to remove
+                                         ){
 
 
   unsigned int nSubjects=dataset.nSubjects();
@@ -2691,17 +2703,19 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
   vector<double> timesk ;
+  int nTimes_unique = dataset.nTimes_unique();
+
   VectorXd yk;
   //VectorXd meanVec;
   MatrixXd precMat;
-  double logDetPrecMat;
+  double logDetPrecMat =0.0;
 
-  unsigned int sizek = 0;
+  int sizek = 0;
   double dmvnorm = 0.0;
   int counter = 0;
 
   unsigned int ind_permut;
-  //std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   sizek=size_k;
 
@@ -2735,8 +2749,25 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
     }
 
     if(ii>=nSubjects){
-      precMat = Sigma_inv;
+      precMat = Sigma_inv; //ascending order of times
       logDetPrecMat = logDetSigma;
+
+      if(sizek> nTimes_unique){
+        // sort yk with corresponding ordering
+        std::vector<int> idx(timesk.size());
+        int x=0;
+        iota(idx.begin(), idx.end(), x++);
+        stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                    [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+
+        sort(timesk.begin(), timesk.end());
+
+        VectorXd yk_sorted = yk;
+        for(unsigned int j=0;j<sizek;j++)
+          yk_sorted(j)=yk(idx[j]);
+        yk=yk_sorted;
+      }
+      fout << " all subjects, resorting "<<endl;
     }else{
 
       if(params.z(ii) != c ){ // Add one subject
@@ -2752,16 +2783,19 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
         precMat.setZero(sizek,sizek);
         GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
 
-        if(Sigma_inv.rows()>0 && sizek> 15){
+        if(Sigma_inv.rows()>0 && sizek> nTimes_unique){
+          fout << " Inverse_woodbury "<<logDetSigma<< endl;
           logDetPrecMat=Inverse_woodbury(Sigma_inv,logDetSigma, precMat,timesk);
         }else{
           logDetPrecMat = log(precMat.determinant());// log(Sigma.determinant());
           precMat = precMat.inverse();
         }
+        fout << " add 1 subject "<<endl;
+
       }else{
         precMat.setZero(sizek,sizek);
 
-        if(sizek>15){
+        if(sizek>nTimes_unique){
 
           vector<double> timesk2;
           timesk2.resize(Sigma_inv.rows());
@@ -2781,10 +2815,13 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
           Sigma2.setZero(Sigma_inv.rows(),Sigma_inv.rows());
           GP_cov(Sigma2,params.L(c),timesk2,dataset.equalTimes(),kernelType,1);
           logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat,timesk, Sigma_inv2);
+          fout << " remove 1 subject, Inverse_woodbury "<<endl;
+
         }else{
           GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
           logDetPrecMat=log(precMat.determinant());
           precMat=precMat.inverse();
+          fout << " remove 1 subject, recompute "<<endl;
         }
       }
     }
@@ -2792,6 +2829,17 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
   }else{
     //std::cout << "no one remaining, empty class\n";
     dmvnorm=0;
+  }
+  fout << " dmvnorm bis "<< dmvnorm<< " logdet "<<logDetPrecMat << " prod "<< yk.transpose()*precMat*yk << " sizek "<<sizek<<endl;
+
+  if(sizek ==21){
+    fout << "ii "<< ii << " nSubjects "<< nSubjects<<" c" << c <<" yk "<< endl<< yk<< endl << " times "<<endl;
+    for(unsigned int j=0; j<timesk.size(); j++)
+      fout << timesk[j]<< " ";
+    fout << endl << " params.L(c) "<<endl;
+    for(unsigned int j=0; j<3; j++)
+      fout << params.L(c)[j]<< " ";
+    //fout << endl<< " Sigma_inv "<<endl<< Sigma_inv << endl<<" precMat "<<endl<< precMat << endl<<endl;
   }
 
   return dmvnorm;
@@ -2943,8 +2991,8 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
                               const mcmcModel<pReMiuMParams,
                                               pReMiuMOptions,
                                               pReMiuMData>& model){
-
   std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
+
   const pReMiuMData& dataset = model.dataset();
   const string outcomeType = model.dataset().outcomeType();
   const string kernelType = model.options().kernelType(); //AR
@@ -3607,7 +3655,7 @@ double logPdfPostMultivariateNormal(const pReMiuMParams& params, const pReMiuMDa
   vector<double> timesk ;
   VectorXd yk;
 
-  unsigned int sizek = 0;
+  int sizek = 0;
   int counter = 0;
 
   for(unsigned int i=0;i<nSubjects;i++){
@@ -3874,7 +3922,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
   VectorXd yk;
   MatrixXd GPSigma;
 
-  unsigned int sizek = 0;
+  int sizek = 0;
   int counter = 0;
    std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
    //std::fstream fout_GP("GPmean_output.txt", std::ios::in | std::ios::out | std::ios::app);
@@ -4063,7 +4111,7 @@ double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& da
   vector<double> timesk ;
   VectorXd yk;
 
-  unsigned int sizek = 0;
+  int sizek = 0;
   int counter = 0;
 
   for(unsigned int i=0;i<nSubjects;i++){

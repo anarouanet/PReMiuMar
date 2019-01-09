@@ -43,3 +43,8 @@ double logPYiGivenZiWiMVN(const pReMiuMParams& params, const pReMiuMData& datase
 eigenvalue = 0 if  eigenvalue < 0 in Sample_mean
 sample GP mean after L in metropolisHastingsForL and gibbsForLInActive.
 test 
+
+
+8/01/19: 
+in Get_Sigma_inv_GP_cov, correct woodbury identity (no error in K and +0.001 for Kuu^(-1) to compute det and have det(Lambda)>0 && sort time vector, ascending order
+in logPYiGivenZiWiLongitudinal_bis:  sort yk to correspond to sigma

@@ -53,7 +53,7 @@ using namespace arma;
 
 using boost::math::lgamma;
 
-double logMultivarGammaFn(const double& x,const unsigned int& p){
+double logMultivarGammaFn(const double x,const unsigned int p){
 
 	double out;
 	out = 0.25*(double)(p*(p-1))*log(pi<double>());
@@ -193,14 +193,25 @@ void Permut_cov(MatrixXd& Mat,  const int start_permut, const int length_permut)
   Mat=Mat_permut;
 }
 //AR
-double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const unsigned int dimBlock, const std::vector<double> grid, const string& kernel){
+double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<double> &times,
+                            const unsigned int dimBlock, const std::vector<double>& grid,
+                            const string& kernel){
   double a,eL0,eL1,eL2,eL3;
   int i,j;
   int nTimes = times.size();
   double det=0;
-  //std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   Mat.setZero(nTimes,nTimes);
+
+  // ascending order of times
+  // std::vector<int> idx(times.size());
+  // int x=0;
+  // iota(idx.begin(), idx.end(), x++);
+  // stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+  //      [&](int i1,int i2) { return (times[i1] < times[i2]); }
+  //      );
+  sort(times.begin(), times.end());
 
   if(kernel.compare("SQexponential")==0){
      eL0 = exp(L[0]);
@@ -222,7 +233,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<doub
     //[sigma_b^2 + sigma_v^2(t-l)(t-l)]^2
      eL0 = exp(L[0]); //sigma_b^2
      eL1 = exp(L[1]); //sigma_v^2
-     eL2 = exp(L[2]); // sigma_e^2
+     eL2 = exp(L[2]);
      eL3 = exp(L[3]); // l
 
     for(i=1;i<nTimes;i++){
@@ -239,7 +250,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<doub
     }
   }
 
-  if(*std::max_element(std::begin(grid), std::end(grid))==0){
+  if(*std::max_element(std::begin(grid), std::end(grid))==0 || grid.size()==nTimes){
     //MatrixXd L_inv = Mat.llt().solve(MatrixXd::Identity(Mat.rows(), Mat.rows()));
     //det=  log(L_inv.determinant());
 
@@ -249,6 +260,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<doub
     det=  2*log(L.determinant());
     //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
     Mat = L.inverse().transpose()*L.inverse();
+    fout << "det Get_Sigma_inv_GP_cov 1 subject "<< det<<endl;
 
   }else{
 
@@ -284,26 +296,43 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<doub
 
     for(int i=0;i<grid.size();i++){
       if(kernel.compare("SQexponential")==0){
-        Kuu(i,i) = Kuu(i,i) + eL0;
+        Kuu(i,i) = Kuu(i,i) + eL0+0.001;
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
-          Kuu(i,i)=a*a + eL2;
+          Kuu(i,i)=a*a ;//+ eL2;
         }
       }
     }
 
-
     MatrixXd Qtt=Ktu*Kuu.inverse()*Ktu.transpose();
-    MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
+    MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();//
+    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Aut=Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
     Mat =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*(MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).inverse()*Aut*Lambda.inverse();
-
     det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
+
+    if(std::isnan(det))
+      fout << "det Get_Sigma_inv_GP_cov "<< det << " det Lambda "<<Lambda.determinant()<<endl;
+//
+//     if(nTimes ==5){
+//       fout <<  " times "<<endl;
+//       for(unsigned int j=0; j<times.size(); j++)
+//         fout << times[j]<< " ";
+//       fout <<  " grid "<<endl;
+//       for(unsigned int j=0; j<grid.size(); j++)
+//         fout << grid[j]<< " ";
+//       fout << endl << " params.L(c) "<<endl;
+//       for(unsigned int j=0; j<3; j++)
+//         fout << L[j]<< " ";
+//       fout << endl<< " Mat inv " << log(Mat.determinant()) <<endl<< Mat.inverse() << endl;
+//
+//       Mat =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*(MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).inverse()*Aut*Lambda.inverse();
+//       det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
+//
+//       fout <<" precMat "<< det<<endl<< Mat << endl << " Ktu "<< endl<<Ktu  << endl<<" Kuu "<< endl<<Kuu  << endl << " Kut "<<endl<< Ktu.transpose() <<endl << " Ktu*Kuu-1 "<<endl<<Ktu* Kuu.inverse() << " Kuu*Kuu-1 "<<endl<<Kuu* Kuu.inverse() <<endl<<endl;
+//     }
   }
-
-
-
   return det;
 }
 

@@ -1773,7 +1773,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 	unsigned int nBurn = sampler.nBurn();
 	unsigned int nFilter = sampler.nFilter();
 	vector<ofstream*>& outFiles = sampler.outFiles();
-	std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
 	// Check if we need to do anything
 	if((reportBurnIn||((!reportBurnIn)&&sweep>nBurn))&&(sweep%nFilter==0)){
@@ -2370,9 +2369,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			}
 		}
 		if(varSelectType.compare("None")!=0){
-		  fout << " varSelectType "<<varSelectType<< endl;
-		  fout<<"omega "<< params.omega(0)<< endl;
-		  fout<<"rho "<< params.rho(0)<< endl;
 		  // Print variable selection related quantities
 			for(unsigned int j=0;j<nCovariates;j++){
 				*(outFiles[omegaInd]) << params.omega(j);
@@ -2435,8 +2431,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				}
 				if(varSelectType.compare("BinaryCluster")==0){
 					for(unsigned int c=0;c<maxNClusters;c++){
-					  fout << "gamma "<<params.gamma(c,j)<< " gammaInd "<<gammaInd<<endl;
-
 						*(outFiles[gammaInd]) << params.gamma(c,j);
 						if(c<maxNClusters-1||j<nCovariates-1){
 							*(outFiles[gammaInd]) << " ";
@@ -2447,7 +2441,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				}
 			}
 
-fout << "fin1"<<sweep<<endl;
 			anyUpdates = proposalParams.rhoAnyUpdates();
 			if(anyUpdates){
 				for(unsigned int j=0;j<nCovariates;j++){
@@ -2466,8 +2459,6 @@ fout << "fin1"<<sweep<<endl;
 
 
 	}
-	fout << "fin2"<< sweep<<endl;
-
 }
 
 string storeLogFileData(const pReMiuMOptions& options,

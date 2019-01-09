@@ -3414,15 +3414,16 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   unsigned int maxZ=0;
   //RJ for Longitudinal: save cluster marginal likelihoods, update only when membership changes
   vector<double> clusterMarginal, numerator, denominator;
-  clusterMarginal.resize(maxNClusters);
+  clusterMarginal.resize(maxNClusters,0);
   numerator.resize(maxNClusters,0);
   denominator.resize(maxNClusters,0);
   int origZi;
 
 
   //AR
-  double * det_M0;
-  det_M0 = new double [maxNClusters];
+ // double * det_M0;
+  //det_M0 = new double [maxNClusters];
+  vector<double> det_M0(maxNClusters,0);
   vector<MatrixXd> Sigma_inv_c(maxNClusters);
   vector<int> sizek(maxNClusters,0);
   double temp;
@@ -3432,10 +3433,9 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> timesk;
   int counter = 0;
   vector<double> times = dataset.times();
-  int Ana=0; // 0 ROB, 1 AR, 2 both
-  int ind_grid=0;
-  int grid_size=1;
-  vector<double> grid(grid_size,0);
+  int Ana=2; // 0 ROB, 1 AR, 2 both
+  int grid_size = 0;
+  vector<double> grid;
   //double minui=*std::min_element(std::begin(u), std::end(u) );
 
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
@@ -3467,15 +3467,21 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         //save original cluster label
         origZi = currentParams.z(i);
 
-        if(i==0 && outcomeType.compare("Longitudinal")==0 && ind_grid==1){ //grid construction
-          fout << Ana << " grid "<< ind_grid<< " grid_size "<< grid_size<< endl;
+        if(i==0 && outcomeType.compare("Longitudinal")==0 && Ana>0){ //grid construction
+          grid_size = model.dataset().nTimes_unique();
+          grid=dataset.times_unique();
 
-          double min_grid=*std::min_element(std::begin(times), std::end(times));
-          double pas_grid=(*std::max_element(std::begin(times), std::end(times) )-*std::min_element(std::begin(times), std::end(times)))/(grid_size-1);
+          fout <<" Ana "<< Ana<< " grid_size "<< grid_size<< endl<< " grid "<<endl;
+          for(unsigned int h=0;h<grid_size;h++)
+          fout <<grid[h]<< " ";
+          fout << endl;
 
-          for(unsigned int i2=0;i2<grid_size;i2++){
-            grid[i2]= min_grid+i2*pas_grid;
-          }
+          // double min_grid=*std::min_element(std::begin(times), std::end(times));
+          // double pas_grid=(*std::max_element(std::begin(times), std::end(times) )-*std::min_element(std::begin(times), std::end(times)))/(grid_size-1);
+          //
+          // for(unsigned int i2=0;i2<grid_size;i2++){
+          //   grid[i2]= min_grid+i2*pas_grid;
+          // }
         }
 
         for(unsigned int c=0;c<maxNClusters;c++){
@@ -3513,15 +3519,20 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                   }
                 }
 
-                //AR retrieve covariance matrix`
+                //AR compute covariance matrix
+                fout << " A "<< c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
+
                 det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
+                fout <<  " B "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
+
                 clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
+                fout <<  " C "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
               }
 
               if(Ana==2&abs(temp- clusterMarginal[c])>pow (1.0, -5.0)){
-                fout << i << " c "<< c << " clusterMarginal" << clusterMarginal[c]<< " temp" << temp << endl;
-              }
-
+                fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
+                fout << i << " c "<< c << " clusterMarginal " << clusterMarginal[c]<< " temp" << temp << endl<< endl;
+                }
             }
           }//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3551,45 +3562,43 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                 if(origZi == c){
                   //if point currently in cluster:
                   //marginal(cluster with gene) = clusterMarginal[c]
-                  numerator[c] = clusterMarginal[c];
+                  numerator[c] = clusterMarginal[c]; // likelihood with i
 
                   //get marginal(cluster without gene)
                   if(Ana!=1){
-                    denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
+                    denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // likelihood without i
                     if(Ana==2)
                       temp=denominator[c];
                   }
 
                   if(Ana>0){
-                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
+                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
                   }
 
                   if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
-                    fout << i << " c "<< c << " denominator" << denominator[c]<< " temp" << temp << endl;
+                    fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
+                    fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
                   }
                 }else{
                   //take cluster marginal for denominator
-                  denominator[c] = clusterMarginal[c];
+                  denominator[c] = clusterMarginal[c]; // likelihood without i
 
                   if(Ana!=1){
                     //move point for numerator
                     currentParams.z(i,c,covariateType);//RJ marginal likelihood with i
-
-                    // numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
-                    numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
-
-                    //fout << "i  " << i << " c "<< c << " logPyXz[c] "<<logPyXz[c]<<" numerator[c] "<< numerator[c]<< " zi "<< currentParams.z(i) <<endl;
+                    numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects); // likelihood with i
                     currentParams.z(i,origZi,covariateType);//RJ set cluster to original
                     if(Ana==2)
                       temp=numerator[c];
                   }
 
                   if(Ana>0){
-                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);
+                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
                   }
 
                   if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
-                    fout << i << " c "<< c << " numerator" << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c[c].rows()<< " sizek "<< sizek[c] << endl;
+                    fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
+                    fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c[c].rows()<< " sizek "<< sizek[c] << endl;
                   }
                 }
                 logPyXz[c]+= numerator[c] - denominator[c];
@@ -3747,7 +3756,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             counter = counter + tStop[i2] - tStart[i2] + 1;
           }
         }
-
         det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
       }
     }

@@ -162,7 +162,7 @@ double logPdfNIW(const unsigned int& d, const MatrixXd& Lambda0, const double& l
 }
 
 //AR logPdfMultivariateNormal p(fk|Lk,k)
-double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double>& L, const vector<double>& times, const string& kernelType){
+double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double> L, const vector<double>& times, const string& kernelType){
   VectorXd y(muGP.size());
   std::fstream foutC("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 

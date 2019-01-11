@@ -3424,7 +3424,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
  // double * det_M0;
   //det_M0 = new double [maxNClusters];
   vector<double> det_M0(maxNClusters,0);
-  vector<MatrixXd> Sigma_inv_c(maxNClusters);
+  vector<MatrixXd> Sigma_inv_c_ord(maxNClusters);
   vector<int> sizek(maxNClusters,0);
   double temp;
 
@@ -3506,7 +3506,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
               }
 
               if(sizek[c]>0){
-                Sigma_inv_c[c].setZero(sizek[c],sizek[c]);
+                Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
                 timesk.resize(sizek[c]);
 
                 counter = 0;
@@ -3522,10 +3522,10 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                 //AR compute covariance matrix
                 fout << " A "<< c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
 
-                det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
+                det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
                 fout <<  " B "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
 
-                clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
+                clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
                 fout <<  " C "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
               }
 
@@ -3572,7 +3572,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                   }
 
                   if(Ana>0){
-                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
+                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
                   }
 
                   if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
@@ -3593,12 +3593,12 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                   }
 
                   if(Ana>0){
-                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
+                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
                   }
 
                   if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
                     fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
-                    fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c[c].rows()<< " sizek "<< sizek[c] << endl;
+                    fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c_ord[c].rows()<< " sizek "<< sizek[c] << endl;
                   }
                 }
                 logPyXz[c]+= numerator[c] - denominator[c];
@@ -3721,7 +3721,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
         if(sizek[c]>0){
 
-          Sigma_inv_c[c].setZero(sizek[c],sizek[c]);
+          Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
           timesk.resize(sizek[c]);
 
           counter = 0;
@@ -3734,8 +3734,8 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             }
           }
 
-          det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
-          //clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
+          det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
+          //clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
 
           //if( (abs(denominator[origZi]- clusterMarginal[origZi])>pow(1.0, -5.0))){
           //  fout << i << " zi "<< zi << " clusterMarginal[origZi]" << clusterMarginal[origZi]<< " denominator[origZi] " << denominator[origZi] <<   endl;
@@ -3744,7 +3744,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
         c=zi;
 
-        Sigma_inv_c[c].setZero(sizek[c],sizek[c]);
+        Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
         timesk.resize(sizek[c]);
 
         counter = 0;
@@ -3756,7 +3756,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             counter = counter + tStop[i2] - tStart[i2] + 1;
           }
         }
-        det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
+        det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
       }
     }
 

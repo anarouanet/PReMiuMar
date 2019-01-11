@@ -159,6 +159,8 @@ void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const 
 }
 
 //AR to obtain Sigma_permut^{-1} from Sigma^{-1} = Mat
+// in: Mat a1 a2 a3 b1 b2 b3 c1 c2 c3
+// out: Mat a1 a2 a3 c1 c2 c3 b1 b2 b3
 void Permut_cov(MatrixXd& Mat,  const int start_permut, const int length_permut){
   int i,j,ii,jj,ai,aj;
   int nTimes = Mat.rows();
@@ -192,6 +194,45 @@ void Permut_cov(MatrixXd& Mat,  const int start_permut, const int length_permut)
   }
   Mat=Mat_permut;
 }
+
+//AR Permut_cov with M0 (Mat) sorted.
+// in: Mat a1 b1 c1 a2 b2 c2 a3 b3 c3
+// out: Mat a1 c1 a2 c2 a3 c3 b1 b2 b3
+void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int length_permut,std::vector<int> & idx){
+  int i,j,ii,jj,ai,aj;
+  int nTimes = Mat_sorted.rows();
+  MatrixXd Mat_permut;
+  Mat_permut.setZero(nTimes,nTimes);
+  std::vector<double> idx_i;
+
+  ai=0;
+  for(i=0;i<nTimes;i++){
+    if(idx[i+idx_i.size()] >= start_permut && idx[i+idx_i.size()] < (start_permut+ length_permut+1))
+      idx_i.push_back(i+idx_i.size());
+    if(i< (nTimes-length_permut)){
+      ii=i+idx_i.size();
+    }else {
+      ii=idx_i[ai];
+      ai++;
+    }
+
+    aj=0;
+    std::vector<double> idx_j;
+    for(j=0;j<nTimes;j++){
+      if(idx[j+idx_j.size()] >= start_permut && idx[j+idx_j.size()] < (start_permut+ length_permut+1))
+        idx_j.push_back(j+idx_j.size());
+      if(j< (nTimes-length_permut)){
+        jj=j+idx_j.size();
+      }else {
+        jj=idx_j[aj];
+        aj++;
+      }
+      Mat_permut(i,j)=Mat_sorted(ii,jj);
+    }
+  }
+  Mat_sorted=Mat_permut;
+}
+
 //AR
 double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<double> &times,
                             const unsigned int dimBlock, const std::vector<double>& grid,
@@ -565,8 +606,6 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
 
     log_DetPrecMat= log_det_M0- log(A.determinant());
   }
-
-
   return(log_DetPrecMat);
 }
 

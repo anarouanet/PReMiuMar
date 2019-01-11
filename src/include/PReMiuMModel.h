@@ -2690,7 +2690,7 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
 }
 
 //AR Compute logPYiGivenZiWiLongitudinal from covariance matrix and det
-double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& logDetSigma, const pReMiuMParams& params, const pReMiuMData& dataset,
+double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const double& logDetSigma, const pReMiuMParams& params, const pReMiuMData& dataset,
                                        const unsigned int& nFixedEffects, const unsigned int& c, unsigned int size_k,
                                        const  unsigned int& ii// subject to remove
                                          ){
@@ -2744,29 +2744,28 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
         }
         counter = counter + tStop[i] - tStart[i] + 1;
       }else if(params.z(i) == c & ii==i){
-        ind_permut=counter; //index of subject to permut M0
+        ind_permut=counter; //index (in times and y) of first visit of subject to permut in M0
       }
     }
 
     if(ii>=nSubjects){
-      precMat = Sigma_inv; //ascending order of times
+      precMat = Sigma_inv_ord; //ascending order of times
       logDetPrecMat = logDetSigma;
 
-      if(sizek> nTimes_unique){
-        // sort yk with corresponding ordering
-        std::vector<int> idx(timesk.size());
-        int x=0;
-        iota(idx.begin(), idx.end(), x++);
-        stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
-                    [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+      // sort yk with corresponding ordering
+      std::vector<int> idx(timesk.size());
+      int x=0;
+      iota(idx.begin(), idx.end(), x++);
+      stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                  [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
 
-        sort(timesk.begin(), timesk.end());
+      sort(timesk.begin(), timesk.end());
 
-        VectorXd yk_sorted = yk;
-        for(unsigned int j=0;j<sizek;j++)
-          yk_sorted(j)=yk(idx[j]);
-        yk=yk_sorted;
-      }
+      VectorXd yk_sorted = yk;
+      for(unsigned int j=0;j<sizek;j++)
+        yk_sorted(j)=yk(idx[j]);
+      yk=yk_sorted;
+
       fout << " all subjects, resorting "<<endl;
     }else{
 
@@ -2783,22 +2782,41 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
         precMat.setZero(sizek,sizek);
         GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
 
-        if(Sigma_inv.rows()>0 && sizek> nTimes_unique){
-          fout << " Inverse_woodbury "<<logDetSigma<< endl;
-          logDetPrecMat=Inverse_woodbury(Sigma_inv,logDetSigma, precMat,timesk);
-        }else{
-          logDetPrecMat = log(precMat.determinant());// log(Sigma.determinant());
-          precMat = precMat.inverse();
-        }
-        fout << " add 1 subject "<<endl;
+        if(Sigma_inv_ord.rows()>0 && sizek> nTimes_unique){
 
-      }else{
+          logDetPrecMat=Inverse_woodbury(Sigma_inv_ord,logDetSigma, precMat,timesk);
+          fout << " add 1 subject, Inverse_woodbury "<<logDetSigma<< endl;
+
+          // sort yk with corresponding ordering
+          std::vector<int> idx(timesk.size());
+          int x=0;
+          iota(idx.begin(), idx.end(), x++);
+          stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                      [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+
+          sort(timesk.begin(), timesk.end());
+
+          VectorXd yk_sorted = yk;
+          for(unsigned int j=0;j<sizek;j++)
+            yk_sorted(j)=yk(idx[j]);
+          yk=yk_sorted;
+
+
+        }else{
+          LLT<MatrixXd> lltOfA(precMat); // compute the Cholesky decomposition of A
+          MatrixXd L = lltOfA.matrixL();
+          logDetPrecMat=  2*log(L.determinant());
+          //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+          precMat = L.inverse().transpose()*L.inverse();
+          fout << " add 1 subject, LLT "<<endl;
+        }
+      }else{ // Remove one subject
         precMat.setZero(sizek,sizek);
 
-        if(sizek>nTimes_unique){
+        if(Sigma_inv_ord.rows()>0 && sizek>nTimes_unique){
 
           vector<double> timesk2;
-          timesk2.resize(Sigma_inv.rows());
+          timesk2.resize(Sigma_inv_ord.rows());
           for(unsigned int j=0;j<timesk.size();j++)
             timesk2[j]= timesk[j];
 
@@ -2807,21 +2825,72 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv, const double& 
             timesk2[counter+j] = times[tStart[ii]-1+j];
           }
 
-          MatrixXd Sigma_inv2=Sigma_inv;
-          if(ind_permut+tStop[ii]-tStart[ii]+1<Sigma_inv2.rows())
-            Permut_cov(Sigma_inv2, ind_permut, tStop[ii]-tStart[ii]+1);
+          vector<double> timesk3;
+          timesk3.resize(sizek + tStop[ii]-tStart[ii]+1);
+          counter=0;
+          for(unsigned int i=0;i<nSubjects;i++){
+            if(params.z(i) == c ){
+              for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+                timesk3[counter+j] = times[tStart[i]-1+j];
+              }
+              counter = counter + tStop[i] - tStart[i] + 1;
+            }
+          }
+
+
+          // sort yk with corresponding ordering
+          std::vector<int> idx(timesk3.size());
+          int x=0;
+          iota(idx.begin(), idx.end(), x++);
+          stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                      [&](int i1,int i2) { return (timesk3[i1] < timesk3[i2]); });
+          stable_sort(timesk3.begin(), timesk3.end());
+
+
+
+          std::vector<double> times_permut(timesk3.size());
+          std::vector<double> idx_i;
+          int ai=0;
+          int iii;
+          for(int i=0;i<timesk3.size();i++){
+            if(idx[i] >= ind_permut && idx[i] < ind_permut+ tStop[ii]-tStart[ii]+1)
+              idx_i.push_back(i);
+            if(i< timesk3.size()-(tStop[ii]-tStart[ii]+1)){
+              iii=i+idx_i.size();
+            }else {
+              iii=idx_i[ai];
+              ai++;
+            }
+            times_permut[i]=timesk3[iii];
+          }
+
+
+          MatrixXd Sigma_inv_ord2=Sigma_inv_ord;
+          Permut_cov_sorted(Sigma_inv_ord2, ind_permut, tStop[ii]-tStart[ii]+1, idx);
 
           MatrixXd Sigma2; // Sigma  with subject to remove at the end
-          Sigma2.setZero(Sigma_inv.rows(),Sigma_inv.rows());
+          Sigma2.setZero(Sigma_inv_ord.rows(),Sigma_inv_ord.rows());
           GP_cov(Sigma2,params.L(c),timesk2,dataset.equalTimes(),kernelType,1);
-          logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat,timesk, Sigma_inv2);
+          logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat, timesk, Sigma_inv_ord2);
           fout << " remove 1 subject, Inverse_woodbury "<<endl;
+
+
+
+          VectorXd yk_sorted = yk;
+          for(unsigned int j=0;j<sizek;j++)
+            yk_sorted(j)=yk(idx[j]);
+          yk=yk_sorted;
+
+
 
         }else{
           GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
-          logDetPrecMat=log(precMat.determinant());
-          precMat=precMat.inverse();
-          fout << " remove 1 subject, recompute "<<endl;
+          LLT<MatrixXd> lltOfA(precMat); // compute the Cholesky decomposition of A
+          MatrixXd L = lltOfA.matrixL();
+          logDetPrecMat=  2*log(L.determinant());
+          //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+          precMat = L.inverse().transpose()*L.inverse();
+          fout << " remove 1 subject, LLT "<<endl;
         }
       }
     }

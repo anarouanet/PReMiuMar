@@ -3578,6 +3578,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                   if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
                     fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                     fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
+                    fout << Sigma_inv_c_ord[c].rows()<<endl<<endl;
                   }
                 }else{
                   //take cluster marginal for denominator

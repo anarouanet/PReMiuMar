@@ -198,7 +198,7 @@ void Permut_cov(MatrixXd& Mat,  const int start_permut, const int length_permut)
 //AR Permut_cov with M0 (Mat) sorted.
 // in: Mat a1 b1 c1 a2 b2 c2 a3 b3 c3
 // out: Mat a1 c1 a2 c2 a3 c3 b1 b2 b3
-void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int length_permut,std::vector<int> & idx){
+void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int length_permut, const std::vector<int> & idx){
   int i,j,ii,jj,ai,aj;
   int nTimes = Mat_sorted.rows();
   MatrixXd Mat_permut;
@@ -231,6 +231,23 @@ void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int 
     }
   }
   Mat_sorted=Mat_permut;
+}
+
+void Permut_cov_sorted(MatrixXd& Mat,   const std::vector<int> & idx){
+  //Permut according to idx
+
+  int i,j;
+  int nTimes = Mat.rows();
+  MatrixXd Mat_permut;
+  Mat_permut.setZero(nTimes,nTimes);
+  std::vector<double> idx_i;
+
+  for(i=0;i<nTimes;i++){
+    for(j=0;j<nTimes;j++){
+      Mat_permut(i,j)=Mat(idx[i],idx[j]);
+    }
+  }
+  Mat=Mat_permut;
 }
 
 //AR
@@ -301,10 +318,8 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     det=  2*log(L.determinant());
     //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
     Mat = L.inverse().transpose()*L.inverse();
-    fout << "det Get_Sigma_inv_GP_cov 1 subject "<< det<<endl;
 
   }else{
-
     MatrixXd Ktu;
     MatrixXd Kuu;
     Ktu.setZero(nTimes,grid.size());
@@ -337,7 +352,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     for(int i=0;i<grid.size();i++){
       if(kernel.compare("SQexponential")==0){
-        Kuu(i,i) = Kuu(i,i) + eL0+0.001;
+        Kuu(i,i) = Kuu(i,i) + eL0;//+0.001
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
@@ -346,11 +361,21 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
       }
     }
 
-    MatrixXd Qtt=Ktu*Kuu.inverse()*Ktu.transpose();
+    //MatrixXd Kuu_inv = Kuu.inverse() ;
+
+    LLT<MatrixXd> lltOfA(Kuu); // compute the Cholesky decomposition of A
+    MatrixXd L = lltOfA.matrixL();
+    MatrixXd Kuu_inv = L.inverse().transpose()*L.inverse();
+
+    MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
     MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();//
-    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
-    MatrixXd Aut=Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
-    Mat =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*(MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).inverse()*Aut*Lambda.inverse();
+    //Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
+    MatrixXd Aut=L.inverse()* Ktu.transpose(); //Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
+    MatrixXd T=(MatrixXd::Identity(grid.size(), grid.size())+
+      Aut*Lambda.inverse()*Aut.transpose());
+
+    Mat  =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*T.inverse()*Aut*Lambda.inverse();
+
     det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
 
     if(std::isnan(det))
@@ -385,8 +410,8 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 //   return Inverse_woodbury( M0,  log_det_M0,  Mat,  times);
 // }
 
-double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat,std::vector<double> times){
-
+double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, MatrixXd& Mat, const std::vector<int> idx){
+// Function to add one subject
   double log_DetPrecMat=0.0;
   MatrixXd kno;
   MatrixXd Knew;
@@ -394,7 +419,7 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
   int i,j;
   int nTimes = Mat.rows();
 
-  i=M0.rows();
+  i=M0_inv.rows();
 
   if(i<nTimes){ // add one subject
 
@@ -415,35 +440,42 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
     for(int i2=0;i2<nTimes-i;i2++)
       Knew(i2,i2) = Mat(i+i2,i+i2);
 
-    MatrixXd A(nTimes-i,nTimes-i);
+    MatrixXd A(nTimes-i,nTimes-i), A_inv(nTimes-i,nTimes-i);
     MatrixXd B(i,nTimes-i);
     A.setZero(nTimes-i,nTimes-i);
     B.setZero(i,nTimes-i);
-    B=M0*kno.transpose();
+    B=M0_inv*kno.transpose();
     A=Knew-kno*B;
 
-    if(M0.rows() == Mat.rows()){
-      //error
-      //foutt << " ERROR "  << M0.rows()  << " versus "<< Mat.rows() <<endl;
-    }else{
-      log_DetPrecMat=log_det_M0+log(A.determinant());
-    }
+    LLT<MatrixXd> lltOfA(A); // compute the Cholesky decomposition of A
+    MatrixXd La = lltOfA.matrixL();
+    A_inv = La.inverse().transpose()*La.inverse();
+    log_DetPrecMat=log_det_M0+log(A.determinant());
+
+    //check
+    MatrixXd Mata=Mat;
+
 
     Mat.setZero(nTimes,nTimes);
-    Mat.topRows(i)<<M0+B*A.inverse()*kno*M0, -B*A.inverse();
-    Mat.bottomRows(nTimes-i)<<-A.inverse()*B.transpose(), A.inverse();
+    Mat.topRows(i)<<M0_inv+B*A_inv*kno*M0_inv, -B*A_inv;
+    Mat.bottomRows(nTimes-i)<<-A_inv*B.transpose(), A_inv;
+
+
+  //Permut back
+  Permut_cov_sorted(Mat, idx);
+
 
   }else{ // remove one subject i>nTimes
-
+    cout << " problem inverse_Woodbury !!!!!" <<endl;
     Knew.setZero(i-nTimes,i-nTimes);
     kno.setZero(i-nTimes,nTimes);
 
     for(int i2=nTimes;i2<i;i2++){
       for(j=0;j<i2;j++){
         if(j<nTimes){
-          kno(i2-nTimes,j)=M0(i2,j);
+          kno(i2-nTimes,j)=M0_inv(i2,j);
         }else{
-          Knew(i2-nTimes,j-nTimes)=M0(i2,j);
+          Knew(i2-nTimes,j-nTimes)=M0_inv(i2,j);
         }
       }
     }
@@ -451,14 +483,14 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
 
     Knew = Knew + Knew.transpose();
     for(int i2=0;i2<i-nTimes;i2++)
-      Knew(i2,i2) = M0(nTimes+i2,nTimes+i2);
+      Knew(i2,i2) = M0_inv(nTimes+i2,nTimes+i2);
 
     MatrixXd U(i,(i-nTimes));
     U << MatrixXd::Zero(nTimes,i-nTimes), MatrixXd::Identity(i-nTimes,i-nTimes);
     MatrixXd V(i-nTimes,i);
     V << -kno, MatrixXd::Zero(i-nTimes,i-nTimes);
 
-    MatrixXd Mnew_inv=M0.inverse(); // To improve
+    MatrixXd Mnew_inv=M0_inv.inverse(); // To improve
 
     MatrixXd T=(MatrixXd::Identity(i-nTimes,i-nTimes)+V*Mnew_inv*U);
     MatrixXd M1_inv(i,i);
@@ -483,6 +515,7 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
     for(int i2=0;i2<nTimes;i2++)
       Mat(i2,i2) = M2(i2,i2);
 
+
     MatrixXd A(i-nTimes,i-nTimes);
     MatrixXd B(nTimes,i-nTimes);
 
@@ -493,12 +526,11 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
 
     log_DetPrecMat= log_det_M0- log(A.determinant());
   }
-
-
   return(log_DetPrecMat);
 }
 
-double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat,std::vector<double> times, MatrixXd& M0_inv){
+double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat, MatrixXd& M0_inv){
+// Function to remove one subject
 
   double log_DetPrecMat=0.0;
   MatrixXd kno;
@@ -508,45 +540,7 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
   int nTimes = Mat.rows();
 
   i=M0.rows();
-
-  if(i<nTimes){ // add one subject
-
-    Knew.setZero(nTimes-i,nTimes-i);
-    kno.setZero(nTimes-i,i);
-
-    for(int i2=i;i2<nTimes;i2++){
-      for(j=0;j<i2;j++){
-        if(j<i){
-          kno(i2-i,j)=Mat(i2,j);
-        }else{
-          Knew(i2-i,j-i)=Mat(i2,j);
-        }
-      }
-    }
-
-    Knew = Knew + Knew.transpose();
-    for(int i2=0;i2<nTimes-i;i2++)
-      Knew(i2,i2) = Mat(i+i2,i+i2);
-
-    MatrixXd A(nTimes-i,nTimes-i);
-    MatrixXd B(i,nTimes-i);
-    A.setZero(nTimes-i,nTimes-i);
-    B.setZero(i,nTimes-i);
-    B=M0*kno.transpose();
-    A=Knew-kno*B;
-
-    if(M0.rows() == Mat.rows()){
-      //error
-      //foutt << " ERROR "  << M0.rows()  << " versus "<< Mat.rows() <<endl;
-    }else{
-      log_DetPrecMat=log_det_M0+log(A.determinant());
-    }
-
-    Mat.setZero(nTimes,nTimes);
-    Mat.topRows(i)<<M0+B*A.inverse()*kno*M0, -B*A.inverse();
-    Mat.bottomRows(nTimes-i)<<-A.inverse()*B.transpose(), A.inverse();
-
-  }else{ // remove one subject i>nTimes
+  if(i<nTimes){ cout << " problem Inverse_woodbury, should be removing one subject"<<endl;}else{ // remove one subject i>nTimes
 
     Knew.setZero(i-nTimes,i-nTimes);
     kno.setZero(i-nTimes,nTimes);
@@ -561,10 +555,13 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
       }
     }
 
-
     Knew = Knew + Knew.transpose();
+
+
     for(int i2=0;i2<i-nTimes;i2++)
       Knew(i2,i2) = M0(nTimes+i2,nTimes+i2);
+
+
 
     MatrixXd U(i,(i-nTimes));
     U << MatrixXd::Zero(nTimes,i-nTimes), MatrixXd::Identity(i-nTimes,i-nTimes);
@@ -603,8 +600,8 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
     B.setZero(nTimes,i-nTimes);
     B=Mat*kno.transpose();
     A=Knew-kno*B;
-
     log_DetPrecMat= log_det_M0- log(A.determinant());
+
   }
   return(log_DetPrecMat);
 }

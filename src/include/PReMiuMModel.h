@@ -2674,16 +2674,8 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       // }
       //logDetPrecMat = -log(precMat.determinant());//log(Sigma.determinant());
       dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
-     fout << " dmvnorm "<< dmvnorm<< " logdet "<<logDetPrecMat << " prod "<< yk.transpose()*precMat*yk << " sizek "<<sizek <<endl;
-      if(sizek ==21){
-        fout << " yk "<< endl<< yk<< endl << " times "<<endl;
-        for(unsigned int j=0; j<timesk.size(); j++)
-          fout << timesk[j]<< " ";
-        fout << endl << " params.L(c) "<<endl;
-        for(unsigned int j=0; j<3; j++)
-          fout << params.L(c)[j]<< " ";
-        fout << endl<< " Sigma "<<endl<< Sigma << endl;//<<" precMat "<<endl<< precMat << endl<<endl;
-      }
+     cout << " dmvnorm "<< dmvnorm<< " logdet "<<logDetPrecMat << " prod "<< yk.transpose()*precMat*yk << " sizek "<<sizek <<endl;
+
     }
   }
   return dmvnorm;
@@ -2759,7 +2751,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
       stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
                   [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
 
-      sort(timesk.begin(), timesk.end());
+      stable_sort(timesk.begin(), timesk.end());
 
       VectorXd yk_sorted = yk;
       for(unsigned int j=0;j<sizek;j++)
@@ -2771,35 +2763,34 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
 
       if(params.z(ii) != c ){ // Add one subject
 
+        std::vector<double> times_check=timesk;
+        stable_sort(times_check.begin(), times_check.begin()+counter);
+
         for(unsigned int j=0;j<tStop[ii]-tStart[ii]+1;j++){
           yk(counter+j) = y[tStart[ii]-1+j];
           timesk[counter+j] = times[tStart[ii]-1+j];
+          times_check[counter+j] = times[tStart[ii]-1+j];//check
+
           for(unsigned int b=0;b<nFixedEffects;b++){
             yk(counter+j)-=params.beta(b,0)*dataset.W(ii,b);
           }
         }
 
         precMat.setZero(sizek,sizek);
-        GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
+        GP_cov(precMat,params.L(c),times_check,dataset.equalTimes(),kernelType,1);
 
         if(Sigma_inv_ord.rows()>0 && sizek> nTimes_unique){
 
-          logDetPrecMat=Inverse_woodbury(Sigma_inv_ord,logDetSigma, precMat,timesk);
-          fout << " add 1 subject, Inverse_woodbury "<<logDetSigma<< endl;
-
-          // sort yk with corresponding ordering
-          std::vector<int> idx(timesk.size());
+          std::vector<int> idx_back(sizek);
           int x=0;
-          iota(idx.begin(), idx.end(), x++);
-          stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
-                      [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+          iota(idx_back.begin(), idx_back.end(), x++);
+          stable_sort(idx_back.begin(), idx_back.end(), // sort indexes based on comparing values in times
+                      [&](int i1,int i2) { return (times_check[i1] < times_check[i2]); });
 
-          sort(timesk.begin(), timesk.end());
-
-          VectorXd yk_sorted = yk;
-          for(unsigned int j=0;j<sizek;j++)
-            yk_sorted(j)=yk(idx[j]);
-          yk=yk_sorted;
+          logDetPrecMat=Inverse_woodbury(Sigma_inv_ord,logDetSigma, precMat, idx_back);
+          fout << " add 1 subject, Inverse_woodbury "<<logDetSigma<< endl;
+          // Sigma2 and Sigma_inv_ord2 including measurement errors
+          // ordered, with subject to remove at the end
 
 
         }else{
@@ -2810,13 +2801,27 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           precMat = L.inverse().transpose()*L.inverse();
           fout << " add 1 subject, LLT "<<endl;
         }
+
+        // sort yk with corresponding ordering
+        std::vector<int> idx(timesk.size());
+        int x=0;
+        iota(idx.begin(), idx.end(), x++);
+        stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                    [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+
+        sort(timesk.begin(), timesk.end());
+
+        VectorXd yk_sorted = yk;
+        for(unsigned int j=0;j<sizek;j++)
+          yk_sorted(j)=yk(idx[j]);
+        yk=yk_sorted;
       }else{ // Remove one subject
         precMat.setZero(sizek,sizek);
 
         if(Sigma_inv_ord.rows()>0 && sizek>nTimes_unique){
 
           vector<double> timesk2;
-          timesk2.resize(Sigma_inv_ord.rows());
+          timesk2.resize(Sigma_inv_ord.rows()); // sizek+tStop[i]-tStart[i]+1 + indiv in end
           for(unsigned int j=0;j<timesk.size();j++)
             timesk2[j]= timesk[j];
 
@@ -2826,7 +2831,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           }
 
           vector<double> timesk3;
-          timesk3.resize(sizek + tStop[ii]-tStart[ii]+1);
+          timesk3.resize(sizek + tStop[ii]-tStart[ii]+1); // sizek+tStop[i]-tStart[i]+1 + indiv in middle
           counter=0;
           for(unsigned int i=0;i<nSubjects;i++){
             if(params.z(i) == c ){
@@ -2853,8 +2858,8 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           int ai=0;
           int iii;
           for(int i=0;i<timesk3.size();i++){
-            if(idx[i] >= ind_permut && idx[i] < ind_permut+ tStop[ii]-tStart[ii]+1)
-              idx_i.push_back(i);
+            if(idx[i+idx_i.size()] >= ind_permut && idx[i+idx_i.size()] < ind_permut+ tStop[ii]-tStart[ii]+1)
+              idx_i.push_back(i+idx_i.size());
             if(i< timesk3.size()-(tStop[ii]-tStart[ii]+1)){
               iii=i+idx_i.size();
             }else {
@@ -2864,24 +2869,27 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
             times_permut[i]=timesk3[iii];
           }
 
-
           MatrixXd Sigma_inv_ord2=Sigma_inv_ord;
           Permut_cov_sorted(Sigma_inv_ord2, ind_permut, tStop[ii]-tStart[ii]+1, idx);
-
-          MatrixXd Sigma2; // Sigma  with subject to remove at the end
+          MatrixXd Sigma2;
           Sigma2.setZero(Sigma_inv_ord.rows(),Sigma_inv_ord.rows());
-          GP_cov(Sigma2,params.L(c),timesk2,dataset.equalTimes(),kernelType,1);
-          logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat, timesk, Sigma_inv_ord2);
-          fout << " remove 1 subject, Inverse_woodbury "<<endl;
+          GP_cov(Sigma2,params.L(c),times_permut,dataset.equalTimes(),kernelType,1);
+          logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat, Sigma_inv_ord2);
+          // Sigma2 and Sigma_inv_ord2 including measurement errors
+          // ordered, with subject to remove at the end
 
-
+            //check
+            fout << " idx "<<endl;
+            for(unsigned int j=0;j<sizek;j++)
+              fout << idx[j]<<" ";
+            fout << endl<< " yk "<<endl<<yk.transpose()<<endl;
 
           VectorXd yk_sorted = yk;
           for(unsigned int j=0;j<sizek;j++)
             yk_sorted(j)=yk(idx[j]);
+          fout << " yk_sorted "<<endl<<yk_sorted.transpose()<<endl;
+
           yk=yk_sorted;
-
-
 
         }else{
           GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
@@ -2899,17 +2907,11 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
     //std::cout << "no one remaining, empty class\n";
     dmvnorm=0;
   }
-  fout << " dmvnorm bis "<< dmvnorm<< " logdet "<<logDetPrecMat << " prod "<< yk.transpose()*precMat*yk << " sizek "<<sizek<<endl;
 
-  if(sizek ==21){
-    fout << "ii "<< ii << " nSubjects "<< nSubjects<<" c" << c <<" yk "<< endl<< yk<< endl << " times "<<endl;
-    for(unsigned int j=0; j<timesk.size(); j++)
-      fout << timesk[j]<< " ";
-    fout << endl << " params.L(c) "<<endl;
-    for(unsigned int j=0; j<3; j++)
-      fout << params.L(c)[j]<< " ";
-    //fout << endl<< " Sigma_inv "<<endl<< Sigma_inv << endl<<" precMat "<<endl<< precMat << endl<<endl;
-  }
+  if(isinf(dmvnorm))
+    fout << " dmvnorm inf "<< dmvnorm<< " logdetprecMat "<<log(precMat.determinant()) << " prod "<< yk.transpose()*precMat*yk <<
+      " sizek "<<sizek<<endl<<" yk "<<  yk.transpose()<<endl<<
+      " precMat "<<endl<< precMat<<endl<< endl;
 
   return dmvnorm;
 }

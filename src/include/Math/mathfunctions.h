@@ -38,7 +38,6 @@
 #include<fstream>
 #include <Eigen/Dense>
 #include<boost/math/special_functions/gamma.hpp>
-#include <armadillo>
 #include<string>
 
 using std::ifstream;
@@ -49,7 +48,6 @@ using std::min;
 using std::string;
 using namespace boost::math::constants;
 using namespace Eigen;
-using namespace arma;
 
 using boost::math::lgamma;
 

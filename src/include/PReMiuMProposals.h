@@ -2950,8 +2950,6 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           propParams.LLocalReset(l);
         }
       }
-      //currentParams.L(c,2,0.1);//AR change
-      //currentParams.L(c,2,-3);//AR change
 
       //AR sample meanGP
       //if(model.options().sampleGPmean()){ //AR change

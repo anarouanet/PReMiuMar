@@ -2021,7 +2021,7 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 						}
 					}
 				} else {
-					if(outcomeType.compare("Longitudinal")!=0)
+					//if(outcomeType.compare("Longitudinal")!=0)
 					  *(outFiles[thetaInd]) << params.theta(c,0);
 				}
 			}
@@ -2032,14 +2032,14 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			if(c<maxNClusters-1){
 				*(outFiles[psiInd]) << " ";
 				if(includeResponse){
-				  if(outcomeType.compare("Longitudinal")!=0)
+				  //if(outcomeType.compare("Longitudinal")!=0)
 				    *(outFiles[thetaInd]) << " ";
 				}
 				*(outFiles[nMembersInd]) << " ";
 			}else{
 				*(outFiles[psiInd]) << endl;
 				if(includeResponse){
-				  if(outcomeType.compare("Longitudinal")!=0)
+				  //if(outcomeType.compare("Longitudinal")!=0)
 					  *(outFiles[thetaInd]) << endl;
 				}
 				*(outFiles[nMembersInd]) << " " << sumMembers << endl;

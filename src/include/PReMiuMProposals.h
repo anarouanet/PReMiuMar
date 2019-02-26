@@ -2418,7 +2418,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
       }
-      //currentParams.L(c,2,-1.5);//AR change
+      //currentParams.L(c,2,-3);//AR change
     }
   }
 }
@@ -2951,7 +2951,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         }
       }
       //currentParams.L(c,2,0.1);//AR change
-      //currentParams.L(c,2,-1.5);//AR change
+      //currentParams.L(c,2,-3);//AR change
 
       //AR sample meanGP
       //if(model.options().sampleGPmean()){ //AR change
@@ -3433,7 +3433,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> timesk;
   int counter = 0;
   vector<double> times = dataset.times();
-  int Ana=2; // 0 ROB, 1 AR, 2 both
+  int Ana=1; // 0 ROB, 1 AR, 2 both
   int grid_size = 0;
   vector<double> grid;
   //double minui=*std::min_element(std::begin(u), std::end(u) );
@@ -3520,13 +3520,13 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                 }
 
                 //AR compute covariance matrix
-                fout << " A "<< c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
+                //fout << " A "<< c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
 
                 det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
-                fout <<  " B "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
+                //fout <<  " B "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
 
                 clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
-                fout <<  " C "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
+                //fout <<  " C "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
               }
 
               if(Ana==2&abs(temp- clusterMarginal[c])>pow (1.0, -5.0)){
@@ -3578,7 +3578,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                   if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
                     fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                     fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
-                    fout << Sigma_inv_c_ord[c].rows()<<endl<<endl;
                   }
                 }else{
                   //take cluster marginal for denominator

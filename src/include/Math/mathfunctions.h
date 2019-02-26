@@ -352,7 +352,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     for(int i=0;i<grid.size();i++){
       if(kernel.compare("SQexponential")==0){
-        Kuu(i,i) = Kuu(i,i) + eL0;//+0.001
+        Kuu(i,i) = Kuu(i,i) + eL0+0.001;//
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
@@ -368,7 +368,10 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     MatrixXd Kuu_inv = L.inverse().transpose()*L.inverse();
 
     MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
-    MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();//
+    MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
+
+    // check
+    MatrixXd Mat2=Mat;
     //Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Aut=L.inverse()* Ktu.transpose(); //Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
     MatrixXd T=(MatrixXd::Identity(grid.size(), grid.size())+
@@ -378,8 +381,17 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
 
-    if(std::isnan(det))
-      fout << "det Get_Sigma_inv_GP_cov "<< det << " det Lambda "<<Lambda.determinant()<<endl;
+    if(std::isnan(det) || isinf(det)){
+      fout << "det Get_Sigma_inv_GP_cov "<< det << " Lambda det "<<Lambda.determinant()<<
+        " *  "<< (MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()<<endl;
+      // <<
+      //     " Lambda diag "<<endl<<Lambda.diagonal().transpose()<<endl<<
+      //       " Qtt diag "<<endl<<Qtt.diagonal().transpose()<<endl<<
+      //         " Mat diag "<<endl<<Mat2.diagonal().transpose()<<endl<<
+      //           " Lambda "<<Lambda<< endl<<endl<<
+      //             " Aut "<<Aut<< endl<<endl;
+    }
+
 //
 //     if(nTimes ==5){
 //       fout <<  " times "<<endl;
@@ -399,6 +411,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 //       fout <<" precMat "<< det<<endl<< Mat << endl << " Ktu "<< endl<<Ktu  << endl<<" Kuu "<< endl<<Kuu  << endl << " Kut "<<endl<< Ktu.transpose() <<endl << " Ktu*Kuu-1 "<<endl<<Ktu* Kuu.inverse() << " Kuu*Kuu-1 "<<endl<<Kuu* Kuu.inverse() <<endl<<endl;
 //     }
   }
+
   return det;
 }
 
@@ -415,6 +428,7 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
   double log_DetPrecMat=0.0;
   MatrixXd kno;
   MatrixXd Knew;
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   int i,j;
   int nTimes = Mat.rows();
@@ -452,80 +466,16 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
     A_inv = La.inverse().transpose()*La.inverse();
     log_DetPrecMat=log_det_M0+log(A.determinant());
 
-    //check
-    MatrixXd Mata=Mat;
-
-
     Mat.setZero(nTimes,nTimes);
     Mat.topRows(i)<<M0_inv+B*A_inv*kno*M0_inv, -B*A_inv;
     Mat.bottomRows(nTimes-i)<<-A_inv*B.transpose(), A_inv;
 
-
   //Permut back
   Permut_cov_sorted(Mat, idx);
 
-
   }else{ // remove one subject i>nTimes
     cout << " problem inverse_Woodbury !!!!!" <<endl;
-    Knew.setZero(i-nTimes,i-nTimes);
-    kno.setZero(i-nTimes,nTimes);
-
-    for(int i2=nTimes;i2<i;i2++){
-      for(j=0;j<i2;j++){
-        if(j<nTimes){
-          kno(i2-nTimes,j)=M0_inv(i2,j);
-        }else{
-          Knew(i2-nTimes,j-nTimes)=M0_inv(i2,j);
-        }
-      }
-    }
-
-
-    Knew = Knew + Knew.transpose();
-    for(int i2=0;i2<i-nTimes;i2++)
-      Knew(i2,i2) = M0_inv(nTimes+i2,nTimes+i2);
-
-    MatrixXd U(i,(i-nTimes));
-    U << MatrixXd::Zero(nTimes,i-nTimes), MatrixXd::Identity(i-nTimes,i-nTimes);
-    MatrixXd V(i-nTimes,i);
-    V << -kno, MatrixXd::Zero(i-nTimes,i-nTimes);
-
-    MatrixXd Mnew_inv=M0_inv.inverse(); // To improve
-
-    MatrixXd T=(MatrixXd::Identity(i-nTimes,i-nTimes)+V*Mnew_inv*U);
-    MatrixXd M1_inv(i,i);
-    M1_inv.setZero(i,i);
-    M1_inv=Mnew_inv - Mnew_inv*U*T.inverse()*V*Mnew_inv;
-
-    MatrixXd U1=-V.transpose();
-    MatrixXd V1=-U.transpose();
-
-    MatrixXd M2(i,i);
-    M2.setZero(i,i);
-    MatrixXd T1=(MatrixXd::Identity(i-nTimes,i-nTimes)+V1*M1_inv*U1);
-    M2=M1_inv - M1_inv*U1*T1.inverse()*V1*M1_inv;
-
-    Mat.setZero(nTimes,nTimes);
-    for(int i2=0;i2<nTimes;i2++){
-      for(j=0;j<i2;j++){
-        Mat(i2,j)=M2(i2,j);
-      }
-    }
-    Mat = Mat + Mat.transpose();
-    for(int i2=0;i2<nTimes;i2++)
-      Mat(i2,i2) = M2(i2,i2);
-
-
-    MatrixXd A(i-nTimes,i-nTimes);
-    MatrixXd B(nTimes,i-nTimes);
-
-    A.setZero(i-nTimes,i-nTimes);
-    B.setZero(nTimes,i-nTimes);
-    B=Mat*kno.transpose();
-    A=Knew-kno*B;
-
-    log_DetPrecMat= log_det_M0- log(A.determinant());
-  }
+}
   return(log_DetPrecMat);
 }
 

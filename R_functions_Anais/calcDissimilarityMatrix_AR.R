@@ -9,7 +9,7 @@ calcDissimilarityMatrix_AR<-function(runInfoObj,onlyLS=FALSE,nSweeps1){
   nSubjects=NULL
   nPredictSubjects=NULL
   nBurn=NULL
-library(PReMiuM)
+  #library(PReMiuM)
 
   for (i in 1:length(runInfoObj)) assign(names(runInfoObj)[i],runInfoObj[[i]])
 
@@ -25,7 +25,7 @@ library(PReMiuM)
 
   # Call the C++ to compute the dissimilarity matrix
   disSimList<-.Call('calcDisSimMat',fileName,nSweeps,recordedNBurn,nFilter,nSubjects,
-                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuM')
+                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuMar')
   if (onlyLS){
     lsOptSweep<-disSimList$lsOptSweep
     disSimMatPred<-NULL

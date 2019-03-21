@@ -2389,7 +2389,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   // Find the number of clusters
   unsigned int maxZ = currentParams.workMaxZi();
   unsigned int maxNClusters = currentParams.maxNClusters();
-
+  double ratio = model.options().ratio();
   nTry++;
   nAccept++;
 
@@ -2401,9 +2401,13 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   }
   for (unsigned int l=0;l<nL;l++){
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
-      randomNormal normalRand(hyperParams.muL(l),hyperParams.sigmaL(l));
-      double L = normalRand(rndGenerator);
-      currentParams.L(c,l,L);
+      if(ratio == 0 || l != 2){
+        randomNormal normalRand(hyperParams.muL(l),hyperParams.sigmaL(l));
+        double L = normalRand(rndGenerator);
+        currentParams.L(c,l,L);
+        if(ratio != 0 & l == 0)
+          currentParams.L(c,2,currentParams.L(c,0)-log(ratio));
+      }
     }
   }
 
@@ -2412,6 +2416,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
     unsigned int nTimes_unique = model.dataset().nTimes_unique();
     VectorXd Fval(nTimes_unique);
 
+    #pragma omp parallel for
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
 
@@ -2880,6 +2885,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
   const string outcomeType = model.dataset().outcomeType();
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Find the number of clusters
   unsigned int maxZ = currentParams.workMaxZi();
@@ -2893,6 +2899,9 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
   unsigned int LUpdateFreq = propParams.LUpdateFreq(); //25
 
   double currentCondLogPost = 0.0;
+  //int ratio = 1; // if ratio=1, exp(L2)=exp(L1)/4 L2= L1- log(4), otherwise L2 separate
+  double ratio = model.options().ratio();
+
   for(unsigned int c=0;c<=maxZ;c++){
 
     unsigned int nL=4;
@@ -2901,53 +2910,71 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
     if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
       for (unsigned int l=0;l<nL;l++){ //AR change nL-1
+        if(ratio == 0 || l!= 2){
 
-        if(l == 2){
-          currentCondLogPost = logCondPostL(currentParams,model,c); // p(L_k)p(Y^k|L_k,f_k,k)
-        }else{
-          currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
-        }
+          if(l==0 & ratio != 0)
+            currentParams.L(c,2,currentParams.L(c,l)- log(ratio));
 
-        nTry++;
-        propParams.LAddTry(l);
-        double& stdDev = propParams.LStdDev(l);
-        double LOrig = currentParams.L(c,l);
-        double LProp = LOrig+stdDev*normRand(rndGenerator);
-        currentParams.L(c,l,LProp);
-        double propCondLogPost = 0;
-        double logAcceptRatio = 0;
-
-        if(l == 2){
-          propCondLogPost = logCondPostL(currentParams,model,c); // p(L_2)p(Y^k|L_2k,f_k,k)
-        }else{
-          propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
-        }
-        logAcceptRatio = propCondLogPost - currentCondLogPost;
-
-        double uni = unifRand(rndGenerator);
-        if(uni<exp(logAcceptRatio)){
-          nAccept++;
-          propParams.LAddAccept(l);
-          currentCondLogPost = propCondLogPost;
-        }else{
-          currentParams.L(c,l,LOrig);
-        }
-
-        // Update the std dev of the proposal
-        if(propParams.nTryL(l)%LUpdateFreq==0){
-          //if(propParams.LLocalAcceptRate(l)>LTargetRate)
-          //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
-          //else
-          //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
-
-          stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
-            pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
-
-          propParams.LAnyUpdates(true);
-          if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
-            propParams.LStdDevReset(l);
+                    if(l == 2 & ratio == 0){
+            currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
+          }else{
+            currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
+            if(l==0 & ratio != 0){
+              currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
+            }
           }
-          propParams.LLocalReset(l);
+
+          nTry++;
+          propParams.LAddTry(l);
+          double& stdDev = propParams.LStdDev(l);
+          double LOrig = currentParams.L(c,l);
+          double LProp = LOrig+stdDev*normRand(rndGenerator);
+          currentParams.L(c,l,LProp);
+          if(l==0 & ratio != 0)
+            currentParams.L(c,2,LProp- log(ratio));
+
+          double propCondLogPost = 0;
+          double logAcceptRatio = 0;
+
+          if(l == 2 & ratio ==  0){
+            propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
+          }else{
+            propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
+
+            if(l==0 & ratio != 0){
+              propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
+            }
+
+          }
+          logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+          double uni = unifRand(rndGenerator);
+          if(uni<exp(logAcceptRatio)){
+            nAccept++;
+            propParams.LAddAccept(l);
+            currentCondLogPost = propCondLogPost;
+          }else{
+            currentParams.L(c,l,LOrig);
+            if(l==0 & ratio != 0)
+              currentParams.L(c,2,LOrig- log(ratio));
+          }
+
+          // Update the std dev of the proposal
+          if(propParams.nTryL(l)%LUpdateFreq==0){
+            //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+            //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+            //else
+            //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+            stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+              pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+            propParams.LAnyUpdates(true);
+            if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+              propParams.LStdDevReset(l);
+            }
+            propParams.LLocalReset(l);
+          }
         }
       }
 
@@ -2956,6 +2983,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         unsigned int nTimes_unique = model.dataset().nTimes_unique();
         VectorXd Fval(nTimes_unique);
 
+        #pragma omp parallel for
         for(unsigned int c=0;c<=maxZ;c++){
           Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
 
@@ -2966,7 +2994,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       //}
 
     }else{
-      currentCondLogPost = logCondPostL(currentParams,model,c);
+      currentCondLogPost = logCondPostL(currentParams,model,c,1);
 
       for (unsigned int l=0;l<nL;l++){
         nTry++;
@@ -2976,7 +3004,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         double ui1= normRand(rndGenerator);
         double LProp = LOrig+stdDev*ui1;
         currentParams.L(c,l,LProp);
-        double propCondLogPost = logCondPostL(currentParams,model,c);
+        double propCondLogPost = logCondPostL(currentParams,model,c,1);
         double logAcceptRatio = propCondLogPost - currentCondLogPost;
         double uii= unifRand(rndGenerator);
         if(uii<exp(logAcceptRatio)){
@@ -3149,6 +3177,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
   nTry++;
   nAccept++;
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Define a uniform random number generator
   randomUniform unifRand(0,1);
@@ -3369,6 +3398,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
     }
   }
 
+
   double (*logPYiGivenZiWi)(const pReMiuMParams&, const pReMiuMData&,
           const unsigned int&,const int&,
           const unsigned int&)=NULL;
@@ -3436,7 +3466,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> grid;
   //double minui=*std::min_element(std::begin(u), std::end(u) );
 
-  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
   for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){//nSubjects+nPredictSubjects;i++){
 
     vector<double> logPyXz(maxNClusters,0.0);
@@ -3542,7 +3571,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
               if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
                 logPyXz[c] += logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
-                logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
+                //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
 
                 //AR to remove
                 sizek[c]=0;
@@ -3623,7 +3652,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         logPyXz[c]=-(numeric_limits<double>::max());
       }
       //AR
-      if(isinf(logPyXz[c]))
+      if(std::isinf(logPyXz[c]))
         logPyXz[c] = -(numeric_limits<double>::max());
 
       if(logPyXz[c]>maxLogPyXz){
@@ -3702,6 +3731,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
     if(zi>maxZ){
       maxZ=zi;
     }
+
     currentParams.z(i,zi,covariateType);
     //AR Compute again sizek, yk and timeskfor z(i) and currentParams.z(i)
     if(outcomeType.compare("Longitudinal")==0 && zi!=origZi && !model.options().sampleGPmean() ){//AR change !model.options().sampleGPmean()

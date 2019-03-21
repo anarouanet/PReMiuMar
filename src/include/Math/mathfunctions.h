@@ -53,106 +53,106 @@ using boost::math::lgamma;
 
 double logMultivarGammaFn(const double x,const unsigned int p){
 
-	double out;
-	out = 0.25*(double)(p*(p-1))*log(pi<double>());
-	for(unsigned int i=1;i<=p;i++){
-		out += lgamma(x+(1.0-(double)i)/2.0);
-	}
-	return out;
+  double out;
+  out = 0.25*(double)(p*(p-1))*log(pi<double>());
+  for(unsigned int i=1;i<=p;i++){
+    out += lgamma(x+(1.0-(double)i)/2.0);
+  }
+  return out;
 }
 
 double logit(const double& lambda){
-	return 1.0/(1.0+exp(-lambda));
+  return 1.0/(1.0+exp(-lambda));
 }
 
 //RJ matrix (fast) inversion function
- void invert(MatrixXd& invSigma,MatrixXd& Sigma,const unsigned int dimBlock, double noise){
-	if(dimBlock>0){
-		int dimSigma = Sigma.rows();
-		int nBlocks = dimSigma/dimBlock;
-		MatrixXd C;
-		C = Sigma.block(0, 0, dimBlock, dimBlock);
-		for(int i=0;i<dimBlock;i++)
-			C(i,i) = C(i,i) - noise;
-		double invNoise = 1.0/noise;
-		MatrixXd E;
-        E = nBlocks*C;
-        for(int i=0;i<dimBlock;i++)
-            E(i,i) = E(i,i) + noise;
-		E = - invNoise * C * E.inverse();
-        invSigma = E.replicate(nBlocks,nBlocks);
-        for(int i=0;i<dimSigma;i++)
-            invSigma(i,i) = invSigma(i,i) + invNoise;
-	}else{
-		invSigma = Sigma.inverse();
-	}
+void invert(MatrixXd& invSigma,MatrixXd& Sigma,const unsigned int dimBlock, double noise){
+  if(dimBlock>0){
+    int dimSigma = Sigma.rows();
+    int nBlocks = dimSigma/dimBlock;
+    MatrixXd C;
+    C = Sigma.block(0, 0, dimBlock, dimBlock);
+    for(int i=0;i<dimBlock;i++)
+      C(i,i) = C(i,i) - noise;
+    double invNoise = 1.0/noise;
+    MatrixXd E;
+    E = nBlocks*C;
+    for(int i=0;i<dimBlock;i++)
+      E(i,i) = E(i,i) + noise;
+    E = - invNoise * C * E.inverse();
+    invSigma = E.replicate(nBlocks,nBlocks);
+    for(int i=0;i<dimSigma;i++)
+      invSigma(i,i) = invSigma(i,i) + invNoise;
+  }else{
+    invSigma = Sigma.inverse();
+  }
 }
 //RJ GP covariance function
 void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const unsigned int dimBlock, const string& kernel, const unsigned int error){
-	double a;
-  	int i,j;
-  	int nTimes = times.size();
-  	Mat.setZero(Mat.rows(),Mat.cols());
+  double a;
+  int i,j;
+  int nTimes = times.size();
+  Mat.setZero(Mat.rows(),Mat.cols());
 
-  	if(kernel.compare("SQexponential")==0){
+  if(kernel.compare("SQexponential")==0){
 
-  	double eL0 = exp(L[0]);
-  	double eL1 = exp(L[1])*2.0;
-  	double eL2 = exp(L[2]);
-	  if(error==0)
-	    eL2 = 0;
-
-
-  	  // if(dimBlock<0){
-  	  //   int nBlocks = nTimes/dimBlock;
-  	  //   MatrixXd unit;
-  	  //   unit.resize(dimBlock,dimBlock);
-  	  //   unit.fill(0.0);
-  	  //
-  	  //   for(i=1;i<dimBlock;i++){
-  	  //     for(j=0;j<i;j++){
-  	  //       a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
-  	  //       unit(i,j)=eL0*std::exp(a);
-  	  //     }
-  	  //   }
-  	  //   unit = unit + unit.transpose() + eL0*MatrixXd::Identity(dimBlock, dimBlock);
-  	  //   Mat = unit.replicate(nBlocks,nBlocks);
-  	  //   for(i=0;i<nTimes;i++) Mat(i,i) = Mat(i,i) + eL2;
-  	  // }else{
-
-  	    for(i=0 ;i<nTimes;i++){
-  	      for(j=0;j<i;j++){
-  	        a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
-  	        Mat(i,j)=eL0*std::exp(a);
-  	      }
-  	    }
-  	    Mat = Mat + Mat.transpose();
-  	    for(int i=0;i<nTimes;i++)
-  	      Mat(i,i) = eL0+eL2;
+    double eL0 = exp(L[0]);
+    double eL1 = exp(L[1])*2.0;
+    double eL2 = exp(L[2]);
+    if(error==0)
+      eL2 = 0;
 
 
-  	}else{
-  	  //[sigma_b^2 + sigma_v^2(t-l)(t-l)]^2
-  	  double eL0 = exp(L[0]); //sigma_b^2
-  	  double eL1 = exp(L[1]); //sigma_v^2
-  	  double eL2 = exp(L[2]); // sigma_e^2
-  	  if(error==0)
-  	    eL2=0;
-  	   double eL3 = exp(L[3]); // l
+    // if(dimBlock<0){
+    //   int nBlocks = nTimes/dimBlock;
+    //   MatrixXd unit;
+    //   unit.resize(dimBlock,dimBlock);
+    //   unit.fill(0.0);
+    //
+    //   for(i=1;i<dimBlock;i++){
+    //     for(j=0;j<i;j++){
+    //       a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
+    //       unit(i,j)=eL0*std::exp(a);
+    //     }
+    //   }
+    //   unit = unit + unit.transpose() + eL0*MatrixXd::Identity(dimBlock, dimBlock);
+    //   Mat = unit.replicate(nBlocks,nBlocks);
+    //   for(i=0;i<nTimes;i++) Mat(i,i) = Mat(i,i) + eL2;
+    // }else{
 
-  	  for(i=0 ;i<nTimes;i++){
-  	    for(j=0;j<i;j++){
-  	      a=eL0+eL1*(times[i]-eL3)*(times[j]-eL3);
-  	      Mat(i,j)=a*a;
-  	    }
-  	  }
-  	  Mat = Mat + Mat.transpose();
+    for(i=0 ;i<nTimes;i++){
+      for(j=0;j<i;j++){
+        a=-(times[i]-times[j])*(times[i]-times[j])/eL1;
+        Mat(i,j)=eL0*std::exp(a);
+      }
+    }
+    Mat = Mat + Mat.transpose();
+    for(int i=0;i<nTimes;i++)
+      Mat(i,i) = eL0+eL2;
 
-  	  for(int i=0;i<nTimes;i++){
-  	    a=eL0+eL1*(times[i]-eL3)*(times[i]-eL3);
-  	    Mat(i,i)=a*a + eL2;
-  	  }
-  	}
+
+  }else{
+    //[sigma_b^2 + sigma_v^2(t-l)(t-l)]^2
+    double eL0 = exp(L[0]); //sigma_b^2
+    double eL1 = exp(L[1]); //sigma_v^2
+    double eL2 = exp(L[2]); // sigma_e^2
+    if(error==0)
+      eL2=0;
+    double eL3 = exp(L[3]); // l
+
+    for(i=0 ;i<nTimes;i++){
+      for(j=0;j<i;j++){
+        a=eL0+eL1*(times[i]-eL3)*(times[j]-eL3);
+        Mat(i,j)=a*a;
+      }
+    }
+    Mat = Mat + Mat.transpose();
+
+    for(int i=0;i<nTimes;i++){
+      a=eL0+eL1*(times[i]-eL3)*(times[i]-eL3);
+      Mat(i,i)=a*a + eL2;
+    }
+  }
 
 }
 
@@ -252,7 +252,8 @@ void Permut_cov_sorted(MatrixXd& Mat,   const std::vector<int> & idx){
 double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<double> &times,
                             const unsigned int dimBlock, const std::vector<double>& grid,
                             const string& kernel){
-  double a,eL0,eL1,eL2,eL3;
+
+    double a,eL0,eL1,eL2,eL3;
   int i,j;
   int nTimes = times.size();
   double det=0;
@@ -270,9 +271,9 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
   sort(times.begin(), times.end());
 
   if(kernel.compare("SQexponential")==0){
-     eL0 = exp(L[0]);
-     eL1 = exp(L[1])*2.0;
-     eL2 = exp(L[2]);
+    eL0 = exp(L[0]);
+    eL1 = exp(L[1])*2.0;
+    eL2 = exp(L[2]);
 
     for(i=1;i<nTimes;i++){
       for(j=0;j<i;j++){
@@ -287,10 +288,10 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
   }else{
 
     //[sigma_b^2 + sigma_v^2(t-l)(t-l)]^2
-     eL0 = exp(L[0]); //sigma_b^2
-     eL1 = exp(L[1]); //sigma_v^2
-     eL2 = exp(L[2]);
-     eL3 = exp(L[3]); // l
+    eL0 = exp(L[0]); //sigma_b^2
+    eL1 = exp(L[1]); //sigma_v^2
+    eL2 = exp(L[2]);
+    eL3 = exp(L[3]); // l
 
     for(i=1;i<nTimes;i++){
       for(j=0;j<i;j++){
@@ -318,6 +319,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     Mat = L.inverse().transpose()*L.inverse();
 
   }else{
+
     MatrixXd Ktu;
     MatrixXd Kuu;
     Ktu.setZero(nTimes,grid.size());
@@ -350,38 +352,40 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     for(int i=0;i<grid.size();i++){
       if(kernel.compare("SQexponential")==0){
-        Kuu(i,i) = Kuu(i,i) + eL0+0.001;//
+        Kuu(i,i) = Kuu(i,i) + eL0;//
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
-          Kuu(i,i)=a*a ;//+ eL2;
+          Kuu(i,i)=a*a +0.0001;//+ eL2;
         }
       }
     }
 
     //MatrixXd Kuu_inv = Kuu.inverse() ;
+    //cout << " Kuu " << Kuu.rows() << " "<< Kuu.cols()<<endl;
 
     LLT<MatrixXd> lltOfA(Kuu); // compute the Cholesky decomposition of A
     MatrixXd L = lltOfA.matrixL();
-    MatrixXd Kuu_inv = L.inverse().transpose()*L.inverse();
+    MatrixXd L_inv = L.inverse();
+    MatrixXd Kuu_inv = L_inv.transpose()*L_inv;
 
     MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
     MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
+    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
 
-    // check
-    MatrixXd Mat2=Mat;
-    //Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
-    MatrixXd Aut=L.inverse()* Ktu.transpose(); //Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
+    MatrixXd Lambda_inv = Lambda.inverse();
+
+    MatrixXd Aut=L_inv* Ktu.transpose(); //Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());
     MatrixXd T=(MatrixXd::Identity(grid.size(), grid.size())+
-      Aut*Lambda.inverse()*Aut.transpose());
+      Aut*Lambda_inv*Aut.transpose());
 
-    Mat  =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*T.inverse()*Aut*Lambda.inverse();
-
-    det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
+    //MatrixXd Mat2=Mat;
+    Mat  =Lambda_inv-Lambda_inv*Aut.transpose()*T.inverse()*Aut*Lambda_inv;
+    det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda_inv*Aut.transpose()).determinant()*Lambda.determinant());
 
     if(std::isnan(det) || isinf(det)){
       fout << "det Get_Sigma_inv_GP_cov "<< det << " Lambda det "<<Lambda.determinant()<<
-        " *  "<< (MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()<<endl;
+        " *  "<< (MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda_inv*Aut.transpose()).determinant()<<endl;
       // <<
       //     " Lambda diag "<<endl<<Lambda.diagonal().transpose()<<endl<<
       //       " Qtt diag "<<endl<<Qtt.diagonal().transpose()<<endl<<
@@ -390,26 +394,25 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
       //             " Aut "<<Aut<< endl<<endl;
     }
 
-//
-//     if(nTimes ==5){
-//       fout <<  " times "<<endl;
-//       for(unsigned int j=0; j<times.size(); j++)
-//         fout << times[j]<< " ";
-//       fout <<  " grid "<<endl;
-//       for(unsigned int j=0; j<grid.size(); j++)
-//         fout << grid[j]<< " ";
-//       fout << endl << " params.L(c) "<<endl;
-//       for(unsigned int j=0; j<3; j++)
-//         fout << L[j]<< " ";
-//       fout << endl<< " Mat inv " << log(Mat.determinant()) <<endl<< Mat.inverse() << endl;
-//
-//       Mat =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*(MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).inverse()*Aut*Lambda.inverse();
-//       det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
-//
-//       fout <<" precMat "<< det<<endl<< Mat << endl << " Ktu "<< endl<<Ktu  << endl<<" Kuu "<< endl<<Kuu  << endl << " Kut "<<endl<< Ktu.transpose() <<endl << " Ktu*Kuu-1 "<<endl<<Ktu* Kuu.inverse() << " Kuu*Kuu-1 "<<endl<<Kuu* Kuu.inverse() <<endl<<endl;
-//     }
+    //
+    //     if(nTimes ==5){
+    //       fout <<  " times "<<endl;
+    //       for(unsigned int j=0; j<times.size(); j++)
+    //         fout << times[j]<< " ";
+    //       fout <<  " grid "<<endl;
+    //       for(unsigned int j=0; j<grid.size(); j++)
+    //         fout << grid[j]<< " ";
+    //       fout << endl << " params.L(c) "<<endl;
+    //       for(unsigned int j=0; j<3; j++)
+    //         fout << L[j]<< " ";
+    //       fout << endl<< " Mat inv " << log(Mat.determinant()) <<endl<< Mat.inverse() << endl;
+    //
+    //       Mat =Lambda.inverse()-Lambda.inverse()*Aut.transpose()*(MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).inverse()*Aut*Lambda.inverse();
+    //       det=log((MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda.inverse()*Aut.transpose()).determinant()*Lambda.determinant());
+    //
+    //       fout <<" precMat "<< det<<endl<< Mat << endl << " Ktu "<< endl<<Ktu  << endl<<" Kuu "<< endl<<Kuu  << endl << " Kut "<<endl<< Ktu.transpose() <<endl << " Ktu*Kuu-1 "<<endl<<Ktu* Kuu.inverse() << " Kuu*Kuu-1 "<<endl<<Kuu* Kuu.inverse() <<endl<<endl;
+    //     }
   }
-
   return det;
 }
 
@@ -422,7 +425,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 // }
 
 double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, MatrixXd& Mat, const std::vector<int> idx){
-// Function to add one subject
+  // Function to add one subject
   double log_DetPrecMat=0.0;
   MatrixXd kno;
   MatrixXd Knew;
@@ -468,17 +471,17 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
     Mat.topRows(i)<<M0_inv+B*A_inv*kno*M0_inv, -B*A_inv;
     Mat.bottomRows(nTimes-i)<<-A_inv*B.transpose(), A_inv;
 
-  //Permut back
-  Permut_cov_sorted(Mat, idx);
+    //Permut back
+    Permut_cov_sorted(Mat, idx);
 
   }else{ // remove one subject i>nTimes
     cout << " problem inverse_Woodbury !!!!!" <<endl;
-}
+  }
   return(log_DetPrecMat);
 }
 
 double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat, MatrixXd& M0_inv){
-// Function to remove one subject
+  // Function to remove one subject
 
   double log_DetPrecMat=0.0;
   MatrixXd kno;
@@ -556,26 +559,25 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
 
 
 //RJ GP covariance star function
-double GP_cov_star(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,std::vector<double> timestar, const string& kernel){
+void GP_cov_star(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,std::vector<double> timestar, const string& kernel){
 
-	double a;
-  	int i,j;
-  	int nTimes = times.size();
-  	int nStar = timestar.size();
-  	Mat.setZero(Mat.rows(),Mat.cols());
+  double a;
+  int i,j;
+  int nTimes = times.size();
+  int nStar = timestar.size();
+  Mat.setZero(Mat.rows(),Mat.cols());
 
-  	for(i=0;i<nTimes;i++){
-    	for(j=0;j<nStar;j++){
-    	  if(kernel.compare("SQexponential")==0){
-    	    a=-1.0/2.0/exp(L[1])*(times[i]-timestar[j])*(times[i]-timestar[j]);
-    	    Mat(i,j)=exp(L[0])*std::exp(a);
-    	  }else{
-    	    a=exp(L[0])+exp(L[1])*(times[i]-exp(L[3]))*(timestar[j]-exp(L[3]));
-    	    Mat(i,j)=a*a ;//+ exp(L[3]);
-    	  }
-    	}
-  	}
-  	return 0;
+  for(i=0;i<nTimes;i++){
+    for(j=0;j<nStar;j++){
+      if(kernel.compare("SQexponential")==0){
+        a=-1.0/2.0/exp(L[1])*(times[i]-timestar[j])*(times[i]-timestar[j]);
+        Mat(i,j)=exp(L[0])*std::exp(a);
+      }else{
+        a=exp(L[0])+exp(L[1])*(times[i]-exp(L[3]))*(timestar[j]-exp(L[3]));
+        Mat(i,j)=a*a ;//+ exp(L[3]);
+      }
+    }
+  }
 }
 
 

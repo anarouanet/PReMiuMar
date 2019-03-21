@@ -2630,7 +2630,6 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
   Sigma.setZero(sizek,sizek);
 
   if(sizek > 0){
-    GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
 
     int dimBlock = dataset.equalTimes();
     if(dimBlock<0){//RJ!!
@@ -2659,11 +2658,62 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       //   }
       //   dmvnorm = -0.5*sumY.transpose()*precMat*sumY -0.5*sumY2*invNoise - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
     }else{
+      fout << "timesk "<< c <<endl;
+      for(unsigned int ii=0;ii<timesk.size();ii++)
+        fout << timesk[ii]<< " ";
+
+      fout << endl;
+
+      fout << "yk "<<endl;
+      for(unsigned int ii=0;ii<timesk.size();ii++)
+        fout << yk[ii]<< " ";
+
+      fout << endl;
+
+
+      // sort yk and times with corresponding ordering in idx
+      std::vector<int> idx(timesk.size());
+      int x=0;
+      iota(idx.begin(), idx.end(), x++);
+      stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                  [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+
+      stable_sort(timesk.begin(), timesk.end());
+
+      VectorXd yk_sorted = yk;
+      for(unsigned int j=0;j<sizek;j++)
+        yk_sorted(j)=yk(idx[j]);
+      yk=yk_sorted;
+
+
+      fout << "idx"<<endl;
+      for(unsigned int ii=0;ii<timesk.size();ii++)
+        fout << idx[ii]<< " ";
+
+      fout << endl;
+
+      fout << "timesk sorted"<<endl;
+      for(unsigned int ii=0;ii<timesk.size();ii++)
+        fout << timesk[ii]<< " ";
+
+      fout << endl;
+
+      fout << "yk sorted"<<endl;
+      for(unsigned int ii=0;ii<timesk.size();ii++)
+        fout << yk[ii]<< " ";
+
+      fout << endl;
+
+
+      GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),kernelType,1); // Sigma ordered;
+      logDetPrecMat=Get_Sigma_inv_GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),dataset.times_unique(),kernelType);
+
       precMat = Sigma.inverse();
+      //det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
 
       LLT<MatrixXd> lltOfA(Sigma); // compute the Cholesky decomposition of A
       MatrixXd L = lltOfA.matrixL();
-      logDetPrecMat=  2*log(L.determinant());
+      //logDetPrecMat=  2*log(L.determinant());
 
       // if(isinf(logDetPrecMat)){
       //   MatrixXd Sigma2 = Sigma+0.0001*MatrixXd::Identity(Sigma.rows(), Sigma.rows());
@@ -2674,6 +2724,9 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       // }
       //logDetPrecMat = -log(precMat.determinant());//log(Sigma.determinant());
       dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+
+      fout << "Kuu det "<< logDetPrecMat <<" vs LLT "<<2*log(L.determinant()) << " dnorm "<< dmvnorm<<endl;
+
     }
   }
   return dmvnorm;
@@ -2838,7 +2891,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           }
 
 
-          // sort yk with corresponding ordering
+          // sort times with corresponding ordering
           std::vector<int> idx(timesk3.size());
           int x=0;
           iota(idx.begin(), idx.end(), x++);
@@ -3349,8 +3402,8 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
 
         for(unsigned int l=0;l<nL;l++){
           if(hyperParams.sigmaL(l)>0)
-              logPrior+= logPdfNormal(params.L(c,l),hyperParams.muL(l),
-                                  hyperParams.sigmaL(l));
+            logPrior+= logPdfNormal(params.L(c,l),hyperParams.muL(l),
+                                    hyperParams.sigmaL(l));
         }
 
         if(model.options().sampleGPmean()){//AR
@@ -3655,11 +3708,13 @@ double logCondPostLambdaiBinomial(const pReMiuMParams& params,
 }
 
 //RJ logCondPostL function definition: p(sigma)p(Y^k|sigma_k,k)
+//addprior = 0 if prior should not be computed
 double logCondPostL(const pReMiuMParams& params,
                     const mcmcModel<pReMiuMParams,
                                     pReMiuMOptions,
                                     pReMiuMData>& model,
-                                    const unsigned int& c){
+                                    const unsigned int& c,
+                                    const int addprior){
 
   const pReMiuMData& dataset = model.dataset();
   const pReMiuMHyperParams& hyperParams = params.hyperParams();
@@ -3679,8 +3734,9 @@ double logCondPostL(const pReMiuMParams& params,
 
   if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
     unsigned int l = 2;
-    logPrior+=logPdfNormal(params.L(c,l),hyperParams.muL(l),
-                           hyperParams.sigmaL(l));
+    if(addprior==1)
+      logPrior+=logPdfNormal(params.L(c,l),hyperParams.muL(l),
+                             hyperParams.sigmaL(l));
   }else{
     for(unsigned int l=0;l<nL;l++){
       logPrior+=logPdfNormal(params.L(c,l),hyperParams.muL(l),
@@ -3692,9 +3748,9 @@ double logCondPostL(const pReMiuMParams& params,
   double out = 0;
   if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
     out = logPrior +  logPYiGivenZiWiLongitudinal_meanGP(params,dataset,nFixedEffects,c,dataset.nSubjects());
-    double a= logPYiGivenZiWiLongitudinal_meanGP(params,dataset,nFixedEffects,c,dataset.nSubjects());
-    double b=logPYiGivenZiWiLongitudinal(params,dataset,nFixedEffects,c,dataset.nSubjects());
-    foutL << " lik Y|f "<< a<< " lik Y|L "<< b<< endl;
+    //double a= logPYiGivenZiWiLongitudinal_meanGP(params,dataset,nFixedEffects,c,dataset.nSubjects());
+    //double b=logPYiGivenZiWiLongitudinal(params,dataset,nFixedEffects,c,dataset.nSubjects());
+    //foutL << " lik Y|f "<< a<< " lik Y|L "<< b<< endl;
   }else{
     out = logPrior +  logPYiGivenZiWiLongitudinal(params,dataset,nFixedEffects,c,dataset.nSubjects());
   }
@@ -3809,8 +3865,8 @@ double logCondPostL_covGP(const pReMiuMParams& params,
       logPrior+=logPdfNormal(params.L(c,l),hyperParams.muL(l),
                              hyperParams.sigmaL(l));
   }
-  //double out = logPrior + logPdfMultivariateNormal(params.meanGP(c),params.L(c), dataset.times_unique(), dataset.kernelType());
-  double out = logPrior +  logPYiGivenZiWiLongitudinal(params,dataset,dataset.nFixedEffects(),c,dataset.nSubjects());
+  double out = logPrior + logPdfMultivariateNormal(params.meanGP(c),params.L(c), dataset.times_unique(), dataset.kernelType());
+  //double out = logPrior +  logPYiGivenZiWiLongitudinal(params,dataset,dataset.nFixedEffects(),c,dataset.nSubjects());
 
   return out;
 }
@@ -3968,11 +4024,12 @@ void logNuPostSurvival(const pReMiuMParams& params,
 VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
                        const unsigned int c, baseGeneratorType& rndGenerator,
                        const unsigned int init){
-
+// If init == 1 or sizek == 0, f drawn from prior
   vector<double> times_unique = dataset.times_unique();
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
   VectorXd GPmean(nTimes_unique);
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Define a normal random number generator
   randomNormal normRand(0,1);
@@ -3991,8 +4048,6 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
 
   int sizek = 0;
   int counter = 0;
-  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
-  //std::fstream fout_GP("GPmean_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // set sizes based on cluster occupation
   if(init == 0){
@@ -4002,10 +4057,6 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       }
     }
   }
-
-  //params.L(c,0,0) ;// A changer !!!! -0.5,-0.1,-0.5
-  //params.L(c,1,0) ;// A changer !!!!
-  //params.L(c,2,0) ;// A changer !!!!
 
   if(sizek > 0 && init == 0){
     yk.resize(sizek);
@@ -4025,16 +4076,33 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       }
     }
 
+    // sort yk and times with corresponding ordering in idx
+    std::vector<int> idx(timesk.size());
+    int x=0;
+    iota(idx.begin(), idx.end(), x++);
+    stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
+                [&](int i1,int i2) { return (timesk[i1] < timesk[i2]); });
+
+    stable_sort(timesk.begin(), timesk.end());
+
+    VectorXd yk_sorted = yk;
+    for(unsigned int j=0;j<sizek;j++)
+      yk_sorted(j)=yk(idx[j]);
+    yk=yk_sorted;
+
+
     //Computation posterior mean of GP: postM
     MatrixXd priorCor(sizek, nTimes_unique); // K_{}k,*}
     priorCor.setZero(sizek, nTimes_unique);
     MatrixXd invC(sizek, sizek);
 
     GP_cov_star(priorCor,params.L(c),timesk,times_unique, kernelType);
-    GP_cov(invC, params.L(c), timesk, 1, kernelType,1);
-    MatrixXd inverseC=invC.inverse();
+    GP_cov(invC, params.L(c), timesk, dataset.equalTimes(), kernelType,1);
 
-    postM = priorCor.transpose() * (inverseC * yk);
+    double logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
+
+    postM = priorCor.transpose() * (invC * yk);
+
 
     // foutC << " yk "<< yk<<endl<< " times "<< endl;
     // for(unsigned int j=0;j<yk.size();j++)
@@ -4049,7 +4117,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
     MatrixXd postV(nTimes_unique, nTimes_unique);
     MatrixXd priorCor_star(nTimes_unique, nTimes_unique);
     GP_cov(priorCor_star, params.L(c), times_unique,  1, kernelType,0);
-    postV = priorCor_star - priorCor.transpose() * inverseC * priorCor;
+    postV = priorCor_star - priorCor.transpose() * invC * priorCor;
 
     VectorXd random_vector(nTimes_unique);
     for(int i = 0; i < nTimes_unique; ++i){

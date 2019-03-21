@@ -34,7 +34,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
   upperNu=NULL
   sampleGPmean=FALSE
 
-  library("PReMiuM")
+  #library("PReMiuM")
   library("grid")
   library("ggplot2")
   for (i in 1:length(riskProfObj)) assign(names(riskProfObj)[i],riskProfObj[[i]])
@@ -799,7 +799,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     GPDF<-data.frame("time"=c(),"mu"=c(),"cluster"=c(),"sigma"=c(),"fillColor"=c())
     times <- longMat$time
     yData <- longMat$outcome
-    tTimes <- seq(min(times),max(times),length.out=20)
+    tTimes <- seq(min(times),max(times),length.out=40)
     palette <- rainbow(max(whichClusters))
     times_c <- list()
     yData_c <- list()
@@ -823,7 +823,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
                                       "fillColor"=riskColor[c]))
 
       }else{
-        params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,])
+        params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,],kernel)
         GPDF <- rbind(GPDF,data.frame("time"=tTimes,"mu"=params$mu+longMean,
                                       "cluster"=rep(c,times=length(tTimes)),
                                       "sigma"=1.645*sqrt(diag(params$GPSigma)),
@@ -885,8 +885,8 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
     #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
     plotObj <- plotObj + labs(color="Cluster")
-    plotObj <- plotObj + labs(y="Outcome\n")+theme(axis.title.y=element_text(size=40,angle=90))
-    plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=40))
+    plotObj <- plotObj + labs(y="Outcome")+theme(axis.title.y=element_text(size=40,angle=90))
+    plotObj <- plotObj + labs(x="Time")+theme(axis.title.x=element_text(size=40))
     plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
     plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
@@ -899,17 +899,20 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 
     ##//AR data plot
     library(cowplot)
-    longFile_com <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
-    png(longFile_com,width=1200,height=800)
+    library(premiumPlots)
+
+    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
+    png(longFile,width=1200,height=800)
     plotObj <- ggplot(GPDF) + theme_bw()
     plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
     #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
     #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
     plotObj <- plotObj + labs(color="Cluster")
-    plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=20,angle=90))
-    plotObj <- plotObj + labs(x="Time") + theme(axis.title.x=element_text(size=20))
+    plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
+    plotObj <- plotObj + labs(x="Time") + theme(axis.title.x=element_text(size=30))
     plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
-    #plotObj <- plotObj + theme(axis.text.x=element_text(size=10)) + theme(axis.text.y=element_text(size=20))
+    plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
+
     plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
                                axis.line.y = element_line(colour="black",size=1))
     #plotObj <- plotObj + theme(legend.title=element_text(size=10)) + theme(legend.text=element_text(size=20))
@@ -919,13 +922,14 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
       facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
-    p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.25)
-    plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
+    p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1)
+    plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
+    print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 
     dev.off()
 
-    longFile_com_data <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
-    png(longFile_com_data,width=1200,height=800)
+    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
+    png(longFile,width=1200,height=800)
 
 
     plotObj <- ggplot(GPDF)+theme_bw()
@@ -955,7 +959,8 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
       facet_wrap(~cluster,ncol=1, strip.position="left")+
       theme(legend.position = "none")
-    plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+    plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+    print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 
     dev.off()
   }

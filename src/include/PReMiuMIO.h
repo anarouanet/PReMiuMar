@@ -115,6 +115,7 @@ pReMiuMOptions processCommandLine(string inputStr){
 			Rprintf("--weibullFixedShape=<bool>\n\tWhether the shape parameter of the Weibull distribution is fixed.\n");
 			Rprintf("--kernel=<string>\n\tThe kernel type for the covariance function of the GP if yModel == Longitudinal. Options are\n\tcurrently 'SQexponential' and 'Quadratic' (SQexponential)\n");
 			Rprintf("--sampleGPmean=<string>\n\tIndicator for the sampling of the mean of the GP, if yModel == Longitudinal.\n");
+			Rprintf("--ratio_v=<string>\n\t Ratio between L1k and L3k defining the variance of the GP, if yModel == Longitudinal.\n");
 
 		}else{
 			while(currArg < argc){
@@ -204,6 +205,11 @@ pReMiuMOptions processCommandLine(string inputStr){
 				  options.kernelType(kernelType);
 				}else if(inString.find("--sampleGPmean")!=string::npos){ //AR
 				  options.sampleGPmean(true);
+				}else if(inString.find("--ratio_v")!=string::npos){ //AR
+				  size_t pos = inString.find("=")+1;
+				  string tmpStr = inString.substr(pos,inString.size()-pos);
+				  double ratio=(double)atof(tmpStr.c_str());
+				  options.ratio(ratio);
 				}else if(inString.find("--xModel")!=string::npos){
 					size_t pos = inString.find("=")+1;
 					string covariateType = inString.substr(pos,inString.size()-pos);

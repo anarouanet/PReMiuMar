@@ -31,7 +31,7 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
                    varSelectType="None", entropy,reportBurnIn=FALSE, run=TRUE, discreteCovs, continuousCovs,
                    whichLabelSwitch="123", includeCAR=FALSE, neighboursFile="Neighbours.txt",
-                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,kernel="SQexponential", sampleGPmean= FALSE){
+                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,kernel="SQexponential", sampleGPmean= FALSE, ratio_v= 0){
 
   # suppress scientific notation
   options(scipen=999)
@@ -504,7 +504,8 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
   if (includeCAR) inputString<-paste(inputString," --includeCAR", " --neighbours=", neighboursFile ,sep="")
   if (useNormInvWishPrior) inputString<-paste(inputString," --useNormInvWishPrior", sep="")
   if (!missing(kernel)) inputString<-paste(inputString," --kernel=",  kernel ,sep="")
-  if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sep="")
+  if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sampleGPmean,sep="")
+  if (ratio_v != 0) inputString<-paste(inputString," --ratio_v=" ,ratio_v,sep="")
 
   if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
 
@@ -614,7 +615,7 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
               "useNormInvWishPrior"=useNIWP,
               "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
               "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
-              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "nTimes_unique"=length(all_times)))
+              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "ratio_v"= ratio_v, "nTimes_unique"=length(all_times)))
 }
 
 

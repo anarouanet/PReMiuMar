@@ -549,7 +549,6 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 					// Update the chain state
 					it->updateParameters(_chain,_model,_rndGenerator);
 					//Rprintf("prop ",it->proposalName().c_str(),"\n");
-					//fout << it->proposalName()<<endl;
 				}
 			}
 		}

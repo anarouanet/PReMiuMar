@@ -27,7 +27,7 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
   weibullFixedShape=NULL
   sampleGPmean=FALSE
 
-  library("PReMiuM")
+  #library("PReMiuM")
   for (i in 1:length(clusObj)) assign(names(clusObj)[i],clusObj[[i]])
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
 

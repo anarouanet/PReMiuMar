@@ -53,6 +53,10 @@
 //#include <stdlib.h> srand(seed)
 #include<Rcpp.h>
 
+
+
+#include<unistd.h>
+#include<stdio.h>
 using std::vector;
 using std::ostringstream;
 using std::time;
@@ -89,6 +93,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	// Seed the random number generator
 
 	pReMiuMSampler.seedGenerator(options.seed());
+	//pReMiuMSampler.seedGeneratorMult(options.seedsMult());
 
 	// Set the sampler specific variables
 	pReMiuMSampler.nSweeps(options.nSweeps());

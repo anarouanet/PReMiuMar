@@ -47,6 +47,8 @@
 #include<Eigen/Core>
 #include<Eigen/Cholesky>
 #include<Eigen/LU>
+#include <omp.h>
+
 
 // Custom includes
 #include<MCMC/chain.h>
@@ -929,7 +931,7 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
   sumCPlus1ToMaxMembers[maxZ]=0;
   for(int c=maxZ-1;c>=0;c--){
     sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
-}
+  }
 
 
   double tmp=0.0;
@@ -2414,11 +2416,20 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   if(model.options().sampleGPmean()){ //AR model.options().sampleGPmean()
 
     unsigned int nTimes_unique = model.dataset().nTimes_unique();
-    VectorXd Fval(nTimes_unique);
+    int threads = omp_get_max_threads();
+    vector<baseGeneratorType> rngArray(threads);
+
+    // Seed by taking random numbers from the existing generator
+    boost::random::uniform_int_distribution<> seeder;
+    for (auto &rng : rngArray)
+      rng.seed(seeder(rndGenerator));
+
 
     #pragma omp parallel for
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
-      Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
+      int threadNum = omp_get_thread_num();
+      VectorXd Fval(nTimes_unique);
+      Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
 
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
@@ -2885,7 +2896,6 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
   const string outcomeType = model.dataset().outcomeType();
-  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Find the number of clusters
   unsigned int maxZ = currentParams.workMaxZi();
@@ -2915,7 +2925,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           if(l==0 & ratio != 0)
             currentParams.L(c,2,currentParams.L(c,l)- log(ratio));
 
-                    if(l == 2 & ratio == 0){
+          if(l == 2 & ratio == 0){
             currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
           }else{
             currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
@@ -2980,18 +2990,27 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
       //AR sample meanGP
       //if(model.options().sampleGPmean()){ //AR change
-        unsigned int nTimes_unique = model.dataset().nTimes_unique();
+      unsigned int nTimes_unique = model.dataset().nTimes_unique();
+      //int threads = omp_get_max_threads();
+      //vector<baseGeneratorType> rngArray(threads);
+
+      // Seed by taking random numbers from the existing generator
+      //boost::random::uniform_int_distribution<> seeder;
+      //for (auto &rng : rngArray)
+        //rng.seed(seeder(rndGenerator));
+
+      //#pragma omp parallel for
+      //for(unsigned int c=0;c<=maxZ;c++){
+      //  int threadNum = omp_get_thread_num();
         VectorXd Fval(nTimes_unique);
+        //Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
+        Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
 
-        #pragma omp parallel for
-        for(unsigned int c=0;c<=maxZ;c++){
-          Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
-
-          for(unsigned int j=0;j<nTimes_unique;j++){
-            currentParams.meanGP(c,j, Fval(j));
-          }
+        for(unsigned int j=0;j<nTimes_unique;j++){
+          currentParams.meanGP(c,j, Fval(j));
         }
       //}
+
 
     }else{
       currentCondLogPost = logCondPostL(currentParams,model,c,1);
@@ -3186,6 +3205,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
   vector<double> rnd(nSubjects+nPredictSubjects,0.0);
   vector<double> u(nSubjects+nPredictSubjects,0.0);
+
   for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){
     rnd[i] = unifRand(rndGenerator);
     u[i] = currentParams.u(i);
@@ -3194,6 +3214,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> testBound(maxNClusters,0.0);
   vector<double> clusterWeight(maxNClusters,0.0);
 
+  #pragma omp parallel for
   for(unsigned int c=0;c<maxNClusters;c++){
     if(samplerType.compare("SliceDependent")==0){
       testBound[c] = exp(currentParams.logPsi(c));
@@ -3212,6 +3233,8 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<vector<double> > logPXiGivenZi;
   logPXiGivenZi.resize(nSubjects+nPredictSubjects);
   if(covariateType.compare("Discrete")==0){
+
+    #pragma omp parallel for
     for(unsigned int i=0;i<nSubjects;i++){
       logPXiGivenZi[i].resize(maxNClusters,0);
       for(unsigned int c=0;c<maxNClusters;c++){
@@ -3228,6 +3251,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         }
       }
     }
+
     // For the predictive subjects we do not count missing data
     for(unsigned int i=nSubjects;i<nSubjects+nPredictSubjects;i++){
       logPXiGivenZi[i].resize(maxNClusters,0);
@@ -3449,17 +3473,14 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
 
   //AR
- // double * det_M0;
+  // double * det_M0;
   //det_M0 = new double [maxNClusters];
   vector<double> det_M0(maxNClusters,0);
   vector<MatrixXd> Sigma_inv_c_ord(maxNClusters);
   vector<int> sizek(maxNClusters,0);
-  double temp;
 
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
-  vector<double> timesk;
-  int counter = 0;
   vector<double> times = dataset.times();
   int Ana=1; // 0 ROB, 1 AR, 2 both
   int grid_size = 0;
@@ -3500,7 +3521,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
           fout <<" Ana "<< Ana<< " grid_size "<< grid_size<< endl<< " grid "<<endl;
           for(unsigned int h=0;h<grid_size;h++)
-          fout <<grid[h]<< " ";
+            fout <<grid[h]<< " ";
           fout << endl;
 
           // double min_grid=*std::min_element(std::begin(times), std::end(times));
@@ -3511,7 +3532,11 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
           // }
         }
 
+        #pragma omp parallel for
         for(unsigned int c=0;c<maxNClusters;c++){
+
+          double temp;
+          vector<double> timesk;
 
           if( !model.options().sampleGPmean() && i==0 && outcomeType.compare("Longitudinal")==0 ){//for first person, calculate all marginals
             if(Ana!=1)
@@ -3536,7 +3561,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                 Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
                 timesk.resize(sizek[c]);
 
-                counter = 0;
+                int counter = 0;
                 for(unsigned int i2=0;i2<nSubjects;i2++){
                   if(currentParams.z(i2) == c){
                     for(unsigned int j=0;j<tStop[i2]-tStart[i2]+1;j++){
@@ -3559,7 +3584,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
               if(Ana==2&abs(temp- clusterMarginal[c])>pow (1.0, -5.0)){
                 fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                 fout << i << " c "<< c << " clusterMarginal " << clusterMarginal[c]<< " temp" << temp << endl<< endl;
-                }
+              }
             }
           }//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3570,8 +3595,9 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             if(outcomeType.compare("Longitudinal")==0){//RJ marginal likelihood without i
 
               if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
-                logPyXz[c] += logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
-                //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
+                double temp2 = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
+                logPyXz[c] += temp2;
+                  //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
 
                 //AR to remove
                 sizek[c]=0;
@@ -3750,9 +3776,11 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         if(sizek[c]>0){
 
           Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
+          vector<double> timesk;
           timesk.resize(sizek[c]);
 
-          counter = 0;
+          int counter = 0;
+
           for(unsigned int i2=0;i2<nSubjects;i2++){
             if(currentParams.z(i2) == c){
               for(unsigned int j=0;j<tStop[i2]-tStart[i2]+1;j++){
@@ -3773,9 +3801,10 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         c=zi;
 
         Sigma_inv_c_ord[c].setZero(sizek[c],sizek[c]);
+        vector<double> timesk;
         timesk.resize(sizek[c]);
 
-        counter = 0;
+        int counter = 0;
         for(unsigned int i2=0;i2<nSubjects;i2++){
           if(currentParams.z(i2) == c){
             for(unsigned int j=0;j<tStop[i2]-tStart[i2]+1;j++){

@@ -170,6 +170,8 @@ class pReMiuMOptions{
 			_seed=rndSeedNew;
 		}
 
+
+
 		/// \brief Return the input file name
 		string inFileName() const{
 			return _inFileName;

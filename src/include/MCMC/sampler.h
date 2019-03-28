@@ -308,7 +308,7 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 
 		/// \brief The seed for the random number generator
 		unsigned int _seed;
-
+		vector<unsigned int>_seedsMult;
 		/// \var _nSweeps
 		/// \brief The number of sweeps that we are running the sampler for
 

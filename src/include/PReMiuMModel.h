@@ -2981,6 +2981,7 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
   unsigned int ni = 0;
   int unsigned l = 2; // SQexponential or SQuadratic
 
+
   for(unsigned int i=0; i<dataset.nSubjects(); i++){
     if((params.z(i) == c &&  ii == dataset.nSubjects()) || ( i == ii ) ){
 
@@ -3000,6 +3001,7 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
       //double eL0 = exp(L[0]);
       //double eL1 = exp(L[1])*2.0;
       //double eL2 = exp(L[2]);
+
       dmvnorm +=  -0.5*yi.transpose()*Vi_inv*yi - 0.5*ni*log(2.0*pi<double>())
         - 0.5*ni*params.L(c,l);//*abs(params.L(c,l)); //log(exp(params.L(c,2)*ni)) ;
     }
@@ -4029,6 +4031,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
   VectorXd GPmean(nTimes_unique);
+
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Define a normal random number generator
@@ -4101,78 +4104,85 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
 
     double logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
 
-    postM = priorCor.transpose() * (invC * yk);
+    if(std::isnan(logDetPrecMat) || isinf(logDetPrecMat)){
+      for (unsigned int j=0;j<GPmean.size();j++)
+        GPmean(j)=0;
+
+    }else{
+
+      postM = priorCor.transpose() * (invC * yk);
 
 
-    // foutC << " yk "<< yk<<endl<< " times "<< endl;
-    // for(unsigned int j=0;j<yk.size();j++)
-    //   foutC << timesk[j]<<" " ;
-    //
-    //   foutC << endl<<" postM "<< postM<<endl<< " times_unique "<<endl;
-    //   for(unsigned int j=0;j<times_unique.size();j++)
-    //     foutC << times_unique[j]<<" " ;
-    //     foutC << endl;
+      // foutC << " yk "<< yk<<endl<< " times "<< endl;
+      // for(unsigned int j=0;j<yk.size();j++)
+      //   foutC << timesk[j]<<" " ;
+      //
+      //   foutC << endl<<" postM "<< postM<<endl<< " times_unique "<<endl;
+      //   for(unsigned int j=0;j<times_unique.size();j++)
+      //     foutC << times_unique[j]<<" " ;
+      //     foutC << endl;
 
-    //Computation posterior covariance matrix of GP: postV
-    MatrixXd postV(nTimes_unique, nTimes_unique);
-    MatrixXd priorCor_star(nTimes_unique, nTimes_unique);
-    GP_cov(priorCor_star, params.L(c), times_unique,  1, kernelType,0);
-    postV = priorCor_star - priorCor.transpose() * invC * priorCor;
+      //Computation posterior covariance matrix of GP: postV
+      MatrixXd postV(nTimes_unique, nTimes_unique);
+      MatrixXd priorCor_star(nTimes_unique, nTimes_unique);
+      GP_cov(priorCor_star, params.L(c), times_unique,  1, kernelType,0);
+      postV = priorCor_star - priorCor.transpose() * invC * priorCor;
 
-    VectorXd random_vector(nTimes_unique);
-    for(int i = 0; i < nTimes_unique; ++i){
-      random_vector(i) = normRand(rndGenerator);
-    }
-
-
-    //Eigen decomposition of postV
-    EigenSolver<MatrixXd> es(postV, true);
-    VectorXd eigenvalues(es.eigenvalues().size()) ;
-
-    bool sdp=true;
-    for(int i = 0; i < nTimes_unique; ++i){
-      eigenvalues(i) = es.eigenvalues()(i).real() ;
-
-      if(es.eigenvalues()(i).real()<0){
-        eigenvalues(i) =0;
-        sdp=false;
-      }
-
-      if(es.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
-        fout << c <<" c post complex eigenvalue " <<es.eigenvalues()(i).imag()<< endl;
-        fout << c <<" c post complex eigenvector " <<es.eigenvectors()(i).imag()<< endl;
-      }
-    }
-
-    // if(!sdp){
-    //   postV = postV +0.001*MatrixXd::Identity(nTimes_unique, nTimes_unique);
-    //   EigenSolver<MatrixXd> es2(postV, true);
-    //
-    //   bool sdp=true;
-    //   for(int i = 0; i < nTimes_unique; ++i){
-    //     if(es2.eigenvalues()(i).real()<0)
-    //       sdp=false;
-    //     if(es2.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
-    //       fout << c <<" c post complex eigenvalue bis " <<es2.eigenvalues()(i).imag()<< endl;
-    //       fout << c <<" c post complex eigenvector bis " <<es2.eigenvectors()(i).imag()<< endl;
-    //     }
-    //   }
-    //   GPSigma= es2.eigenvectors().real() * es2.eigenvalues().real().cwiseSqrt().asDiagonal();
-    //}else{
-    GPSigma= es.eigenvectors().real() * eigenvalues.cwiseSqrt().asDiagonal();
-    //}
-
-    GPmean = postM  +  GPSigma* random_vector;
-
-    if(std::isnan(GPmean(1))){
-      fout << c <<" GPmean " << endl <<GPmean(0)<< endl;
-      fout << c <<" L " << params.L(c,0)<<" L " << params.L(c,1) <<" L " << params.L(c,2)<<endl;
-      fout << c <<" postM " << endl <<postM<< endl;
+      VectorXd random_vector(nTimes_unique);
       for(int i = 0; i < nTimes_unique; ++i){
-        fout << c <<" eigenvalue" <<es.eigenvalues()(i)<< endl<< endl;
+        random_vector(i) = normRand(rndGenerator);
       }
+
+
+      //Eigen decomposition of postV
+      EigenSolver<MatrixXd> es(postV, true);
+      VectorXd eigenvalues(es.eigenvalues().size()) ;
+
+      bool sdp=true;
       for(int i = 0; i < nTimes_unique; ++i){
-        fout << c <<" eigenvalue2" <<es.eigenvalues()(i)<< endl<< endl;
+        eigenvalues(i) = es.eigenvalues()(i).real() ;
+
+        if(es.eigenvalues()(i).real()<0){
+          eigenvalues(i) =0;
+          sdp=false;
+        }
+
+        if(es.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
+          fout << c <<" c post complex eigenvalue " <<es.eigenvalues()(i).imag()<< endl;
+          fout << c <<" c post complex eigenvector " <<es.eigenvectors()(i).imag()<< endl;
+        }
+      }
+
+      // if(!sdp){
+      //   postV = postV +0.001*MatrixXd::Identity(nTimes_unique, nTimes_unique);
+      //   EigenSolver<MatrixXd> es2(postV, true);
+      //
+      //   bool sdp=true;
+      //   for(int i = 0; i < nTimes_unique; ++i){
+      //     if(es2.eigenvalues()(i).real()<0)
+      //       sdp=false;
+      //     if(es2.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
+      //       fout << c <<" c post complex eigenvalue bis " <<es2.eigenvalues()(i).imag()<< endl;
+      //       fout << c <<" c post complex eigenvector bis " <<es2.eigenvectors()(i).imag()<< endl;
+      //     }
+      //   }
+      //   GPSigma= es2.eigenvectors().real() * es2.eigenvalues().real().cwiseSqrt().asDiagonal();
+      //}else{
+      GPSigma= es.eigenvectors().real() * eigenvalues.cwiseSqrt().asDiagonal();
+      //}
+
+      GPmean = postM  +  GPSigma* random_vector;
+
+      if(std::isnan(GPmean(1))){
+        fout << c <<" GPmean " << endl <<GPmean(0)<< endl;
+        fout << c <<" L " << params.L(c,0)<<" L " << params.L(c,1) <<" L " << params.L(c,2)<<endl;
+        fout << c <<" postM " << endl <<postM<< endl;
+        for(int i = 0; i < nTimes_unique; ++i){
+          fout << c <<" eigenvalue" <<es.eigenvalues()(i)<< endl<< endl;
+        }
+        for(int i = 0; i < nTimes_unique; ++i){
+          fout << c <<" eigenvalue2" <<es.eigenvalues()(i)<< endl<< endl;
+        }
       }
     }
 
@@ -4221,7 +4231,6 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
 
     GPmean =  GPSigma * random_vector;
   }
-
   return(GPmean);
 }
 

@@ -4187,10 +4187,8 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
     }
 
   }else{ // init == 1 || sizek==0
-
     MatrixXd priorCor(nTimes_unique, nTimes_unique);
     GP_cov(priorCor, params.L(c), times_unique, 1, kernelType,0);
-
     EigenSolver<MatrixXd> es(priorCor, true);
 
     bool sdp=true;
@@ -4222,6 +4220,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
     //   }
     //   GPSigma= es2.eigenvectors().real() * es2.eigenvalues().real().cwiseSqrt().asDiagonal();
     // }else{
+
     GPSigma= es.eigenvectors().real() * eigenvalues.cwiseSqrt().asDiagonal();
     //}
 

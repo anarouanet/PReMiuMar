@@ -25,13 +25,14 @@
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, data, longData=NULL,
+profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, data, longData=NULL,
                    output="output", hyper, predict, predictType="RaoBlackwell", nSweeps=1000,
                    nBurn=1000, nProgress=500, nFilter=1, nClusInit, seed, yModel="Bernoulli",
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
                    varSelectType="None", entropy,reportBurnIn=FALSE, run=TRUE, discreteCovs, continuousCovs,
                    whichLabelSwitch="123", includeCAR=FALSE, neighboursFile="Neighbours.txt",
-                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,kernel="SQexponential", sampleGPmean= FALSE, ratio_v= 0){
+                   weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,
+                   kernel="SQexponential", sampleGPmean= FALSE, ratio_v= 0, time_grid=NULL, ngrid=0){
 
   # suppress scientific notation
   options(scipen=999)
@@ -76,6 +77,24 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
     data <- data[with(data, order(ID)), ]
     longData <- longData[with(longData, order(ID)), ]
   }
+
+  if(yModel == "LME" & missing(formula))
+    stop("The argument formula must be specified in LME ymodel")
+  if (missing(longData) & yModel %in% c("Longitudinal","MVN", "LME"))
+    stop("The argument data should be specified and defined as a data.frame")
+  if (yModel == "LME" & class(formula) != "formula")
+    stop("The argument fixed must be a formula")
+#
+#   if(yModel=="LME"){
+#     m <- match.call()[c(1, match(c("data", "subset", "na.action"),
+#                                  names(match.call()), 0))]
+#     m$formula <- terms(formula)
+#     m$na.action <- na.action
+#     m[[1]] <- as.name("model.frame")
+#     m <- eval(m, sys.parent())
+#     na.fixed <- attr(m, "na.action")
+#   }
+
 
   # open file to write output
   fileName<-paste(output,"_input.txt",sep="")
@@ -311,19 +330,33 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
   all_times<-c()
   if(!is.null(longData)){
     ##//AR correspondance times to sample GPmean
-    write(length(unique(longData$time)),fileName,append=T,ncolumns=1)
+    if(!is.null(time_grid)){
+      time_grid=all_times
+      ngrid=length(time_grid)
+    }else{
+      if(ngrid==0){
+        all_times <- unique(longData$time)
+      }else{
+        all_times <- seq(min(longData$time, na.rm = T), max(longData$time, na.rm = T),(max(longData$time, na.rm = T)-min(longData$time, na.rm = T))/(ngrid-1))
+      }
+    }
 
-    all_times <- unique(longData$time)
     all_times <- all_times[order(all_times)]
     times_corr <- vector(length=length(longData$time))
 
     count=0
     for(i in 1:nSubjects){
       for(j in 1:(timeindices[i,2]-timeindices[i,1]+1)){
-        times_corr[count + j] <- min(which(all_times == longData$time[count + j]))-1
+        if(ngrid==length(unique(longData$time))){
+          times_corr[count + j] <- min(which(all_times == longData$time[count + j]))-1
+        }else{
+          times_corr[count + j] <- which(abs((all_times-longData$time[count + j]))==min(abs(all_times-longData$time[count + j])))
+        }
       }
       count <- count + j
     }
+    write(length(all_times),fileName,append=T,ncolumns=1)
+
     write(t(all_times),fileName,append=T,ncolumns=1)
     write(t(times_corr),fileName,append=T,ncolumns=1)
   }
@@ -615,8 +648,10 @@ profRegr<-function(covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, 
               "useNormInvWishPrior"=useNIWP,
               "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
               "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
-              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "ratio_v"= ratio_v, "nTimes_unique"=length(all_times)))
-}
+              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "ratio_v"= ratio_v,
+              "nTimes_unique"=length(all_times), "all_times"=all_times, "times_corr"=times_corr))
+
+  }
 
 
 

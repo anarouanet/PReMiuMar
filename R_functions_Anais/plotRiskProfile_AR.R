@@ -799,7 +799,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     GPDF<-data.frame("time"=c(),"mu"=c(),"cluster"=c(),"sigma"=c(),"fillColor"=c())
     times <- longMat$time
     yData <- longMat$outcome
-    tTimes <- seq(min(times),max(times),length.out=40)
+    tTimes <- seq(min(times),max(times),length.out=41)
     palette <- rainbow(max(whichClusters))
     times_c <- list()
     yData_c <- list()
@@ -923,10 +923,24 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
     p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1)
+    p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
+    #p2 + theme(axis.text.x = element_blank())
+
     plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
     print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 
     dev.off()
+
+    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
+    pdf(longFile, width=12, height=10 )
+    p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
+    p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+    p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+    timescale<-function(x){x*5}
+    p1 + scale_x_continuous(labels=timescale)
+    print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+    dev.off()
+
 
     longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
     png(longFile,width=1200,height=800)
@@ -963,7 +977,19 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 
     dev.off()
-  }
+
+    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
+    pdf(longFile, width=12, height=10 )
+    p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+    p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+    timescale<-function(x){x*5}
+    p1b <- p1b + scale_x_continuous(labels=timescale)
+    plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+    print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+    dev.off()
+
+
+}
 
   if(yModel=='MVN'){
     png(paste(strsplit(outFile,"\\.")[[1]][1],'-MVN.png',sep=""),width=1200,height=800)

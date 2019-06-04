@@ -61,6 +61,7 @@ using std::vector;
 using std::ostringstream;
 using std::time;
 using std::string;
+using std::cout;
 
 RcppExport SEXP profRegr(SEXP inputString) {
 
@@ -111,7 +112,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	pReMiuMData dataset = pReMiuMSampler.model().dataset();
 
 	/* ---------- Add the proposals -------- */
-
 	// Set the proposal parameters
 	pReMiuMPropParams proposalParams(options.nSweeps(),dataset.nCovariates(),
 										dataset.nFixedEffects(),dataset.nCategoriesY(),dataset.kernelType());
@@ -170,8 +170,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 		}
 	}
 
-
-	if(options.includeResponse()){
+		if(options.includeResponse()){
 		// The Metropolis Hastings update for the active theta
 		if(options.outcomeType().compare("Longitudinal")!=0) //AR
 		  pReMiuMSampler.addProposal("metropolisHastingsForThetaActive",1.0,1,1,&metropolisHastingsForThetaActive);
@@ -336,7 +335,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	pReMiuMSampler.writeLogFile();
 
 	/* ---------- Initialise the chain ---- */
-
 	pReMiuMSampler.initialiseChain();
 
 	pReMiuMHyperParams hyperParams = pReMiuMSampler.chain().currentState().parameters().hyperParams();
@@ -347,6 +345,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	/* ---------- Run the sampler --------- */
 	// Note: in this function the output gets written
 	pReMiuMSampler.run();
+
 
 	/* -- End the clock time and write the full run details to log file --*/
 	currTime = time(NULL);

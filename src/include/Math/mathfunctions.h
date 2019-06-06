@@ -100,7 +100,7 @@ void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const 
     double eL1 = exp(L[1])*2.0;
     double eL2 = exp(L[2]);
     if(error==0)
-      eL2 = 0;
+      eL2 = 0.001;
 
 
     // if(dimBlock<0){

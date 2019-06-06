@@ -34,7 +34,7 @@
 
 #include<cmath>
 #include<string>
-
+#include <vector>
 #include<boost/math/distributions/normal.hpp>
 #include<boost/math/special_functions/gamma.hpp>
 #include<boost/math/constants/constants.hpp>
@@ -48,6 +48,7 @@
 
 using boost::math::lgamma;
 using std::string;
+using std::vector;
 
 using namespace Eigen;
 using namespace boost::math::constants;
@@ -163,13 +164,16 @@ double logPdfNIW(const unsigned int& d, const MatrixXd& Lambda0, const double& l
 
 //AR logPdfMultivariateNormal p(fk|Lk,k)
 double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double> L, const vector<double>& times, const string& kernelType){
+
   VectorXd y(muGP.size());
   std::fstream foutC("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 
   for(unsigned int i=0;i<muGP.size();i++)
     y(i)=muGP[i];
 
+
   MatrixXd precMat(muGP.size(),muGP.size());
+  precMat.setZero(muGP.size(),muGP.size());
 
   GP_cov(precMat,L,times,0,kernelType,0);
   double logDetPrecMat=0 ;//=log(precMat.determinant());
@@ -181,6 +185,11 @@ double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double>
    // logDetPrecMat=  2*log(Llt.determinant());
 
    MatrixXd precMat1=precMat.inverse();
+   //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+   MatrixXd Mat2 = Llt.inverse().transpose()*Llt.inverse();
+
+
+
   //double dmvnorm = -0.5*y.transpose()*precMat*y - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
   double bb=y.transpose()*precMat1*y;
   double dmvnorm = -0.5*bb - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
@@ -194,7 +203,13 @@ double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double>
     //MatrixXd precMat2=PartialPivLU(precMat);
     //double bb2=y.transpose()*precMat2*y;
     //dmvnorm = -0.5*bb2 - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
-    foutC << "bb "<< bb<<" dmvnorm "<<  dmvnorm<< " sizek " << precMat1<<endl;
+    foutC << "bb "<< bb<<" dmvnorm "<<  dmvnorm<< " sizek " <<y.size()<<
+      " L "<< L[0] << " "<< L[1] << " "<< L[2] <<endl<< " y "<< y.transpose()<<endl<< " det "<< precMat.determinant() <<" vs "<< 2*log(Llt.determinant()) ;
+
+//    double a=-(times[1]-times[0])*(times[1]-times[0])/(2*exp(L[1]));
+//    double b = exp(L[0])*exp(a);
+//    foutC << endl<<" times[1] "<< std::setprecision(9)<<times[1] << " times[0] "<< std::setprecision(9)<< times[0]<< " b "<< b  << " vs "<<precMat<<endl<<endl;
+
     dmvnorm = -pow(10,10);
   }
   return dmvnorm;

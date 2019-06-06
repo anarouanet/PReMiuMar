@@ -2927,11 +2927,10 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
           if(l == 2 & ratio == 0){
             currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
-          }else{
+          }else{ //l<2
             currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
-            if(l==0 & ratio != 0){
-              currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
-            }
+            //if(l==0 & ratio != 0)
+              //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
           }
 
           nTry++;
@@ -2951,10 +2950,72 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           }else{
             propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
 
-            if(l==0 & ratio != 0){
-              propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
-            }
+           // if(l==0 & ratio != 0)
+            //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
 
+
+          }
+          logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+          double uni = unifRand(rndGenerator);
+          if(uni<exp(logAcceptRatio)){
+            nAccept++;
+            propParams.LAddAccept(l);
+            currentCondLogPost = propCondLogPost;
+          }else{
+            currentParams.L(c,l,LOrig);
+            if(l==0 & ratio != 0)
+              currentParams.L(c,2,LOrig- log(ratio));
+          }
+
+          // Update the std dev of the proposal
+          if(propParams.nTryL(l)%LUpdateFreq==0){
+            //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+            //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+            //else
+            //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+            stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+              pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+            propParams.LAnyUpdates(true);
+            if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+              propParams.LStdDevReset(l);
+            }
+            propParams.LLocalReset(l);
+          }
+        }
+
+
+        if(ratio==-1 & l==2){ //estimation ratio with beta distribution
+          //currentParams.L(c,2,currentParams.L(c,0)- log(ratio));
+            currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
+
+          nTry++;
+          // propParams.LAddTry(l);
+          // double& stdDev = propParams.LStdDev(l);
+          // double LOrig = currentParams.L(c,l);
+          // double LProp = LOrig+stdDev*normRand(rndGenerator);
+
+          propParams.LAddTry(l);
+          double& stdDev = propParams.LStdDev(l);
+          double LOrig = currentParams.L(c,l);
+          double LProp = LOrig+stdDev*normRand(rndGenerator);
+
+
+          currentParams.L(c,l,LProp);
+          if(l==0 & ratio != 0)
+            currentParams.L(c,2,LProp- log(ratio));
+
+          double propCondLogPost = 0;
+          double logAcceptRatio = 0;
+
+          if(l == 2 & ratio ==  0){
+            propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
+          }else{
+            propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
+            //if(l==0 & ratio != 0)
+              //propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
           }
           logAcceptRatio = propCondLogPost - currentCondLogPost;
 

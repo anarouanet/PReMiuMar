@@ -3,15 +3,16 @@
 \title{Profile Regression}
 \description{Fit a profile regression model.}
 \usage{
-profRegr(covNames, fixedEffectsNames, outcome="outcome", 
-        outcomeT=NA, data, longData=NULL, output="output", hyper, predict, 
-	    predictType="RaoBlackwell", nSweeps=1000, nBurn=1000, nProgress=500, 
+profRegr(covNames, fixedEffectsNames, outcome="outcome",
+        outcomeT=NA, data, longData=NULL, output="output", hyper, predict,
+        predictType="RaoBlackwell", nSweeps=1000, nBurn=1000, nProgress=500,
         nFilter=1, nClusInit, seed, yModel="Bernoulli", xModel="Discrete",
-        sampler="SliceDependent", alpha=-2, dPitmanYor = 0, excludeY=FALSE, 
+        sampler="SliceDependent", alpha=-2, dPitmanYor = 0, excludeY=FALSE,
         extraYVar=FALSE, varSelectType="None", entropy,reportBurnIn=FALSE,
         run=TRUE, discreteCovs, continuousCovs, whichLabelSwitch="123",
-	    includeCAR=FALSE, neighboursFile="Neighbours.txt",
-	    weibullFixedShape=TRUE, useNormInvWishPrior=FALSE)
+        includeCAR=FALSE, neighboursFile="Neighbours.txt",
+        weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,
+        kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL, ngrid=0)
 }
 \arguments{
 \item{covNames}{A vector of strings of the covariate names as by the column names in the data argument. The names of the covariates cannot include space characters.}
@@ -22,7 +23,7 @@ profRegr(covNames, fixedEffectsNames, outcome="outcome",
 \item{longData}{For Longitudinal model: a data frame which has as columns subject IDs (corresponding to IDs in data), the time points, and the outcomes. Note: a zero-filled `outcome' column should still be provided in data.}
 \item{output}{Path to folder to save all output files. The covariates can have missing values, which must be coded as 'NA'. There cannot be missing values in the fixed effects - if there are, use an imputation method before using profile regression.}
 \item{hyper}{Object of type setHyperparams with hyperparameters specifications. This is optional, default values are provided for all hyperparameters. See ?setHyperparams for details.}
-\item{predict}{Data frame containing the predictive scenarios. This is only required if predictions are requested. 
+\item{predict}{Data frame containing the predictive scenarios. This is only required if predictions are requested.
 
 At each iteration the predictive subjects are assigned to one of the current
 clusters according to their covariate profiles (but ignoring missing values), or
@@ -36,7 +37,7 @@ then be processed in the post processing to create a dissimilarity matrix with
 the fitting subjects. The post procesing function calcPredictions will create
 predicted response values for these subjects.
 
-See ?calcPredictions for more details and examples. 
+See ?calcPredictions for more details and examples.
 }
 \item{predictType}{This can be set equal to "RaoBlackwell" and "random". The default is RaoBlackwell. The random option can only be used for Normal response, where the estimated variance of the clusters is considered and the predictive subjects are randomly assigned to a mixture component and then are also randomly sampled within that component.}
 \item{nSweeps}{Number of iterations of the MCMC after the burn-in period. By default this is 1000.}
@@ -64,13 +65,17 @@ See ?calcPredictions for more details and examples.
 \item{weibullFixedShape}{This parameter controls whether the shape parameter of the Weibull distribution (for yModel=Survival only) is a global parameter (fixed) or cluster specific. It is equal to TRUE by default.}
 \item{useNormInvWishPrior}{By default this variable equals FALSE. When this variable equals TRUE, the conjugate Normal-inverse-Wishart prior is used rather
 than the independant normal and inverse Wishart priors. If this prior is used, variable selection cannot be used as it has not been implemented.}
+\item{kernel}{If yModel=Longitudinal, kernel function characterising the covariance of the Gaussian Process. By default, we use a square exponential function ("SQexponential"), but a quadratic kernel ("Quadratic") is also implemented. See details below.}
+\item{sampleGPmean}{If yModel=Longitudinal, indicator if the mean underlying function with a Gaussian Process prior is sampled or marginalised over in the sampler. By default, sampleGPmean=FALSE and the function is marginalised over.}
+\item{estim_ratio}{If yModel=Longitudinal, indicator if, in each cluster, the variance of the measurement error is defined as proportional to the signal variance of the Gaussian Process. If so, we adopt a Beta prior with hyperparameters aRatio, bRatio for the cluster-specific ratios. By default, estim_ratio=FALSE and the variance parameters are independent.}
+\item{time_grid}{If yModel=Longitudinal, a grid of time points used to approximate the inverse covariance matrix. By default, time_grid=NULL and no approximation is made.}
+\item{ngrid}{If yModel=Longitudinal and time_grid is undefined, number of time points for the grid used to approximate the inverse covariance matrix of the Gaussian Process (then defined with regular intervals). By default, ngrid=0 and no approximation is made.}
 }
-
 \value{
 Once the C++ programme has completed the output from fitting the regression is stored in a number of text files in the directory specified. Files are produced
 containing the MCMC traces for all of the values of interest, along with a log file and files for monitoring the acceptance rates of the adaptive Metropolis Hastings moves.
 
-It returns a number of files in the output directory as well as a list with the following elements. This an object of type runInfoObj. The files that are produced in the output directory are described below. 
+It returns a number of files in the output directory as well as a list with the following elements. This an object of type runInfoObj. The files that are produced in the output directory are described below.
 \item{directoryPath}{String. Directory path of the output files.}
 \item{fileStem}{String. The prefix for output files written by PReMiuM.}
 \item{inputFileName}{String. Location and file name of input dataset as created by this function for the C++ routines}
@@ -87,7 +92,7 @@ It returns a number of files in the output directory as well as a list with the 
 \item{includeResponse}{Logical. If FALSE only the covariate data X is modelled.}
 \item{yModel}{String. The model type for the outcome.}
 \item{varSelect}{Logical. If FALSE no variable selection is performed.}
-\item{varSelectType}{String. It specifies what type of variable selection has been performed, if any.} 
+\item{varSelectType}{String. It specifies what type of variable selection has been performed, if any.}
 \item{nCovariates}{Integer. The number of covariates.}
 \item{nFixedEffects}{Integer. The number of fixed effects.}
 \item{nCategoriesY}{Integer. The number of categories of the outcome, if yModel = "Categorical". It is 1 otherwise.}
@@ -103,6 +108,13 @@ It returns a number of files in the output directory as well as a list with the 
 \item{includeCAR}{Logical. Whether a spatial CAR term is included.}
 \item{predictType}{String. Whether a RaoBlackwell or random predictions have been computed.}
 \item{weibullFixedShape}{Logical. Whether the shape parameter of the Weibull distribution for the survival response is fixed or cluster specific.}
+\item{weibullFixedShape}{Logical. Whether the shape parameter of the Weibull distribution for the survival response is fixed or cluster specific.}
+\item{kernel}{Kernel function characterising the covariance of the Gaussian Process.}
+\item{sampleGPmean}{Logical. Whether the mean underlying function with a Gaussian Process prior is sampled in the sampler or not.}
+\item{estim_ratio}{Logical. Whether the variance of the measurement error is defined as proportional to the signal variance of the Gaussian Process or not.}
+\item{nTimes_unique}{Length of the time grid used for approximation of the inverse covariance matrix of the Gaussian Process.}
+\item{all_times}{Time grid used for approximation of the inverse covariance matrix of the Gaussian Process}
+\item{times_corr}{Correspondence between the observed time points and the grid used for approximation.}
 
 These are the files produced in the output directory. We refer to Liverani et al. (2015).
 
@@ -126,9 +138,12 @@ These are the files produced in the output directory. We refer to Liverani et al
 
 \item{_z.txt}{This file includes the cluster membership for each observation at each sweep. Each row represents a sweep (including burn in if reportBurnIn=TRUE) and each element in the rows is the cluster membership for each of the observations, ordered as they are provided to profRegr in the dataframe.}
 
-There are more files that can be in the output, depending on which options are used in profRegr. The file _mu.txt for example reports the mean for xModel=Normal, _phi.txt reports the multinomial probabilities for xModel=Discrete, _rho.txt reports the paramters for variable selection, etc. The files usually report one line for each sweep (including burn in if reportBurnIn=TRUE). See Liverani et al. (2015) for more details of the parameters. 
+\item{_meanGP.txt}{If sampleGmean=TRUE, each row represents a sweep (including burn in if reportBurnIn=TRUE) with the values of the cluster-specific sampled mean functions. The functions are evaluated on the time grid or on the vector of all the observed time points.}
+\item{_ratio_variances.txt}{If estim_ratio=TRUE, each row represents a sweep (including burn in if reportBurnIn=TRUE) with the sampled values of the cluster-specific ratios between the signal variance and the noise variance.}
 
+There are more files that can be in the output, depending on which options are used in profRegr. The file _mu.txt for example reports the mean for xModel=Normal, _phi.txt reports the multinomial probabilities for xModel=Discrete, _rho.txt reports the paramters for variable selection, etc. The files usually report one line for each sweep (including burn in if reportBurnIn=TRUE). See Liverani et al. (2015) for more details of the parameters.
 }
+
 \section{Authors}{
 David Hastie, Department of Epidemiology and Biostatistics, Imperial College London, UK
 
@@ -138,9 +153,13 @@ Aurore J. Lavigne, Department of Epidemiology and Biostatistics, Imperial Colleg
 
 Lamiae Azizi, MRC Biostatistics Unit, Cambridge, UK
 
+Rob Johnson, MRC Biostatistics Unit, Cambridge, UK
+
+Anaïs Rouanet, MRC Biostatistics Unit, Cambridge, UK
+
 Maintainer: Silvia Liverani <liveranis@gmail.com>
 
-The R package PReMiuM is supported through research grants. One key requirement of such funding applications is the ability to demonstrate the impact of the work we seek funding for can. Whatever you are using PReMiuM for, it would be very helpful for us to learn about our users, to tailor our future methodological developments to your needs. Please email us at liveranis@gmail.com or visit http://www.silvialiverani.com/support-premium/. 
+The R package PReMiuM is supported through research grants. One key requirement of such funding applications is the ability to demonstrate the impact of the work we seek funding for can. Whatever you are using PReMiuM for, it would be very helpful for us to learn about our users, to tailor our future methodological developments to your needs. Please email us at liveranis@gmail.com or visit http://www.silvialiverani.com/support-premium/.
 
 }
 \references{
@@ -153,22 +172,22 @@ Hastie, D. I., Liverani, S. and Richardson, S. (2014) Sampling from Dirichlet pr
 \examples{
 # example for Poisson outcome and Discrete covariates
 inputs <- generateSampleDataFile(clusSummaryPoissonDiscrete())
-runInfoObj<-profRegr(yModel=inputs$yModel, 
+runInfoObj<-profRegr(yModel=inputs$yModel,
     xModel=inputs$xModel, nSweeps=10, nClusInit=20,
-    nBurn=20, data=inputs$inputData, output="output", 
+    nBurn=20, data=inputs$inputData, output="output",
     covNames = inputs$covNames, outcomeT = inputs$outcomeT,
     fixedEffectsNames = inputs$fixedEffectNames)
 
 
 # example with Bernoulli outcome and Mixed covariates
 inputs <- generateSampleDataFile(clusSummaryBernoulliMixed())
-runInfoObj<-profRegr(yModel=inputs$yModel, 
+runInfoObj<-profRegr(yModel=inputs$yModel,
     xModel=inputs$xModel, nSweeps=10, nClusInit=15,
-    nBurn=20, data=inputs$inputData, output="output", 
+    nBurn=20, data=inputs$inputData, output="output",
     discreteCovs = inputs$discreteCovs,
     continuousCovs = inputs$continuousCovs)
-    
-    
+
+
 # example with MVN outcome and variable selection
 library('mcclust')
 data(inputs)

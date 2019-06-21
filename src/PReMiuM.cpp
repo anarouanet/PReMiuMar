@@ -114,7 +114,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	/* ---------- Add the proposals -------- */
 	// Set the proposal parameters
 	pReMiuMPropParams proposalParams(options.nSweeps(),dataset.nCovariates(),
-										dataset.nFixedEffects(),dataset.nCategoriesY(),dataset.kernelType());
+										dataset.nFixedEffects(),dataset.nFixedEffects_mix(),dataset.nCategoriesY(),dataset.kernelType());
 	pReMiuMSampler.proposalParams(proposalParams);
 
 	// The gibbs update for the active V
@@ -268,10 +268,12 @@ RcppExport SEXP profRegr(SEXP inputString) {
 			// If independant Normal and Inverse Wishart priors are used
 			pReMiuMSampler.addProposal("gibbsForMuInActive",1.0,1,1,&gibbsForMuInActive);
 		}
-
-
 		// Update for the active Sigma parameters
 		pReMiuMSampler.addProposal("gibbsForTauInActive",1.0,1,1,&gibbsForTauInActive);
+	}
+
+	if(dataset.nFixedEffects_mix()>0){
+	  pReMiuMSampler.addProposal("gibbsForBetaInActive",1.0,1,1,&gibbsForBetaInActive);
 	}
 
 	if(options.varSelectType().compare("None")!=0){
@@ -282,7 +284,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
 			// Gibbs update for gamma
 			pReMiuMSampler.addProposal("gibbsForGammaInActive",1.0,1,firstSweep,&gibbsForGammaInActive);
 		}
-
 	}
 
 	if(options.includeResponse()){

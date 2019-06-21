@@ -274,6 +274,10 @@ public:
     _muBeta = 0.0;
     _sigmaBeta = 2.5;
     _dofBeta = 7;
+
+    _aRatio=1;
+    _bRatio=1;
+
     //RJ default values for muL and sigmaL
     unsigned int nL;
     if(options.kernelType().compare("SQexponential")==0){    //AR
@@ -516,6 +520,22 @@ public:
     _bRho = b;
   }
 
+  double aRatio() const{
+    return _aRatio;
+  }
+
+  void aRatio(const double& a){
+    _aRatio = a;
+  }
+
+  double bRatio() const{
+    return _bRatio;
+  }
+
+  void bRatio(const double& b){
+    _bRatio = b;
+  }
+
   double atomRho() const{
     return _atomRho;
   }
@@ -660,6 +680,8 @@ public:
     _rateTauEpsilon = hyperParams.rateTauEpsilon();
     _aRho = hyperParams.aRho();
     _bRho = hyperParams.bRho();
+    _aRatio = hyperParams.aRatio();
+    _bRatio = hyperParams.bRatio();
     _atomRho = hyperParams.atomRho();
     _shapeSigmaSqY = hyperParams.shapeSigmaSqY();
     _scaleSigmaSqY = hyperParams.scaleSigmaSqY();
@@ -727,6 +749,9 @@ private:
   //RJ declare _muL and _sigmaL
   vector<double> _muL;
   vector<double> _sigmaL;
+
+  double _aRatio;
+  double _bRatio;
 
   // Hyper parameters for prior for tauEpsilon (for extra variation)
   // Prior is tauEpsilon ~ Gamma(shape,rate)
@@ -796,6 +821,7 @@ public:
                 const unsigned int& nDiscreteCov,
                 const unsigned int& nContinuousCov,
                 const unsigned int& nFixedEffects,
+                const unsigned int& nFixedEffects_mix,
                 const unsigned int& nCategoriesY,
                 const unsigned int& nPredictSubjects,
                 const unsigned int& nTimes,//RJ
@@ -806,6 +832,7 @@ public:
                 const string outcomeType,
                 const bool weibullFixedShape,
                 const string kernelType//AR
+                const string nRandomEffects
   ){
 
     unsigned int nDiscrCovs = 0;
@@ -916,6 +943,7 @@ public:
     //RJ resize _L
     _L.resize(maxNClusters);
     _meanGP.resize(maxNClusters); //AR
+    _ratio.resize(maxNClusters); //AR
     _pdf_meanGP.resize(maxNClusters); //AR
     for (unsigned int c=0;c<maxNClusters;c++){
       _theta[c].resize(nCategoriesY);
@@ -925,6 +953,10 @@ public:
         _L[c].resize(4);
       }
       _meanGP[c].resize(nTimes_unique);//AR
+    }
+    _beta_mix.resize(maxNClusters);
+    for (unsigned int c=0;c<maxNClusters;c++){
+        _beta_mix[c].resize(nCategoriesY*nFixedEffects_mix);
     }
     _beta.resize(nFixedEffects);
     for (unsigned int j=0;j<nFixedEffects;j++){
@@ -995,19 +1027,21 @@ public:
       _theta.resize(nClus);
       if (_nu.size()>1) _nu.resize(nClus);
       //RJ resize _L
-      if (_L.size()>1){
+      if (outcomeType.compare("Longitudinal")==0){
         _L.resize(nClus);
         _meanGP.resize(nClus);
+        _ratio.resize(nClus);
         _pdf_meanGP.resize(nClus);
       }
       for (unsigned int c=0;c<nClus;c++){
         _theta[c].resize(nCategoriesY);
-        if(kernelType.compare("SQexponential")==0){ //AR
+        if(outcomeType.compare("Longitudinal")==0 && kernelType.compare("SQexponential")==0){ //AR
           _L[c].resize(3);
         }else{
           _L[c].resize(4);
         }
-        _meanGP[c].resize(nTimes_unique);//AR
+        if(outcomeType.compare("Longitudinal")==0 && kernelType.compare("SQexponential")==0)
+          _meanGP[c].resize(nTimes_unique);//AR
       }
       _workNXInCluster.resize(nClus);
       if (covariateType.compare("Discrete")==0){
@@ -1120,6 +1154,18 @@ public:
   /// \brief Return the number of fixed effects
   unsigned int nFixedEffects(const string& outcomeType) const{
     return _beta.size();
+  }
+
+  unsigned int nFixedEffects() const{
+    return _beta.size();
+  }
+
+  unsigned int nFixedEffects_mix(const string& outcomeType) const{
+    return _nFixedEffects_mix;
+  }
+
+  unsigned int nFixedEffects_mix() const{
+    return _nFixedEffects_mix;
   }
 
   /// \brief Return the number of categories of outcome Y for Categorical outcome
@@ -1535,6 +1581,17 @@ public:
     return _meanGP[c][k];
   }
 
+  //RJ handling functions for _ratio
+  vector <double> ratio() const{
+    return _ratio;
+  }
+  double ratio(const unsigned int& c) const{
+    return _ratio[c];
+  }
+  void ratio(const unsigned int& c,const double& LVal){
+    _ratio[c]=LVal;
+  }
+
   void meanGP(const unsigned int& c,const unsigned int& k,const double& LVal){
     _meanGP[c][k]=LVal;
   }
@@ -1570,6 +1627,17 @@ public:
     _beta[k][j]=betaVal;
   }
 
+  vector<vector <double>> beta_mix() const{
+    return _beta_mix;
+  }
+
+  double beta_mix(const unsigned int& k,const unsigned int& j) const{
+    return _beta_mix[k][j];
+  }
+
+  void beta_mix(const unsigned int& k,const unsigned int& j,const double& betaVal){
+    _beta_mix[k][j]=betaVal;
+  }
 
   /// \brief Return the hyper parameter alpha
   double alpha() const{
@@ -2303,8 +2371,10 @@ public:
     _Sigma = params.Sigma();
     _theta = params.theta();
     _beta = params.beta();
+    _beta_mix = params.beta_mix();
     //RJ set _L and MVN parameters
     _L = params.L();
+    _ratio = params.ratio();
     _meanGP = params.meanGP(); //AR
     _pdf_meanGP = params.pdf_meanGP(); //AR
     _MVNmu = params.MVNmu();
@@ -2388,10 +2458,11 @@ private:
 
   /// \brief A vector of coefficients for confounding covariates
   vector<vector <double> > _beta;
-
+  vector<vector <double> > _beta_mix;
+   unsigned int _nFixedEffects_mix;
   //RJ declare _L
   vector< vector<double> > _L;
-
+  vector<double>  _ratio;
   //AR declare _meanGP
   vector< vector<double> > _meanGP;
 
@@ -2588,6 +2659,7 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
                                    const unsigned int& ii){
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nSubjects=dataset.nSubjects();
   const string kernelType = dataset.kernelType(); //AR
   vector<double> y = dataset.continuousY();
@@ -2620,6 +2692,9 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
         meanVec(counter+j) = 0.0;
         for(unsigned int b=0;b<nFixedEffects;b++){
           yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+        }
+        for(unsigned int b=0;b<nFixedEffects_mix;b++){
+          yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
         }
       }
       //RJ tidy up vector copying
@@ -2738,7 +2813,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
                                        const  unsigned int& ii// subject to remove
 ){
 
-
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nSubjects=dataset.nSubjects();
   vector<double> y = dataset.continuousY();
   const string kernelType = dataset.kernelType(); //AR
@@ -2784,6 +2859,9 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           for(unsigned int b=0;b<nFixedEffects;b++){
             yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
           }
+          for(unsigned int b=0;b<nFixedEffects_mix;b++){
+            yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
+          }
         }
         counter = counter + tStop[i] - tStart[i] + 1;
       }else if(params.z(i) == c & ii==i){
@@ -2823,6 +2901,9 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
 
           for(unsigned int b=0;b<nFixedEffects;b++){
             yk(counter+j)-=params.beta(b,0)*dataset.W(ii,b);
+          }
+          for(unsigned int b=0;b<nFixedEffects_mix;b++){
+            yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(ii,b);
           }
         }
 
@@ -2969,6 +3050,7 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
                                           const unsigned int& nFixedEffects, const int& c,
                                           const  unsigned int& ii){
 
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   vector<double> y = dataset.continuousY();
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
@@ -2996,6 +3078,9 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
         for(unsigned int b=0;b<nFixedEffects;b++){
           yi(j)-=params.beta(b,0)*dataset.W(i,b);
         }
+        for(unsigned int b=0;b<nFixedEffects_mix;b++){
+          yi(j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
+        }
       }
       Vi_inv = MatrixXd::Identity(ni, ni)*exp(-params.L(c,l));
       //double eL0 = exp(L[0]);
@@ -3014,6 +3099,7 @@ double logPYiGivenZiWiMVN(const pReMiuMParams& params, const pReMiuMData& datase
                           const unsigned int& nFixedEffects,const int& zi,
                           const unsigned int& i){
 
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
   unsigned int nSubjects = dataset.nSubjects();
   unsigned int nTimes = dataset.nTimes();
   unsigned int nOutcomes = nTimes/nSubjects;
@@ -3026,9 +3112,76 @@ double logPYiGivenZiWiMVN(const pReMiuMParams& params, const pReMiuMData& datase
     for(unsigned int k=0;k<nFixedEffects;k++){
       mu(j)+=params.beta(k,0)*dataset.W(i,k);
     }
+    for(unsigned int k=0;k<nFixedEffects_mix;k++){
+      mu(j)+=params.beta(zi,k)*dataset.W_mix(i,k);
+    }
   }
 
   return logPdfMultivarNormal(nOutcomes,yi,mu,workSqrtMVNTau,workLogDetMVNTau);
+}
+
+
+//AR Parametric Longitudinal model - Latent class model
+double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const pReMiuMData& dataset,
+                                   const unsigned int& nFixedEffects, const int& c,
+                                   const unsigned int& ii){
+
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
+  unsigned int nSubjects=dataset.nSubjects();
+
+  vector<double> y = dataset.continuousY();
+  vector<double> times = dataset.times();
+  vector<int> tStart = dataset.tStart();
+  vector<int> tStop = dataset.tStop();
+  vector<double> timesk;
+  VectorXd yk;
+  VectorXd meanVec;
+  MatrixXd Sigma;
+  MatrixXd precMat;
+  double logDetPrecMat =0.0;
+  int sizek = 0;
+  double dmvnorm = 0.0;
+  int counter = 0;
+  // set sizes based on cluster occupation
+  for(unsigned int i=0;i<nSubjects;i++){
+    if(params.z(i) == c && ii!=i){
+      sizek = sizek + tStop[i] - tStart[i] + 1;
+    }
+  }
+  timesk.resize(sizek);
+  yk.resize(sizek);
+  meanVec.resize(sizek);
+  for(unsigned int i=0;i<nSubjects;i++){
+    if(params.z(i) == c && ii!=i){
+      for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+        yk(counter+j) = y[tStart[i]-1+j];
+        timesk[counter+j] = times[tStart[i]-1+j];
+        meanVec(counter+j) = 0.0;
+        for(unsigned int b=0;b<nFixedEffects;b++){
+          yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+        }
+        for(unsigned int b=0;b<nFixedEffects_mix;b++){
+          yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
+        }
+      }
+      //RJ tidy up vector copying
+      //timesk.insert(timesk.begin()+counter,times.begin()+tStart[i]-1,times.begin()+tStop[i]);
+      counter = counter + tStop[i] - tStart[i] + 1;
+    }
+  }
+  Sigma.setZero(sizek,sizek);
+
+  if(sizek > 0){
+
+    ME_cov(Sigma,params.MEcov(c),timesk); // Sigma ordered;
+    precMat = Sigma.inverse();
+    //det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
+
+    LLT<MatrixXd> lltOfA(Sigma); // compute the Cholesky decomposition of A
+    MatrixXd L = lltOfA.matrixL();
+    dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+  }
+  return dmvnorm;
 }
 
 double logPYiGivenZiWiNormal(const pReMiuMParams& params, const pReMiuMData& dataset,
@@ -3036,9 +3189,14 @@ double logPYiGivenZiWiNormal(const pReMiuMParams& params, const pReMiuMData& dat
                              const unsigned int& i){
 
   double mu;
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
+
   mu=params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     mu+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    mu+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
   }
 
   return logPdfNormal(dataset.continuousY(i),mu,sqrt(params.sigmaSqY()));
@@ -3049,9 +3207,14 @@ double logPYiGivenZiWiNormalSpatial(const pReMiuMParams& params, const pReMiuMDa
                                     const unsigned int& i){
 
   double mu;
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
+
   mu=params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     mu+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    mu+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
   }
   mu+=params.uCAR(i);
 
@@ -3064,6 +3227,7 @@ double logPYiGivenZiWiCategorical(const pReMiuMParams& params, const pReMiuMData
                                   const unsigned int& i){
 
   vector<double> lambda;
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
   lambda.resize(dataset.nCategoriesY());
 
   double lambdaSum = 1.0;
@@ -3072,6 +3236,9 @@ double logPYiGivenZiWiCategorical(const pReMiuMParams& params, const pReMiuMData
   for (unsigned int k=0;k<dataset.nCategoriesY();k++){
     for (unsigned int j=0;j<nFixedEffects;j++){
       value+=params.beta(j,k)*dataset.W(i,j);
+    }
+    for (unsigned int j=0;j<nFixedEffects_mix;j++){
+      value+=params.beta_mix(zi,j+k*nFixedEffects_mix)*dataset.W_mix(i,j);
     }
     lambda[k] = exp(value + params.theta(zi,k));
     lambdaSum += exp(value + params.theta(zi,k));
@@ -3092,10 +3259,14 @@ double logPYiGivenZiWiSurvival(const pReMiuMParams& params, const pReMiuMData& d
                                const unsigned int& i){
 
   unsigned int weibullFixedShape=params.nu().size();
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
 
   double lambda = params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     lambda+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    lambda+=params.beta_mix(zi, j)*dataset.W_mix(i,j);
   }
   double nu=0;
 
@@ -3130,6 +3301,7 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
   unsigned int nDiscreteCov=dataset.nDiscreteCovs();
   unsigned int nContinuousCov=dataset.nContinuousCovs();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nCategoriesY=dataset.nCategoriesY();
   vector<unsigned int> nCategories = dataset.nCategories();
   const pReMiuMHyperParams& hyperParams = params.hyperParams();
@@ -3170,6 +3342,9 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
           for(unsigned int j=0;j<nFixedEffects;j++){
             extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
           }
+          for(unsigned int j=0;j<nFixedEffects_mix;j++){
+            extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+          }
         }
       }
     }else if(outcomeType.compare("Binomial")==0){
@@ -3183,6 +3358,9 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
           extraVarPriorMean[i]=params.theta(zi,0);
           for(unsigned int j=0;j<nFixedEffects;j++){
             extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
+          }
+          for(unsigned int j=0;j<nFixedEffects_mix;j++){
+            extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
           }
         }
       }
@@ -3201,6 +3379,9 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
           extraVarPriorMean[i]=params.theta(zi,0);
           for(unsigned int j=0;j<nFixedEffects;j++){
             extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
+          }
+          for(unsigned int j=0;j<nFixedEffects_mix;j++){
+            extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
           }
           extraVarPriorMean[i]+=dataset.logOffset(i);
         }
@@ -3366,6 +3547,14 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
                                        hyperParams.sigmaBeta(),hyperParams.dofBeta());
       }
     }
+    for(unsigned int j=0;j<nFixedEffects_mix;j++){
+      for(unsigned int c=0;c<maxNClusters;c++){
+        for (unsigned int k=0;k<nCategoriesY;k++){
+          logPrior+=logPdfLocationScaleT(params.beta_mix(c, j+k*nFixedEffects_mix),hyperParams.muBeta(),
+                                         hyperParams.sigmaBeta(),hyperParams.dofBeta());
+        }
+      }
+    }
 
     // Take account priors for epsilon and tauEpsilon if there is extra variation
     if(responseExtraVar){
@@ -3410,7 +3599,6 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
 
         if(model.options().sampleGPmean()){//AR
           double a =logPdfMultivariateNormal(params.meanGP(c),params.L(c), dataset.times_unique(), kernelType);
-
           logPrior+= a;
           if(logPrior>pow(10,10))
             foutL << c <<" logPrior7_f  "<< logPrior << " a "<< a <<endl;
@@ -3549,6 +3737,7 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   unsigned int nSubjects=dataset.nSubjects();
   unsigned int maxNClusters=params.maxNClusters();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nCategoriesY=dataset.nCategoriesY();
   const pReMiuMHyperParams& hyperParams = params.hyperParams();
   const bool includeCAR=model.options().includeCAR();
@@ -3574,6 +3763,9 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
         for(unsigned int j=0;j<nFixedEffects;j++){
           extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
         }
+        for(unsigned int j=0;j<nFixedEffects_mix;j++){
+          extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+        }
       }
     }
   }else if(outcomeType.compare("Binomial")==0){
@@ -3588,8 +3780,10 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
         for(unsigned int j=0;j<nFixedEffects;j++){
           extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
         }
+        for(unsigned int j=0;j<nFixedEffects_mix;j++){
+          extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+        }
       }
-
     }
   }else if(outcomeType.compare("Poisson")==0){
     if(!responseExtraVar){
@@ -3606,6 +3800,9 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
         extraVarPriorMean[i]=params.theta(zi,0);
         for(unsigned int j=0;j<nFixedEffects;j++){
           extraVarPriorMean[i]+=params.beta(j,0)*dataset.W(i,j);
+        }
+        for(unsigned int j=0;j<nFixedEffects_mix;j++){
+          extraVarPriorMean[i]+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
         }
         extraVarPriorMean[i]+=dataset.logOffset(i);
       }
@@ -3663,6 +3860,17 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
                                 hyperParams.sigmaBeta(),hyperParams.dofBeta());
     }
   }
+
+
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    for(unsigned int c=0;c<maxNClusters;c++){
+      for (unsigned int k=0;k<nCategoriesY;k++){
+        out+=logPdfLocationScaleT(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
+                                  hyperParams.sigmaBeta(),hyperParams.dofBeta());
+      }
+    }
+  }
+
   if(responseExtraVar){
     for(unsigned int i=0;i<nSubjects;i++){
       out+=logPdfNormal(extraVarPriorVal[i],extraVarPriorMean[i],1/sqrt(params.tauEpsilon()));
@@ -3679,11 +3887,15 @@ double logCondPostLambdaiBernoulli(const pReMiuMParams& params,
 
   const pReMiuMData& dataset = model.dataset();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   int zi = params.z(i);
   double meanVal = params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     meanVal+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    meanVal+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
   }
   return logPYiGivenZiWiBernoulliExtraVar(params,dataset,nFixedEffects,zi,i)
     + logPdfNormal(params.lambda(i),meanVal,1.0/sqrt(params.tauEpsilon()));
@@ -3698,11 +3910,15 @@ double logCondPostLambdaiBinomial(const pReMiuMParams& params,
 
   const pReMiuMData& dataset = model.dataset();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   int zi = params.z(i);
   double meanVal = params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     meanVal+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    meanVal+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
   }
   return logPYiGivenZiWiBinomialExtraVar(params,dataset,nFixedEffects,zi,i)
     + logPdfNormal(params.lambda(i),meanVal,1.0/sqrt(params.tauEpsilon()));
@@ -3768,6 +3984,7 @@ double logPdfPostMultivariateNormal(const pReMiuMParams& params, const pReMiuMDa
   vector<double> times_unique = dataset.times_unique();
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   VectorXd postM(nTimes_unique);
 
@@ -3800,6 +4017,9 @@ double logPdfPostMultivariateNormal(const pReMiuMParams& params, const pReMiuMDa
 
         for(unsigned int b=0;b<nFixedEffects;b++){
           yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+        }
+        for(unsigned int b=0;b<nFixedEffects_mix;b++){
+          yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
         }
       }
       counter = counter + tStop[i] - tStart[i] + 1;
@@ -3882,11 +4102,15 @@ double logCondPostLambdaiPoisson(const pReMiuMParams& params,
 
   const pReMiuMData& dataset = model.dataset();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   int zi = params.z(i);
   double meanVal = params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     meanVal+=params.beta(j,0)*dataset.W(i,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    meanVal+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
   }
   meanVal+=dataset.logOffset(i);
 
@@ -3905,6 +4129,7 @@ void logUiPostPoissonSpatial(const pReMiuMParams& params,
 
   const pReMiuMData& dataset=model.dataset();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   double y1;
   double y2;
@@ -3913,6 +4138,9 @@ void logUiPostPoissonSpatial(const pReMiuMParams& params,
   double meanVal=params.theta(zi,0);
   for(unsigned int j=0;j<nFixedEffects;j++){
     meanVal+=params.beta(j,0)*dataset.W(iSub,j);
+  }
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    meanVal+=params.beta_mix(zi,j)*dataset.W_mix(iSub,j);
   }
   int nNeighi=dataset.nNeighbours(iSub);
   // mean of Ui is mean of Uj where j are the neighbours of i
@@ -3942,6 +4170,7 @@ void logNuPostSurvival(const pReMiuMParams& params,
   const pReMiuMData& dataset=model.dataset();
   const pReMiuMHyperParams& hyperParams = params.hyperParams();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nSubjects=dataset.nSubjects();
   const vector<unsigned int> censoring = dataset.censoring();
   vector<double> y = dataset.continuousY();
@@ -3972,6 +4201,9 @@ void logNuPostSurvival(const pReMiuMParams& params,
       for(unsigned int j=0;j<nFixedEffects;j++){
         lambda+=params.beta(j,0)*dataset.W(i,j);
       }
+      for(unsigned int j=0;j<nFixedEffects_mix;j++){
+        lambda+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+      }
       yNulogy += pow(y[i],x) * log(y[i]) * exp(lambda);
       yNu += pow(y[i],x) * exp(lambda);
     } else {
@@ -3979,6 +4211,9 @@ void logNuPostSurvival(const pReMiuMParams& params,
         double lambda = params.theta(zi,0);
         for(unsigned int j=0;j<nFixedEffects;j++){
           lambda+=params.beta(j,0)*dataset.W(i,j);
+        }
+        for(unsigned int j=0;j<nFixedEffects_mix;j++){
+          lambda+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
         }
         yNulogy += pow(y[i],x) * log(y[i]) * exp(lambda);
         yNu += pow(y[i],x) * exp(lambda);
@@ -4030,6 +4265,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
   vector<double> times_unique = dataset.times_unique();
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   VectorXd GPmean(nTimes_unique);
 
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
@@ -4073,6 +4309,9 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
 
           for(unsigned int b=0;b<nFixedEffects;b++){
             yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+          }
+          for(unsigned int b=0;b<nFixedEffects_mix;b++){
+            yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
           }
         }
         counter = counter + tStop[i] - tStart[i] + 1;
@@ -4242,6 +4481,7 @@ double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& da
   vector<double> times_unique = dataset.times_unique();
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   VectorXd postM(nTimes_unique);
 
@@ -4274,6 +4514,9 @@ double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& da
 
         for(unsigned int b=0;b<nFixedEffects;b++){
           yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+        }
+        for(unsigned int b=0;b<nFixedEffects_mix;b++){
+          yk(counter+j)-=params.beta_mix(c, b)*dataset.W_mix(i,b);
         }
       }
       counter = counter + tStop[i] - tStart[i] + 1;

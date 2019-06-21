@@ -25,14 +25,14 @@
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", outcomeT=NA, data, longData=NULL,
+profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_clust=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
                    output="output", hyper, predict, predictType="RaoBlackwell", nSweeps=1000,
                    nBurn=1000, nProgress=500, nFilter=1, nClusInit, seed, yModel="Bernoulli",
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
                    varSelectType="None", entropy,reportBurnIn=FALSE, run=TRUE, discreteCovs, continuousCovs,
                    whichLabelSwitch="123", includeCAR=FALSE, neighboursFile="Neighbours.txt",
                    weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,
-                   kernel="SQexponential", sampleGPmean= FALSE, ratio_v= 0, time_grid=NULL, ngrid=0){
+                   kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL, ngrid=0){
 
   # suppress scientific notation
   options(scipen=999)
@@ -64,7 +64,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
     }
     IDlist <- longData$ID
     IDs <- unique(IDlist)
-    if (length(which(colnames(data)=='ID'))<1 && yModel == 'Longitudinal') {
+    if (length(which(colnames(data)=='ID'))<1 && yModel %in% c('Longitudinal','LME')) {
       print("No ID column in data; assuming the same ordering as in longData.")
       if(length(IDs)!=dim(data)[1]){
         stop("Please supply ID column in data.")
@@ -214,6 +214,28 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
     #if (yModel=="Survival") stop("ERROR: For the current implementation of Survival outcome the fixed effects must be provided. ")
   }
 
+
+  # cluster-specific fixed effects
+  if (!missing(fixedEffectsNames_clust)) {
+    nFixedEffects_mix<-length(fixedEffectsNames_clust)
+    FEIndeces_mix<-vector()
+    for (i in 1:nFixedEffects_mix){
+      tmpIndex_mix<-which(colnames(data)==fixedEffectsNames_clust[i])
+      if (length(tmpIndex_mix)==0) stop("ERROR: cluster-specific fixed effects names in data.frame provided do not correspond to list of fixed effects for profile regression")
+      FEIndeces_mix<-append(FEIndeces_mix,tmpIndex_mix)
+    }
+    fixedEffects_mix<-data[,FEIndeces_mix]
+    if (sum(is.na(fixedEffects_mix))>0) stop("ERROR: cluster-specific fixed effects cannot have missing values. Use an imputation method before using profRegr().")
+    dataMatrix<-cbind(dataMatrix,fixedEffects_mix)
+    for (i in dim(fixedEffects_mix)[2]){
+      if (class(fixedEffects_mix[,i])=="character") stop("ERROR: cluster-specific fixed effects must be of class numeric. See help pages.")
+    }
+  } else {
+    nFixedEffects_mix<-0
+    #if (yModel=="Survival") stop("ERROR: For the current implementation of Survival outcome the fixed effects must be provided. ")
+  }
+
+
   #  extra outcome data
   if (yModel=="Poisson"||yModel=="Binomial"||yModel=="Survival") {
     if(is.na(outcomeT)){
@@ -250,6 +272,10 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
   write(nFixedEffects, fileName,append=T,ncolumns=1)
   if (nFixedEffects>0){
     write(t(fixedEffectsNames), fileName,append=T,ncolumns=1)
+  }
+  write(nFixedEffects_mix, fileName,append=T,ncolumns=1)
+  if (nFixedEffects_mix>0){
+    write(t(fixedEffectsNames_clust), fileName,append=T,ncolumns=1)
   }
   if (yModel=="Categorical") write(yLevels,fileName,append=T,ncolumns=1)
   if (xModel=="Discrete"||xModel=="Mixed"){
@@ -442,6 +468,12 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
       write(paste("sigmaL_noise=",hyper$sigmaLNoise,sep=""),hyperFile,append=T)
     }
     # //AR
+    if (!is.null(hyper$aRatio)){
+      write(paste("aRatio=",hyper$aRatio,sep=""),hyperFile,append=T)
+    }
+    if (!is.null(hyper$bRatio)){
+      write(paste("bRatio=",hyper$bRatio,sep=""),hyperFile,append=T)
+    }
     if (!is.null(hyper$muLTime)){
       write(paste("muL_time=",hyper$muLTime,sep=""),hyperFile,append=T)
     }
@@ -538,7 +570,8 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
   if (useNormInvWishPrior) inputString<-paste(inputString," --useNormInvWishPrior", sep="")
   if (!missing(kernel)) inputString<-paste(inputString," --kernel=",  kernel ,sep="")
   if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sampleGPmean,sep="")
-  if (ratio_v != 0) inputString<-paste(inputString," --ratio_v=" ,ratio_v,sep="")
+  if (estim_ratio) inputString<-paste(inputString," --estim_ratio=" ,estim_ratio,sep="")
+  if (!missing(seed)) inputString<-paste(inputString," --seed=",seed,sep="")
 
   if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
 
@@ -587,6 +620,10 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
   }
   if(nFixedEffects>0){
     wMat<-dataMatrix[,(2+nCovariates):(1+nCovariates+nFixedEffects)]
+  }
+  wMat_mix <-NULL
+  if(nFixedEffects_mix>0){
+    wMat_mix<-dataMatrix[,(2+nCovariates+nFixedEffects):(1+nCovariates+nFixedEffects+nFixedEffects_mix)]
   }
   #}
   # include response
@@ -639,16 +676,16 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, outcome="outcome", 
               "nCovariates"=nCovariates,
               "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
               "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
-              "nFixedEffects"=nFixedEffects,
+              "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
               "nCategoriesY"=yLevels,
               "nCategories"=xLevels,
               "extraYVar"=extraYVar,
               "includeCAR"=includeCAR,
               "weibullFixedShape"=weibullFixedShape,
               "useNormInvWishPrior"=useNIWP,
-              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
+              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,"wMat_mix"=wMat_mix,
               "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
-              "kernel"=kernel, "sampleGPmean"= sampleGPmean, "ratio_v"= ratio_v,
+              "kernel"=kernel, "sampleGPmean"= sampleGPmean,  "estim_ratio"=estim_ratio,
               "nTimes_unique"=length(all_times), "all_times"=all_times, "times_corr"=times_corr))
 
   }
@@ -855,6 +892,7 @@ calcAvgRiskAndProfile<-function(clusObj,includeFixedEffects=F,proportionalHazard
   varSelectType=NULL
   includeResponse=NULL
   nFixedEffects=NULL
+  nFixedEffects_mix=NULL
   reportBurnIn=NULL
   nBurn=NULL
   nFilter=NULL
@@ -958,6 +996,11 @@ calcAvgRiskAndProfile<-function(clusObj,includeFixedEffects=F,proportionalHazard
       betaFileName <-file.path(directoryPath,paste(fileStem,'_beta.txt',sep=''))
       betaFile<-file(betaFileName,open="r")
     }
+    if(nFixedEffects_mix>0){
+      # Construct the fixed effect coefficient file name
+      betamixFileName <-file.path(directoryPath,paste(fileStem,'_beta_cluster-specific.txt',sep=''))
+      betamixFile<-file(betamixFileName,open="r")
+    }
     if (yModel=="Survival"&&weibullFixedShape){
       nuFileName<-file.path(directoryPath,paste(fileStem,'_nu.txt',sep=''))
       nuFile<-file(nuFileName,open="r")
@@ -993,6 +1036,9 @@ calcAvgRiskAndProfile<-function(clusObj,includeFixedEffects=F,proportionalHazard
     }
     if(nFixedEffects>0){
       betaArray<-array(0,dim=c(nSamples,nFixedEffects,nCategoriesY))
+    }
+    if(nFixedEffects_mix>0){
+      betamixArray<-array(0,dim=c(nSamples,nClusters,nFixedEffects_mix*nCategoriesY))
     }
   }else{
     riskArray<-NULL

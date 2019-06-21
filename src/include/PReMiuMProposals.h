@@ -77,7 +77,8 @@ public:
   pReMiuMPropParams() {};
 
   pReMiuMPropParams(const unsigned int& nSweeps,const unsigned int& nCovariates,
-                    const unsigned int& nFixedEffects,const unsigned int& nCategoriesY, const string& kernelType){
+                    const unsigned int& nFixedEffects, const unsigned int& nFixedEffects_mix,
+                    const unsigned int& nCategoriesY, const string& kernelType){
     _thetaStdDev=1.0;
     _thetaStdDevLower=0.1;
     _thetaStdDevUpper=99.9;
@@ -108,6 +109,26 @@ public:
     _betaAcceptTarget = 0.44;
     _betaUpdateFreq = 25;
     _betaAnyUpdates=true;
+
+    _nTryBetamix.resize(nFixedEffects_mix);
+    _nAcceptBetamix.resize(nFixedEffects_mix);
+    _nLocalAcceptBetamix.resize(nFixedEffects_mix);
+    _nResetBetamix.resize(nFixedEffects_mix);
+    _betamixStdDev.resize(nFixedEffects_mix);
+    _betamixStdDevLower.resize(nFixedEffects_mix);
+    _betamixStdDevUpper.resize(nFixedEffects_mix);
+    for(unsigned int j=0;j<nFixedEffects_mix;j++){
+      _betamixStdDev[j]=1.0;
+      _betamixStdDevLower[j]=0.1;
+      _betamixStdDevUpper[j]=99.9;
+      _nTryBetamix[j]=0;
+      _nAcceptBetamix[j]=0;
+      _nLocalAcceptBetamix[j]=0;
+      _nResetBetamix[j]=0;
+    }
+    _betamixAcceptTarget = 0.44;
+    _betamixUpdateFreq = 25;
+    _betamixAnyUpdates=true;
 
     //RJ resize L step values
     unsigned int nL;
@@ -380,7 +401,112 @@ public:
     _betaAnyUpdates = newStatus;
   }
 
+  // AR Cluster-specific Beta
+  vector<unsigned int> nTryBetamix() const{
+    return _nTryBetamix;
+  }
 
+  unsigned int nTryBetamix(const unsigned int& j) const{
+    return _nTryBetamix[j];
+  }
+
+  vector<unsigned int> nAcceptBetamix() const{
+    return _nAcceptBetamix;
+  }
+
+  double betamixAcceptRate(const unsigned int& j) const{
+    if(_nTryBetamix[j]>0){
+      return (double)_nAcceptBetamix[j]/(double)_nTryBetamix[j];
+    }else{
+      return 0.0;
+    }
+  }
+
+  unsigned int betamixUpdateFreq() const{
+    return _betamixUpdateFreq;
+  }
+
+  vector<unsigned int> nLocalAcceptBetamix() const{
+    return _nLocalAcceptBetamix;
+  }
+
+  double betamixLocalAcceptRate(const unsigned int& j) const{
+    return (double)_nLocalAcceptBetamix[j]/(double)_betamixUpdateFreq;
+  }
+
+  double betamixAcceptTarget() const{
+    return _betamixAcceptTarget;
+  }
+
+  void betamixAddTry(const unsigned int& j){
+    _nTryBetamix[j]++;
+  }
+
+  void betamixAddAccept(const unsigned int& j){
+    _nAcceptBetamix[j]++;
+    _nLocalAcceptBetamix[j]++;
+  }
+
+  void betamixLocalReset(const unsigned int& j){
+    _nLocalAcceptBetamix[j]=0;
+  }
+
+  vector<unsigned int> nResetBetamix() const{
+    return _nResetBetamix;
+  }
+
+  void betamixStdDevReset(const unsigned int& j){
+    _betamixStdDev[j] = 1.0;
+    _nResetBetamix[j]++;
+    _betamixStdDevLower[j] = pow(10.0,-((double)_nResetBetamix[j]+1.0));
+    _betamixStdDevUpper[j] = 100.0-pow(10.0,-((double)_nResetBetamix[j]+1.0));
+  }
+
+  vector<double> betamixStdDev() const{
+    return _betamixStdDev;
+  }
+
+  vector<double>& betamixStdDev(){
+    return _betamixStdDev;
+  }
+
+  double& betamixStdDev(const unsigned int& j){
+    return _betamixStdDev[j];
+  }
+
+  const double& betamixStdDev(const unsigned int& j) const{
+    return _betamixStdDev[j];
+  }
+
+  vector<double> betamixStdDevLower() const{
+    return _betamixStdDevLower;
+  }
+
+  double betamixStdDevLower(const unsigned int& j) const{
+    return _betamixStdDevLower[j];
+  }
+
+  vector<double> betamixStdDevUpper() const{
+    return _betamixStdDevUpper;
+  }
+
+  double betamixStdDevUpper(const unsigned int& j) const{
+    return _betamixStdDevUpper[j];
+  }
+
+  // Member function for setting the standard deviation for
+  // proposal for beta for fixed effect j
+  void betamixStdDev(const unsigned int& j,const double& sd){
+    _betamixStdDev[j]=sd;
+  }
+
+  bool betamixAnyUpdates() const{
+    return _betamixAnyUpdates;
+  }
+
+  void betamixAnyUpdates(const bool& newStatus){
+    _betamixAnyUpdates = newStatus;
+  }
 
   //RJ L step handling functions
   vector<unsigned int> nTryL() const{
@@ -476,12 +602,6 @@ public:
   void LAnyUpdates(const bool& newStatus){
     _LAnyUpdates = newStatus;
   }
-
-
-
-
-
-
 
   unsigned int nTryAlpha() const{
     return _nTryAlpha;
@@ -786,6 +906,19 @@ public:
     _betaAcceptTarget=propParams.betaAcceptTarget();
     _betaUpdateFreq=propParams.betaUpdateFreq();
     _betaAnyUpdates=propParams.betaAnyUpdates();
+
+    // AR cluster-specific betas
+    _nTryBetamix=propParams.nTryBetamix();
+    _nAcceptBetamix=propParams.nAcceptBetamix();
+    _nLocalAcceptBetamix=propParams.nLocalAcceptBetamix();
+    _nResetBetamix=propParams.nResetBetamix();
+    _betamixStdDev=propParams.betamixStdDev();
+    _betamixStdDevLower=propParams.betamixStdDevLower();
+    _betamixStdDevUpper=propParams.betamixStdDevUpper();
+    _betamixAcceptTarget=propParams.betamixAcceptTarget();
+    _betamixUpdateFreq=propParams.betamixUpdateFreq();
+    _betamixAnyUpdates=propParams.betamixAnyUpdates();
+
     //RJ set L step values
     _nTryL=propParams.nTryL();
     _nAcceptL=propParams.nAcceptL();
@@ -853,6 +986,17 @@ private:
   double _betaAcceptTarget;
   unsigned int _betaUpdateFreq;
   bool _betaAnyUpdates;
+
+  vector<unsigned int> _nTryBetamix;
+  vector<unsigned int> _nAcceptBetamix;
+  vector<unsigned int> _nLocalAcceptBetamix;
+  vector<unsigned int> _nResetBetamix;
+  vector<double> _betamixStdDev;
+  vector<double> _betamixStdDevLower;
+  vector<double> _betamixStdDevUpper;
+  double _betamixAcceptTarget;
+  unsigned int _betamixUpdateFreq;
+  bool _betamixAnyUpdates;
   //RJ declare L step values
   vector<unsigned int> _nTryL;
   vector<unsigned int> _nAcceptL;
@@ -2373,6 +2517,44 @@ void gibbsForThetaInActive(mcmcChain<pReMiuMParams>& chain,
   }
 }
 
+
+void gibbsForBetaInActive(mcmcChain<pReMiuMParams>& chain,
+                           unsigned int& nTry,unsigned int& nAccept,
+                           const mcmcModel<pReMiuMParams,
+                                           pReMiuMOptions,
+                                           pReMiuMData>& model,
+                                           pReMiuMPropParams& propParams,
+                                           baseGeneratorType& rndGenerator){
+
+  mcmcState<pReMiuMParams>& currentState = chain.currentState();
+  pReMiuMParams& currentParams = currentState.parameters();
+  pReMiuMHyperParams hyperParams = currentParams.hyperParams();
+  const pReMiuMData& dataset = model.dataset();
+  unsigned int nCategoriesY=dataset.nCategoriesY();
+  const string outcomeType = model.dataset().outcomeType();
+  unsigned int nFixedEffects_mix=model.dataset().nFixedEffects_mix();
+
+  // Find the number of clusters
+  unsigned int maxZ = currentParams.workMaxZi();
+  unsigned int maxNClusters = currentParams.maxNClusters();
+
+  nTry++;
+  nAccept++;
+
+  double location = hyperParams.muBeta();
+  double scale = hyperParams.sigmaBeta();
+  unsigned int dof = hyperParams.dofBeta();
+  randomStudentsT studentsTRand(dof);
+  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+    for (unsigned int k=0;k<nCategoriesY;k++){
+      for(unsigned int c=maxZ+1;c<maxNClusters;c++){
+        double beta=location+scale*studentsTRand(rndGenerator);
+        currentParams.beta_mix(c,j+k*nFixedEffects_mix,beta);
+      }
+    }
+  }
+}
+
 //RJ Gibbs for L
 void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
                        unsigned int& nTry,unsigned int& nAccept,
@@ -2391,7 +2573,8 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   // Find the number of clusters
   unsigned int maxZ = currentParams.workMaxZi();
   unsigned int maxNClusters = currentParams.maxNClusters();
-  double ratio = model.options().ratio();
+  bool ratio_estim = model.options().estim_ratio();
+
   nTry++;
   nAccept++;
 
@@ -2401,14 +2584,22 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
   }else{
     nL=4;
   }
+
+  if(model.options().estim_ratio()){
+    for(unsigned int c=maxZ+1;c<maxNClusters;c++){
+      double vVal = betaRand(rndGenerator,hyperParams.aRatio(),hyperParams.bRatio());
+      currentParams.ratio(c, vVal);
+    }
+  }
+
   for (unsigned int l=0;l<nL;l++){
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
-      if(ratio == 0 || l != 2){
+      if(!ratio_estim || l != 2){
         randomNormal normalRand(hyperParams.muL(l),hyperParams.sigmaL(l));
         double L = normalRand(rndGenerator);
         currentParams.L(c,l,L);
-        if(ratio != 0 & l == 0)
-          currentParams.L(c,2,currentParams.L(c,0)-log(ratio));
+        if(ratio_estim && l == 0)
+          currentParams.L(c,2,currentParams.L(c,0)+log(currentParams.ratio(c)));
       }
     }
   }
@@ -2434,7 +2625,6 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
       }
-      //currentParams.L(c,2,-3);//AR change
     }
   }
 }
@@ -2484,7 +2674,8 @@ void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
   const string outcomeType = model.dataset().outcomeType();
 
   // Find the number of clusters
-  unsigned int nFixedEffects = currentParams.nFixedEffects(outcomeType);
+  unsigned int nFixedEffects = model.dataset().nFixedEffects();
+  unsigned int nFixedEffects_mix = model.dataset().nFixedEffects_mix();
 
   // Find the number of categories of Y
   unsigned int nCategoriesY = currentParams.nCategoriesY();
@@ -2539,6 +2730,55 @@ void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
     }
   }
 
+  if(nFixedEffects_mix>0){
+    unsigned int maxZ = currentParams.workMaxZi();
+    double betamixTargetRate = propParams.betamixAcceptTarget();
+    unsigned int betamixUpdateFreq = propParams.betamixUpdateFreq();
+
+    double currentCondLogPost = logCondPostThetaBeta(currentParams,model);
+
+    for(unsigned int c=0;c<=maxZ;c++){
+      for(unsigned int j=0;j<nFixedEffects_mix;j++){
+        for (unsigned int k=0;k<nCategoriesY;k++){
+          nTry++;
+          propParams.betamixAddTry(j);
+          double& stdDev = propParams.betamixStdDev(j);
+          double betaOrig = currentParams.beta_mix(c,j+k*nFixedEffects_mix);
+          double betaProp = betaOrig+stdDev*normRand(rndGenerator);
+          currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaProp);
+          double propCondLogPost = logCondPostThetaBeta(currentParams,model);
+          double logAcceptRatio = propCondLogPost - currentCondLogPost;
+          if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+            nAccept++;
+            propParams.betamixAddAccept(j);
+            currentCondLogPost = propCondLogPost;
+            // Update the std dev of the proposal
+            if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
+              stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
+                pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
+              propParams.betamixAnyUpdates(true);
+              if(stdDev>propParams.betamixStdDevUpper(j)||stdDev<propParams.betamixStdDevLower(j)){
+                propParams.betamixStdDevReset(j);
+              }
+              propParams.betamixLocalReset(j);
+            }
+          }else{
+            currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaOrig);
+            // Update the std dev of the proposal
+            if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
+              stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
+                pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
+              propParams.betamixAnyUpdates(true);
+              if(stdDev<propParams.betamixStdDevLower(j)||stdDev>propParams.betamixStdDevUpper(j)){
+                propParams.betamixStdDevReset(j);
+              }
+              propParams.betamixLocalReset(j);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 
@@ -2644,6 +2884,7 @@ void gibbsForTauEpsilon(mcmcChain<pReMiuMParams>& chain,
 
   unsigned int nSubjects=dataset.nSubjects();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   nTry++;
   nAccept++;
@@ -2660,6 +2901,9 @@ void gibbsForTauEpsilon(mcmcChain<pReMiuMParams>& chain,
     double meanVal=meanVec[i]+currentParams.theta(zi,0);
     for(unsigned int j=0;j<nFixedEffects;j++){
       meanVal+=currentParams.beta(j,0)*dataset.W(i,j);
+    }
+    for(unsigned int j=0;j<nFixedEffects_mix;j++){
+      meanVal+=currentParams.beta_mix(zi,j)*dataset.W_mix(i,j);
     }
     double eps = currentParams.lambda(i)-meanVal;
     sumEpsilon+=pow(eps,2.0);
@@ -2831,6 +3075,7 @@ void gibbsForSigmaSqY(mcmcChain<pReMiuMParams>& chain,
 
   unsigned int nSubjects = currentParams.nSubjects();
   unsigned int nFixedEffects = dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
 
   nTry++;
   nAccept++;
@@ -2843,7 +3088,9 @@ void gibbsForSigmaSqY(mcmcChain<pReMiuMParams>& chain,
     for(unsigned int j=0;j<nFixedEffects;j++){
       mu+=currentParams.beta(j,0)*dataset.W(i,j);
     }
-
+    for(unsigned int j=0;j<nFixedEffects_mix;j++){
+      mu+=currentParams.beta_mix(Zi,j)*dataset.W_mix(i,j);
+    }
     sumVal+=pow(dataset.continuousY(i)-mu,2.0);
   }
 
@@ -2910,7 +3157,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
   double currentCondLogPost = 0.0;
   //int ratio = 1; // if ratio=1, exp(L2)=exp(L1)/4 L2= L1- log(4), otherwise L2 separate
-  double ratio = model.options().ratio();
+  bool ratio_estim = model.options().estim_ratio();
 
   for(unsigned int c=0;c<=maxZ;c++){
 
@@ -2920,16 +3167,16 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
     if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
       for (unsigned int l=0;l<nL;l++){ //AR change nL-1
-        if(ratio == 0 || l!= 2){
+        if(!ratio_estim || l!= 2){
 
-          if(l==0 & ratio != 0)
-            currentParams.L(c,2,currentParams.L(c,l)- log(ratio));
+          if(l==0 && ratio_estim )
+            currentParams.L(c,2,currentParams.L(c,l)+ log(currentParams.ratio(c)));
 
-          if(l == 2 & ratio == 0){
+          if(l == 2 && !ratio_estim){
             currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
           }else{ //l<2
             currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
-            //if(l==0 & ratio != 0)
+            //if(l==0 & ratio_estim != 0)
               //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
           }
 
@@ -2939,21 +3186,19 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           double LOrig = currentParams.L(c,l);
           double LProp = LOrig+stdDev*normRand(rndGenerator);
           currentParams.L(c,l,LProp);
-          if(l==0 & ratio != 0)
-            currentParams.L(c,2,LProp- log(ratio));
+          if(l==0 && ratio_estim)
+            currentParams.L(c,2,LProp+ log(currentParams.ratio(c)));
 
           double propCondLogPost = 0;
           double logAcceptRatio = 0;
 
-          if(l == 2 & ratio ==  0){
+          if(l == 2 && !ratio_estim){
             propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
           }else{
             propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
 
-           // if(l==0 & ratio != 0)
+           // if(l==0 & ratio_estim != 0)
             //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
-
-
           }
           logAcceptRatio = propCondLogPost - currentCondLogPost;
 
@@ -2964,8 +3209,8 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
             currentCondLogPost = propCondLogPost;
           }else{
             currentParams.L(c,l,LOrig);
-            if(l==0 & ratio != 0)
-              currentParams.L(c,2,LOrig- log(ratio));
+            if(l==0 && ratio_estim)
+              currentParams.L(c,2,LOrig+ log(currentParams.ratio(c)));
           }
 
           // Update the std dev of the proposal
@@ -2987,9 +3232,12 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         }
 
 
-        if(ratio==-1 & l==2){ //estimation ratio with beta distribution
-          //currentParams.L(c,2,currentParams.L(c,0)- log(ratio));
-            currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
+        if(ratio_estim && l==2){ //estimation ratio with beta distribution
+          currentParams.L(c,2,currentParams.L(c,0)+ log(currentParams.ratio(c)));
+          currentCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_k,f_k,k)
+
+          currentCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
+            //currentCondLogPost += logPdfBeta(currentParams.ratio(c),currentParams.hyperParams().aRatio(),currentParams.hyperParams().bRatio()); // p(ratio) prior
 
           nTry++;
           // propParams.LAddTry(l);
@@ -2998,36 +3246,42 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           // double LProp = LOrig+stdDev*normRand(rndGenerator);
 
           propParams.LAddTry(l);
-          double& stdDev = propParams.LStdDev(l);
-          double LOrig = currentParams.L(c,l);
-          double LProp = LOrig+stdDev*normRand(rndGenerator);
+          //double& stdDev = propParams.LStdDev(l);
+          double stdDev=0.5;
+          double logitRatioOrig = log(currentParams.ratio(c)/(1-currentParams.ratio(c)));
+          double logitRatioProp = logitRatioOrig+stdDev*normRand(rndGenerator);
+          double RatioOrig = currentParams.ratio(c);
+          double RatioProp = exp(logitRatioProp)/(1+exp(logitRatioProp));
 
+          double LOrig = currentParams.L(c,2);
+          double LProp = currentParams.L(c,0)+log(RatioProp);
 
-          currentParams.L(c,l,LProp);
-          if(l==0 & ratio != 0)
-            currentParams.L(c,2,LProp- log(ratio));
+          currentParams.ratio(c,RatioProp);
+          currentParams.L(c,2,LProp);
 
           double propCondLogPost = 0;
           double logAcceptRatio = 0;
 
-          if(l == 2 & ratio ==  0){
-            propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
-          }else{
-            propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
-            //if(l==0 & ratio != 0)
-              //propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
-          }
+
+
+          propCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_2k,f_k,k)
+          propCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
+
           logAcceptRatio = propCondLogPost - currentCondLogPost;
 
           double uni = unifRand(rndGenerator);
+          // std::cout << "c "<< c << " L0 " << exp(currentParams.L(c,0))<<"  ratioOrig "<<RatioOrig<< " ratioProp " <<RatioProp<<
+          //   "  logitRatioOrig "<<logitRatioOrig<< " logitRatioProp " <<logitRatioProp<<
+          //     " LOrig "<<exp(LOrig) << " LProp " << exp(LProp) <<
+          //     " currentCondLogPost "<< currentCondLogPost<< " propCondLogPost "<< propCondLogPost<< " uni "<< uni << " expratio "<< exp(logAcceptRatio) <<endl;
+
           if(uni<exp(logAcceptRatio)){
             nAccept++;
             propParams.LAddAccept(l);
             currentCondLogPost = propCondLogPost;
           }else{
             currentParams.L(c,l,LOrig);
-            if(l==0 & ratio != 0)
-              currentParams.L(c,2,LOrig- log(ratio));
+            currentParams.ratio(c,RatioOrig);
           }
 
           // Update the std dev of the proposal
@@ -3063,15 +3317,14 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       //#pragma omp parallel for
       //for(unsigned int c=0;c<=maxZ;c++){
       //  int threadNum = omp_get_thread_num();
+
+
         VectorXd Fval(nTimes_unique);
         //Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
         Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
-
         for(unsigned int j=0;j<nTimes_unique;j++){
           currentParams.meanGP(c,j, Fval(j));
         }
-      //}
-
 
     }else{
       currentCondLogPost = logCondPostL(currentParams,model,c,1);
@@ -3177,6 +3430,7 @@ void gibbsForUCAR(mcmcChain<pReMiuMParams>& chain,
   unsigned int nSubjects=dataset.nSubjects();
   const string& outcomeType = model.dataset().outcomeType();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
 
   //Rprintf("TauCAR after update of uCAR is %f \n .", currentParams.TauCAR());
   nTry++;
@@ -3197,6 +3451,9 @@ void gibbsForUCAR(mcmcChain<pReMiuMParams>& chain,
       double betaW = 0.0;
       for(unsigned int j=0;j<nFixedEffects;j++){
         betaW+=currentParams.beta(j,0)*dataset.W(iSub,j);
+      }
+      for(unsigned int j=0;j<nFixedEffects_mix;j++){
+        betaW+=currentParams.beta_mix(Zi,j)*dataset.W_mix(iSub,j);
       }
       double meanUi=0.0;
       for (int j = 0; j<nNeighi; j++){
@@ -3244,6 +3501,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   unsigned int nPredictSubjects=dataset.nPredictSubjects();
   unsigned int maxNClusters=currentParams.maxNClusters();
   unsigned int nFixedEffects=dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nCategoriesY=dataset.nCategoriesY();
   unsigned int nCovariates=dataset.nCovariates();
   unsigned int nDiscreteCovs=dataset.nDiscreteCovs();
@@ -3566,6 +3824,9 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             for(unsigned int j=0;j<nFixedEffects;j++){
               meanVal+=currentParams.beta(j,0)*dataset.W(i,j);
             }
+            for(unsigned int j=0;j<nFixedEffects_mix;j++){
+              meanVal+=currentParams.beta_mix(c,j)*dataset.W_mix(i,j);
+            }
             logPyXz[c]+=logPdfNormal(currentParams.lambda(i),meanVal,
                                      1/sqrt(currentParams.tauEpsilon()));
           }
@@ -3827,7 +4088,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
       clusterMarginal[zi] = numerator[zi];
       clusterMarginal[origZi] = denominator[origZi];
 
-      if(Ana>0 ){
+      if(Ana>0){
         sizek[origZi] =sizek[origZi] -(tStop[i] - tStart[i] + 1) ;
         sizek[currentParams.z(i)] =sizek[currentParams.z(i)] + (tStop[i] - tStart[i] + 1) ;
 
@@ -3891,7 +4152,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
       }
     }
   }
-
   currentParams.workNXInCluster(nMembers);
   currentParams.workMaxZi(maxZ);
 }

@@ -75,7 +75,7 @@ class pReMiuMOptions{
 			_outcomeType="Bernoulli";
 			_kernelType="SQexponential"; //AR
 			_sampleGPmean=false; //AR
-			_ratio=0; //AR
+			_estim_ratio= false; //AR
 			_covariateType="Discrete";
 			_includeResponse = true;
 			_whichLabelSwitch = "123";
@@ -262,12 +262,12 @@ class pReMiuMOptions{
 		  return _sampleGPmean;
 		}
 
-		void ratio(const double& incResp){//AR
-		  _ratio=incResp;
+		void estim_ratio(const bool& incResp){//AR
+		  _estim_ratio=incResp;
 		}
 
-		double ratio() const{
-		  return _ratio;
+		bool estim_ratio() const{
+		  return _estim_ratio;
 		}
 
 		/// \brief Return which label switch moves are implemented
@@ -414,7 +414,7 @@ class pReMiuMOptions{
 			_covariateType=options.covariateType();
 			_includeResponse=options.includeResponse();
 			_sampleGPmean=options.sampleGPmean();//AR
-			_ratio=options.ratio();//AR
+			_estim_ratio=options.estim_ratio();//AR
 			_whichLabelSwitch=options.whichLabelSwitch();
 			_fixedAlpha=options.fixedAlpha();
 			_dPitmanYor=options.dPitmanYor();
@@ -466,7 +466,7 @@ class pReMiuMOptions{
 		// This notes whether we are sampling the GP mean if yModel == Longitudinal
 		bool _sampleGPmean;
 		// This notes which label switching moves are run
-		double _ratio;
+		bool _estim_ratio;
 		// Ratio between L1k and L3k defining the variance of the GP
 		string _whichLabelSwitch;
 		// This has a fixed value of alpha (if negative we update alpha)

@@ -548,7 +548,7 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 				if(unifRand(_rndGenerator)<it->proposalWeight()){
 					// Update the chain state
 					it->updateParameters(_chain,_model,_rndGenerator);
-					//Rprintf("prop ",it->proposalName().c_str(),"\n");
+				//	std::cout <<"prop " << it->proposalName().c_str()<<endl;
 				}
 			}
 		}

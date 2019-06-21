@@ -156,6 +156,13 @@ void GP_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,const 
 
 }
 
+//RJ GP covariance function
+void ME_cov(MatrixXd& Mat,std::vector<double> L,std::vector<double> times){
+  ME_cov(Sigma,params,timesk); // Sigma ordered;
+
+
+}
+
 //AR to obtain Sigma_permut^{-1} from Sigma^{-1} = Mat
 // in: Mat a1 a2 a3 b1 b2 b3 c1 c2 c3
 // out: Mat a1 a2 a3 c1 c2 c3 b1 b2 b3

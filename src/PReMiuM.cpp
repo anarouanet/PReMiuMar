@@ -40,13 +40,15 @@
 #include<sstream>
 
 // Custom includes
+#include<PReMiuMProposals.h>
+
 #include<MCMC/sampler.h>
 #include<MCMC/model.h>
 #include<MCMC/proposal.h>
 #include<PReMiuMOptions.h>
 #include<PReMiuMModel.h>
 #include<PReMiuMData.h>
-#include<PReMiuMProposals.h>
+
 #include<PReMiuMIO.h>
 
 #include "include/postProcess.h"
@@ -172,12 +174,12 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 		if(options.includeResponse()){
 		// The Metropolis Hastings update for the active theta
-		if(options.outcomeType().compare("Longitudinal")!=0) //AR
+		if(options.outcomeType().compare("Longitudinal")!=0 && options.outcomeType().compare("LME")!=0) //AR
 		  pReMiuMSampler.addProposal("metropolisHastingsForThetaActive",1.0,1,1,&metropolisHastingsForThetaActive);
 
 		// Adaptive MH for beta
-		if(dataset.nFixedEffects()>0){
-			pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
+		if(dataset.nFixedEffects()>0 || dataset.nFixedEffects_mix()>0){
+			//pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
 		}
 
 		if(options.responseExtraVar()){
@@ -211,6 +213,11 @@ RcppExport SEXP profRegr(SEXP inputString) {
 			//pReMiuMSampler.addProposal("gibbsForMVNMuActive",1.0,1,1,&gibbsForMVNMuActive);
 			// Update for the active Sigma parameters
 			pReMiuMSampler.addProposal("gibbsForMVNTauActive",1.0,1,1,&gibbsForMVNTauActive);
+		}
+		//RJ add sampler for L & MVN
+		if(options.outcomeType().compare("LME")==0){
+		  pReMiuMSampler.addProposal("gibbsForForSigmaLMEActive",1.0,1,1,&gibbsForForSigmaLMEActive);
+		  pReMiuMSampler.addProposal("metropolisHastingsForSigmaEpsilonLME",1.0,1,1,&metropolisHastingsForSigmaEpsilonLME);
 		}
 	}
 
@@ -288,7 +295,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 	if(options.includeResponse()){
 		// The Metropolis Hastings update for the inactive theta
-		if(options.outcomeType().compare("Longitudinal")!=0) //AR
+		if(options.outcomeType().compare("Longitudinal")!=0 && options.outcomeType().compare("LME")!=0) //AR
 		  pReMiuMSampler.addProposal("gibbsForThetaInActive",1.0,1,1,&gibbsForThetaInActive);
 
 		if(options.outcomeType().compare("Survival")==0&&!options.weibullFixedShape()) {
@@ -301,6 +308,8 @@ RcppExport SEXP profRegr(SEXP inputString) {
 		}else if(options.outcomeType().compare("MVN")==0){
 			pReMiuMSampler.addProposal("gibbsForMVNMuInActive",1.0,1,1,&gibbsForMVNMuInActive);
 			pReMiuMSampler.addProposal("gibbsForMVNTauInActive",1.0,1,1,&gibbsForMVNTauInActive);
+		}else if(options.outcomeType().compare("LME")==0){
+		  pReMiuMSampler.addProposal("gibbsForSigmaLMEInActive",1.0,1,1,&gibbsForSigmaLMEInActive);
 		}
 	}
 
@@ -336,10 +345,11 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	pReMiuMSampler.writeLogFile();
 
 	/* ---------- Initialise the chain ---- */
-	pReMiuMSampler.initialiseChain();
 
-	pReMiuMHyperParams hyperParams = pReMiuMSampler.chain().currentState().parameters().hyperParams();
-	unsigned int nClusInit = pReMiuMSampler.chain().currentState().parameters().workNClusInit();
+ 	pReMiuMSampler.initialiseChain();
+
+ 	pReMiuMHyperParams hyperParams = pReMiuMSampler.chain().currentState().parameters().hyperParams();
+ 	unsigned int nClusInit = pReMiuMSampler.chain().currentState().parameters().workNClusInit();
 
 	// The following is only used if the sampler type is truncated
 	unsigned int maxNClusters = pReMiuMSampler.chain().currentState().parameters().maxNClusters();
@@ -354,8 +364,8 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	string tmpStr = storeLogFileData(options,dataset,hyperParams,nClusInit,maxNClusters,timeInSecs);
 	pReMiuMSampler.appendToLogFile(tmpStr);
 
-	/* ---------- Clean Up ---------------- */
-	pReMiuMSampler.closeOutputFiles();
+ 	/* ---------- Clean Up ---------------- */
+ 	pReMiuMSampler.closeOutputFiles();
 
 	//int err = 0;
 	return Rcpp::wrap(0);

@@ -99,7 +99,7 @@ double ARSsampleNu(pReMiuMParams params,
 	int lb, ub;
 	const int m = 5;
 	xTmp.resize(m);
-	ui=params.nu(cluster);	
+	ui=params.nu(cluster);
 	xlb=0.000001;
 	xub=100;
 	lb=1; //true

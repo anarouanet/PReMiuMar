@@ -25,7 +25,7 @@
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_clust=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
+profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_clust=NULL, randomEffectsNames=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
                    output="output", hyper, predict, predictType="RaoBlackwell", nSweeps=1000,
                    nBurn=1000, nProgress=500, nFilter=1, nClusInit, seed, yModel="Bernoulli",
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
@@ -79,11 +79,13 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
   }
 
   if(yModel == "LME" & missing(formula))
-    stop("The argument formula must be specified in LME ymodel")
+    #stop("The argument formula must be specified in LME ymodel")
   if (missing(longData) & yModel %in% c("Longitudinal","MVN", "LME"))
     stop("The argument data should be specified and defined as a data.frame")
-  if (yModel == "LME" & class(formula) != "formula")
-    stop("The argument fixed must be a formula")
+      print(" LME : formula option")
+
+#  if (yModel == "LME" & class(formula) != "formula")
+#    stop("The argument fixed must be a formula")
 #
 #   if(yModel=="LME"){
 #     m <- match.call()[c(1, match(c("data", "subset", "na.action"),
@@ -235,6 +237,27 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     #if (yModel=="Survival") stop("ERROR: For the current implementation of Survival outcome the fixed effects must be provided. ")
   }
 
+  # cluster-specific fixed effects
+  if (yModel== 'LME' ){
+    if(!missing(randomEffectsNames)) {
+      nRandomEffects<-length(randomEffectsNames)
+      REIndeces<-vector()
+      for (i in 1:nRandomEffects){
+        tmpIndex_RE<-which(colnames(longData)==randomEffectsNames[i])
+        if (length(tmpIndex_RE)==0) stop("ERROR: random effects names should be included in the names in longData.")
+        REIndeces<-append(REIndeces,tmpIndex_RE)
+      }
+      randomEffects<-longData[,REIndeces]
+      if (sum(is.na(randomEffects))>0) stop("ERROR: covariates with random effects cannot have missing values. Use an imputation method before using profRegr().")
+      longData<-cbind(longData,randomEffects)
+      for (i in dim(randomEffects)[2]){
+        if (class(randomEffects[,i])=="character") stop("ERROR: covariates with random effects must be of class numeric. See help pages.")
+      }
+    } else {
+      nRandomEffects<-0
+      #if (yModel=="Survival") stop("ERROR: For the current implementation of Survival outcome the fixed effects must be provided. ")
+    }
+  }
 
   #  extra outcome data
   if (yModel=="Poisson"||yModel=="Binomial"||yModel=="Survival") {
@@ -276,6 +299,12 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
   write(nFixedEffects_mix, fileName,append=T,ncolumns=1)
   if (nFixedEffects_mix>0){
     write(t(fixedEffectsNames_clust), fileName,append=T,ncolumns=1)
+  }
+  if(yModel=="LME"){
+    write(nRandomEffects+1, fileName,append=T,ncolumns=1)
+    if (nRandomEffects>0){
+      write(t(randomEffectsNames), fileName,append=T,ncolumns=1)
+    }
   }
   if (yModel=="Categorical") write(yLevels,fileName,append=T,ncolumns=1)
   if (xModel=="Discrete"||xModel=="Mixed"){
@@ -334,27 +363,37 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     fullPredictFile<-FALSE
   }
   write(t(dataMatrix), fileName,append=T,ncolumns=dim(dataMatrix)[2])
-  ##//RJ get trajectory lengths
-  IDlist <- longData$ID
-  IDs <- unique(IDlist)
-  tStop <- vector(length=nSubjects)
-  tStop[1] <- sum(IDlist==IDs[1])
-  tStart <- vector(length=nSubjects)
-  tStart[1] <- 1
-  for(i in 2:nSubjects){
-    tStart[i] <- tStart[i-1] + sum(IDlist==IDs[i-1])
-    tStop[i] <- tStop[i-1] + sum(IDlist==IDs[i])
-  }
-  timeindices <- matrix(c(tStart,tStop),ncol=2,byrow=F)
-  ##//RJ write indices then data to file
-  write(t(timeindices),fileName,append=T,ncolumns=2)
-  if(length(longData)>0){
-    meanLongData <- mean(longData$outcome)
-    longData$outcome <- longData$outcome - meanLongData
-    write(t(cbind(longData$time,longData$outcome)),fileName,append=T,ncolumns=(dim(longData)[2]-1))
-  }
-  all_times<-c()
+
   if(!is.null(longData)){
+  ##//RJ get trajectory lengths
+    IDlist <- longData$ID
+    IDs <- unique(IDlist)
+    tStop <- vector(length=nSubjects)
+    tStop[1] <- sum(IDlist==IDs[1])
+    tStart <- vector(length=nSubjects)
+    tStart[1] <- 1
+    for(i in 2:nSubjects){
+      tStart[i] <- tStart[i-1] + sum(IDlist==IDs[i-1])
+      tStop[i] <- tStop[i-1] + sum(IDlist==IDs[i])
+    }
+    timeindices <- matrix(c(tStart,tStop),ncol=2,byrow=F)
+    ##//RJ write indices then data to file
+    write(t(timeindices),fileName,append=T,ncolumns=2)
+    if(length(longData)>0){
+      meanLongData <- mean(longData$outcome)
+      longData$outcome <- longData$outcome - meanLongData
+      write(t(cbind(longData$time,longData$outcome)),fileName,append=T,ncolumns=(dim(longData)[2]-1))
+    }
+
+    if(yModel=="LME"){
+      wMat_RE<-data.frame("intercept"=rep(1,dim(randomEffects)[1]),randomEffects)#longData[,(2+nCovariates+nFixedEffects+nFixedEffects_mix):(1+nCovariates+nFixedEffects+nFixedEffects_mix+nRandomEffects)]
+      #dataMatrix <- cbind(dataMatrix, wMat_RE)
+      write(t(wMat_RE), fileName,append=T, ncolumns=dim(wMat_RE)[2])
+    }
+
+
+    all_times<-c()
+
     ##//AR correspondance times to sample GPmean
     if(!is.null(time_grid)){
       time_grid=all_times
@@ -387,9 +426,10 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     write(t(times_corr),fileName,append=T,ncolumns=1)
   }
 
+
   # other checks to ensure that there are no errors when calling the program
   if (xModel!="Discrete"&xModel!="Normal"&xModel!="Mixed") stop("This xModel is not defined.")
-  if (yModel!="Poisson"&yModel!="Longitudinal"&yModel!="MVN"&yModel!="Binomial"&yModel!="Bernoulli"&yModel!="Normal"&yModel!="Categorical"&yModel!="Survival") stop("This yModel is not defined.")
+  if (yModel!="Poisson"&yModel!="Longitudinal"&yModel!="MVN"&yModel!="LME"&yModel!="Binomial"&yModel!="Bernoulli"&yModel!="Normal"&yModel!="Categorical"&yModel!="Survival") stop("This yModel is not defined.")
 
   # conditions for alpha and dPitmanYor parameters
   # checks that dPitmanYor is in the correct interval
@@ -468,6 +508,12 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
       write(paste("sigmaL_noise=",hyper$sigmaLNoise,sep=""),hyperFile,append=T)
     }
     # //AR
+    if (!is.null(hyper$muSigmaE)){
+      write(paste("muSigmaE=",hyper$muSigmaE,sep=""),hyperFile,append=T)
+    }
+    if (!is.null(hyper$sigmaSigmaE)){
+      write(paste("sigmaSigmaE=",hyper$sigmaSigmaE,sep=""),hyperFile,append=T)
+    }
     if (!is.null(hyper$aRatio)){
       write(paste("aRatio=",hyper$aRatio,sep=""),hyperFile,append=T)
     }
@@ -613,7 +659,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
   }else if(yModel=='Survival'){
     censoring<-dataMatrix[,ncol(dataMatrix)]
     yMat<-cbind(yMat,censoring)
-  }else if(yModel=='Longitudinal'){
+  }else if(yModel=='Longitudinal' || yModel=='LME'){
     longMat <- longData
     tMat <- cbind(tStart,tStop)
     longMean <- meanLongData
@@ -625,7 +671,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
   if(nFixedEffects_mix>0){
     wMat_mix<-dataMatrix[,(2+nCovariates+nFixedEffects):(1+nCovariates+nFixedEffects+nFixedEffects_mix)]
   }
-  #}
+
   # include response
   if (excludeY) {
     includeResponse <- FALSE
@@ -677,13 +723,14 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
               "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
               "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
               "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
+              "randomEffectsNames"=randomEffectsNames,
               "nCategoriesY"=yLevels,
               "nCategories"=xLevels,
               "extraYVar"=extraYVar,
               "includeCAR"=includeCAR,
               "weibullFixedShape"=weibullFixedShape,
               "useNormInvWishPrior"=useNIWP,
-              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,"wMat_mix"=wMat_mix,
+              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
               "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
               "kernel"=kernel, "sampleGPmean"= sampleGPmean,  "estim_ratio"=estim_ratio,
               "nTimes_unique"=length(all_times), "all_times"=all_times, "times_corr"=times_corr))

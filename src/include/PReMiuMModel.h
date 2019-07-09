@@ -98,8 +98,9 @@ public:
                 const unsigned int& nDiscreteCov,
                 const unsigned int& nContinuousCov,
                 const unsigned int& nOutcomes,
-                const string covariateType,
-                const string outcomeType){
+                const string& covariateType,
+                const string& outcomeType,
+                const unsigned int& nRandomEffects){
     if (covariateType.compare("Discrete")==0){
       _aPhi.resize(nCovariates);
     } else if (covariateType.compare("Normal")==0){
@@ -123,6 +124,10 @@ public:
       _workSqrtMVNTau0.setZero(nOutcomes,nOutcomes);
       _MVNR0.setZero(nOutcomes,nOutcomes);
       _workInverseMVNR0.setZero(nOutcomes,nOutcomes);
+    }
+    if (outcomeType.compare("LME")==0){
+      _SigmaLME_R0.setZero(nRandomEffects,nRandomEffects);
+      _workTauLME_R0.setZero(nRandomEffects,nRandomEffects);
     }
   }
 
@@ -267,6 +272,19 @@ public:
       _MVNkappa0=0.01;
     }
 
+
+    //AR defaults for LME parameters
+    if(options.outcomeType().compare("LME")==0){
+      unsigned int nRandomEffects = dataset.nRandomEffects();
+      // Now we compute the hyper parameters for Tau_c
+      // First we compute the sample covariance
+      _SigmaLME_R0=0.01*MatrixXd::Identity(nRandomEffects,nRandomEffects);
+
+      _workTauLME_R0=_SigmaLME_R0.inverse();
+      _workLogDetTauLME_R0= -log(_SigmaLME_R0.determinant());
+      _SigmaLME_kappa0=nRandomEffects;
+    }
+
     _muTheta = 0.0;
     _sigmaTheta = 2.5;
     _dofTheta = 7;
@@ -292,7 +310,8 @@ public:
       _sigmaL[i] = 1.0;
     }
 
-
+    _sigmaSigmaE = 0.5;
+    _muSigmaE = -1.0;
     _shapeTauEpsilon = 5.0;
     _rateTauEpsilon = 0.5;
 
@@ -425,6 +444,32 @@ public:
     _MVNkappa0 = k0;
   }
 
+  const MatrixXd& SigmaLME_R0() const{
+    return _SigmaLME_R0;
+  }
+
+  const MatrixXd& workTauLME_R0() const{
+    return _workTauLME_R0;
+  }
+
+  /// \brief Set the hyper parameter R0
+  void SigmaLME_R0(const MatrixXd& R) {
+    _SigmaLME_R0 = R;
+    _workLogDetTauLME_R0 = - log(R.determinant());
+    _workTauLME_R0 = R.inverse();
+  }
+
+  const double& workLogDetTauLME_R0() const{
+    return _workLogDetTauLME_R0;
+  }
+
+  const double& SigmaLME_kappa0() const{
+    return _SigmaLME_kappa0;
+  }
+  void SigmaLME_kappa0(const double& k0){
+    _SigmaLME_kappa0 = k0;
+  }
+
   double muTheta() const{
     return _muTheta;
   }
@@ -486,6 +531,20 @@ public:
   }
   void sigmaL(const unsigned int& i,const double& sigma){
     _sigmaL[i] = sigma;
+  }
+
+  double sigmaSigmaE() const{
+    return _sigmaSigmaE;
+  }
+  void sigmaSigmaE(const double& sigma){
+    _sigmaSigmaE = sigma;
+  }
+
+  double muSigmaE() const{
+    return _muSigmaE;
+  }
+  void muSigmaE(const double& val){
+    _muSigmaE = val;
   }
 
   double shapeTauEpsilon() const{
@@ -652,57 +711,64 @@ public:
   }
 
   // Copy operator
-  pReMiuMHyperParams& operator=(const pReMiuMHyperParams& hyperParams){
-    _shapeAlpha = hyperParams.shapeAlpha();
-    _rateAlpha = hyperParams.rateAlpha();
-    _aPhi = hyperParams.aPhi();
-    _mu0 = hyperParams.mu0();
-    _Tau0 = hyperParams.Tau0();
-    _R0 = hyperParams.R0();
-    _kappa0 = hyperParams.kappa0();
-    _nu0 = hyperParams.nu0();
-    //RJ set MVN parameters
-    _MVNmu0 = hyperParams.MVNmu0();
-    _MVNTau0 = hyperParams.MVNTau0();
-    _MVNR0 = hyperParams.MVNR0();
-    _MVNkappa0 = hyperParams.MVNkappa0();
-    _MVNnu0 = hyperParams.MVNnu0();
-    _muTheta = hyperParams.muTheta();
-    _sigmaTheta = hyperParams.sigmaTheta();
-    _dofTheta = hyperParams.dofTheta();
-    _muBeta = hyperParams.muBeta();
-    _sigmaBeta = hyperParams.sigmaBeta();
-    _dofBeta = hyperParams.dofBeta();
-    //RJ set _muL and _sigmaL
-    _muL = hyperParams.muL();
-    _sigmaL = hyperParams.sigmaL();
-    _shapeTauEpsilon = hyperParams.shapeTauEpsilon();
-    _rateTauEpsilon = hyperParams.rateTauEpsilon();
-    _aRho = hyperParams.aRho();
-    _bRho = hyperParams.bRho();
-    _aRatio = hyperParams.aRatio();
-    _bRatio = hyperParams.bRatio();
-    _atomRho = hyperParams.atomRho();
-    _shapeSigmaSqY = hyperParams.shapeSigmaSqY();
-    _scaleSigmaSqY = hyperParams.scaleSigmaSqY();
-    _shapeNu = hyperParams.shapeNu();
-    _scaleNu = hyperParams.scaleNu();
-    _workSqrtTau0 = hyperParams.workSqrtTau0();
-    _workLogDetTau0 = hyperParams.workLogDetTau0();
-    _workInverseR0 = hyperParams.workInverseR0();
-    _workLogDetR0 = hyperParams.workLogDetR0();
-    //RJ more MVN hyperparameters
-    _workSqrtMVNTau0 = hyperParams.workSqrtMVNTau0();
-    _workLogDetMVNTau0 = hyperParams.workLogDetMVNTau0();
-    _workInverseMVNR0 = hyperParams.workInverseMVNR0();
-    _workLogDetMVNR0 = hyperParams.workLogDetMVNR0();
-    _rSlice = hyperParams.rSlice();
-    _truncationEps = hyperParams.truncationEps();
-    _shapeTauCAR = hyperParams.shapeTauCAR();
-    _rateTauCAR = hyperParams.rateTauCAR();
-    _initAlloc = hyperParams.initAlloc();
-    return *this;
-  }
+  // pReMiuMHyperParams& operator=(const pReMiuMHyperParams& hyperParams){
+  //   _shapeAlpha = hyperParams.shapeAlpha();
+  //   _rateAlpha = hyperParams.rateAlpha();
+  //   _aPhi = hyperParams.aPhi();
+  //   _mu0 = hyperParams.mu0();
+  //   _Tau0 = hyperParams.Tau0();
+  //   _R0 = hyperParams.R0();
+  //   _kappa0 = hyperParams.kappa0();
+  //   _nu0 = hyperParams.nu0();
+  //   //RJ set MVN parameters
+  //   _MVNmu0 = hyperParams.MVNmu0();
+  //   _MVNTau0 = hyperParams.MVNTau0();
+  //   _MVNR0 = hyperParams.MVNR0();
+  //   _MVNkappa0 = hyperParams.MVNkappa0();
+  //   _MVNnu0 = hyperParams.MVNnu0();
+  //
+  //   //AR set SigmaELME parameters
+  //   _SigmaLME_R0 = hyperParams.SigmaLME_R0();
+  //   _SigmaLME_kappa0 = hyperParams.SigmaLME_kappa0();
+  //
+  //   _muTheta = hyperParams.muTheta();
+  //   _sigmaTheta = hyperParams.sigmaTheta();
+  //   _dofTheta = hyperParams.dofTheta();
+  //   _muBeta = hyperParams.muBeta();
+  //   _sigmaBeta = hyperParams.sigmaBeta();
+  //   _dofBeta = hyperParams.dofBeta();
+  //   //RJ set _muL and _sigmaL
+  //   _muL = hyperParams.muL();
+  //   _sigmaL = hyperParams.sigmaL();
+  //   _muSigmaE = hyperParams.muSigmaE();
+  //   _sigmaSigmaE = hyperParams.sigmaSigmaE();
+  //   _shapeTauEpsilon = hyperParams.shapeTauEpsilon();
+  //   _rateTauEpsilon = hyperParams.rateTauEpsilon();
+  //   _aRho = hyperParams.aRho();
+  //   _bRho = hyperParams.bRho();
+  //   _aRatio = hyperParams.aRatio();
+  //   _bRatio = hyperParams.bRatio();
+  //   _atomRho = hyperParams.atomRho();
+  //   _shapeSigmaSqY = hyperParams.shapeSigmaSqY();
+  //   _scaleSigmaSqY = hyperParams.scaleSigmaSqY();
+  //   _shapeNu = hyperParams.shapeNu();
+  //   _scaleNu = hyperParams.scaleNu();
+  //   _workSqrtTau0 = hyperParams.workSqrtTau0();
+  //   _workLogDetTau0 = hyperParams.workLogDetTau0();
+  //   _workInverseR0 = hyperParams.workInverseR0();
+  //   _workLogDetR0 = hyperParams.workLogDetR0();
+  //   //RJ more MVN hyperparameters
+  //   _workSqrtMVNTau0 = hyperParams.workSqrtMVNTau0();
+  //   _workLogDetMVNTau0 = hyperParams.workLogDetMVNTau0();
+  //   _workInverseMVNR0 = hyperParams.workInverseMVNR0();
+  //   _workLogDetMVNR0 = hyperParams.workLogDetMVNR0();
+  //   _rSlice = hyperParams.rSlice();
+  //   _truncationEps = hyperParams.truncationEps();
+  //   _shapeTauCAR = hyperParams.shapeTauCAR();
+  //   _rateTauCAR = hyperParams.rateTauCAR();
+  //   _initAlloc = hyperParams.initAlloc();
+  //   return *this;
+  // }
 
 
 private:
@@ -733,6 +799,12 @@ private:
   MatrixXd _MVNR0;
   unsigned int _MVNnu0;
 
+  //AR Hyperparameters for LME
+  MatrixXd _SigmaLME_R0;
+  double _SigmaLME_kappa0;
+  MatrixXd _workTauLME_R0;
+  double _workLogDetTauLME_R0;
+
   // Hyper parameters for prior for theta
   // Prior is location and scale T distribution theta ~ t(mu,sigma,dof)
   // http://www.mathworks.com/help/toolbox/stats/brn2ivz-145.html
@@ -749,6 +821,8 @@ private:
   //RJ declare _muL and _sigmaL
   vector<double> _muL;
   vector<double> _sigmaL;
+  double _sigmaSigmaE;
+  double _muSigmaE;
 
   double _aRatio;
   double _bRatio;
@@ -810,10 +884,10 @@ class pReMiuMParams{
 
 public:
   /// \brief Default constructor
-  pReMiuMParams(){};
+  //pReMiuMParams(){};
 
   /// \brief Destructor
-  ~pReMiuMParams(){};
+  //~pReMiuMParams(){};
 
   /// \brief Function to set the sizes of the various class members
   void setSizes(const unsigned int& nSubjects,
@@ -828,11 +902,11 @@ public:
                 const unsigned int& nTimes_unique, //AR
                 const vector<unsigned int>& nCategories,
                 const unsigned int& nClusInit,
-                const string covariateType,
-                const string outcomeType,
-                const bool weibullFixedShape,
-                const string kernelType//AR
-                const string nRandomEffects
+                const string& covariateType,
+                const string& outcomeType,
+                const bool& weibullFixedShape,
+                const string& kernelType,
+                const unsigned int& nRandomEffects//AR
   ){
 
     unsigned int nDiscrCovs = 0;
@@ -871,6 +945,19 @@ public:
     _workSqrtMVNTau.resize(maxNClusters);
     _workLogDetMVNTau.resize(maxNClusters);
     _MVNSigma.resize(maxNClusters);
+
+    if (outcomeType.compare("LME")==0) {
+      _RandomEffects.setZero(nSubjects,nRandomEffects);
+      _covRE.resize(maxNClusters);
+      _workLogDetTauLME.resize(maxNClusters);
+      _workSqrtTauLME.resize(maxNClusters);
+
+      for(unsigned int c=0;c<maxNClusters;c++){
+        _covRE[c].setZero(nRandomEffects,nRandomEffects);
+        _workSqrtTauLME[c].setZero(nRandomEffects,nRandomEffects);
+      }
+    }
+
     for(unsigned int c=0;c<maxNClusters;c++){
       if(c==0){
         if (covariateType.compare("Discrete")==0) _logNullPhi.resize(nCovariates);
@@ -996,6 +1083,7 @@ public:
     }
   }
 
+
   /// \brief Return the number of clusters
   unsigned int maxNClusters() const{
     return _maxNClusters;
@@ -1003,10 +1091,11 @@ public:
 
   /// \brief Set the number of clusters
   void maxNClusters(const unsigned int& nClus,
-                    const string covariateType,
-                    const string outcomeType,
-                    const string kernelType,//AR
-                    const unsigned int& nTimes_unique //AR
+                    const string& covariateType,
+                    const string& outcomeType,
+                    const string& kernelType,//AR
+                    const unsigned int& nTimes_unique, //AR
+                    const unsigned int& nRandomEffects //AR
   ){
     _maxNClusters=nClus;
 
@@ -1033,6 +1122,16 @@ public:
         _ratio.resize(nClus);
         _pdf_meanGP.resize(nClus);
       }
+      if (outcomeType.compare("LME")==0){
+        cout << " resize covRE"<<endl;
+        _workLogDetTauLME.resize(nClus);
+        _workSqrtTauLME.resize(nClus);
+        _covRE.resize(nClus);
+        for (unsigned int c=0;c<nClus;c++){
+           _covRE[c].resize(nRandomEffects,nRandomEffects);
+           _workSqrtTauLME[c].resize(nRandomEffects,nRandomEffects);
+        }
+      }
       for (unsigned int c=0;c<nClus;c++){
         _theta[c].resize(nCategoriesY);
         if(outcomeType.compare("Longitudinal")==0 && kernelType.compare("SQexponential")==0){ //AR
@@ -1041,7 +1140,7 @@ public:
           _L[c].resize(4);
         }
         if(outcomeType.compare("Longitudinal")==0 && kernelType.compare("SQexponential")==0)
-          _meanGP[c].resize(nTimes_unique);//AR
+          _meanGP[c].resize(nTimes_unique);
       }
       _workNXInCluster.resize(nClus);
       if (covariateType.compare("Discrete")==0){
@@ -1149,23 +1248,6 @@ public:
   /// \brief Return the number of covariates
   unsigned int nContinuousCovs() const{
     return _mu[0].size();
-  }
-
-  /// \brief Return the number of fixed effects
-  unsigned int nFixedEffects(const string& outcomeType) const{
-    return _beta.size();
-  }
-
-  unsigned int nFixedEffects() const{
-    return _beta.size();
-  }
-
-  unsigned int nFixedEffects_mix(const string& outcomeType) const{
-    return _nFixedEffects_mix;
-  }
-
-  unsigned int nFixedEffects_mix() const{
-    return _nFixedEffects_mix;
   }
 
   /// \brief Return the number of categories of outcome Y for Categorical outcome
@@ -1536,6 +1618,49 @@ public:
     return _MVNSigma[c](j1,j2);
   }
 
+  vector<MatrixXd> covRE() const{
+    return _covRE;
+  }
+
+  MatrixXd covRE(const unsigned int& c) const{
+    return _covRE[c];
+  }
+
+  double covRE(const unsigned int& c, const unsigned int& i, const unsigned int& j) const{
+    return _covRE[c](i,j);
+  }
+
+  void covRE(const unsigned int& c, const MatrixXd cov) {
+    _covRE[c]=cov;
+    LLT<MatrixXd> llt;
+    _workLogDetTauLME[c]=-log(cov.determinant());
+    _workSqrtTauLME[c]=(llt.compute(cov.inverse())).matrixU();
+  }
+
+
+  MatrixXd RandomEffects() const{
+    return _RandomEffects;
+  }
+
+  /// \brief Return the outcome probability for cluster c
+  VectorXd RandomEffects(const unsigned int& i) const{
+    return _RandomEffects.row(i);
+  }
+
+  /// \brief Return the outcome probability for cluster c and category k
+  double RandomEffects(const unsigned int& i,const unsigned int& j) const{
+    return _RandomEffects(i,j);
+  }
+
+  /// \brief Set the outcome probability for cluster c and category k
+  void RandomEffects(const unsigned int& i,const unsigned int& j,const double& thetaVal){
+    _RandomEffects(i,j)=thetaVal;
+  }
+
+
+  void RandomEffects(const unsigned int& i,const VectorXd& thetaVal){
+    _RandomEffects.row(i)=thetaVal;
+  }
   /// \brief Return the outcome probabilities
   vector<vector <double> > theta() const{
     return _theta;
@@ -1554,6 +1679,15 @@ public:
   /// \brief Set the outcome probability for cluster c and category k
   void theta(const unsigned int& c,const unsigned int& k,const double& thetaVal){
     _theta[c][k]=thetaVal;
+  }
+
+
+  //AR erre variance SigmaE for LME outcome option
+  double  SigmaE() const{
+    return _SigmaE;
+  }
+  void SigmaE(const double& Val){
+    _SigmaE=Val;
   }
 
   //RJ handling functions for _L
@@ -2219,6 +2353,14 @@ public:
     _workSqrtTau[c] = sqrtTau;
   }
 
+  const MatrixXd& workSqrtTauLME(const unsigned int& c) const{
+    return _workSqrtTauLME[c];
+  }
+
+  void workSqrtTauLME(const unsigned int& c, const MatrixXd& sqrtTau){
+    _workSqrtTauLME[c] = sqrtTau;
+  }
+
   const vector<double>& workLogDetTau() const{
     return _workLogDetTau;
   }
@@ -2251,10 +2393,24 @@ public:
     _workLogDetMVNTau[c] = logDetTau;
   }
 
+  const vector<double>& workLogDetTauLME() const{
+    return _workLogDetTauLME;
+  }
+  double workLogDetTauLME(const unsigned int& c) const{
+    return _workLogDetTauLME[c];
+  }
+  void workLogDetTauLME(const unsigned int& c, const double& logDetTau){
+    _workLogDetTauLME[c] = logDetTau;
+  }
+
+
+
   void switchLabels(const unsigned int& c1,const unsigned int& c2,
                     const string& covariateType,
                     const string& outcomeType,
-                    const string& varSelectType){
+                    const string& varSelectType,
+                    const unsigned int& nFixedEffects_mix,
+                    const unsigned int& nCategoriesY){
 
     //Covariate parameters including working parameters
     if(covariateType.compare("Discrete")==0){
@@ -2329,6 +2485,21 @@ public:
       _workLogDetMVNTau[c1]=_workLogDetMVNTau[c2];
       _workLogDetMVNTau[c2]=logDetTauTmp;
     }
+
+    if(outcomeType.compare("LME")==0){
+      MatrixXd CovRETmp = _covRE[c1];
+      _covRE[c1]=_covRE[c2];
+      _covRE[c2]=CovRETmp;
+
+      MatrixXd sqrtTauTmp = _workSqrtTauLME[c1];
+      _workSqrtTauLME[c1]=_workSqrtTauLME[c2];
+      _workSqrtTauLME[c2]=sqrtTauTmp;
+
+
+      double logDetTauTmp = _workLogDetTauLME[c1];
+      _workLogDetTauLME[c1]=_workLogDetTauLME[c2];
+      _workLogDetTauLME[c2]=logDetTauTmp;
+    }
     if(outcomeType.compare("Longitudinal")==0){
       vector<double> LTmp = _L[c1];
       _L[c1]=_L[c2];
@@ -2344,6 +2515,14 @@ public:
 
     }
 
+      for(unsigned int i=0;i<nFixedEffects_mix;i++){
+        for (unsigned int k=0;k<nCategoriesY;k++){
+          double LTmp3 = _beta_mix[c1][i+k*nFixedEffects_mix];
+          _beta_mix[c1][i+k*nFixedEffects_mix]=_beta_mix[c2][i+k*nFixedEffects_mix];
+          _beta_mix[c2][i+k*nFixedEffects_mix]=LTmp3;
+        }
+      }
+
     //Allocation parameters (including counts)
     for(unsigned int i=0;i<nSubjects()+nPredictSubjects();i++){
       if(_z[i]==(int)c1){
@@ -2358,6 +2537,7 @@ public:
   }
 
   /// \brief Copy operator
+  /*
   pReMiuMParams& operator=(const pReMiuMParams& params){
     _maxNClusters=params.maxNClusters();
     _logPsi = params.logPsi();
@@ -2374,6 +2554,7 @@ public:
     _beta_mix = params.beta_mix();
     //RJ set _L and MVN parameters
     _L = params.L();
+    _SigmaE = params.SigmaE();
     _ratio = params.ratio();
     _meanGP = params.meanGP(); //AR
     _pdf_meanGP = params.pdf_meanGP(); //AR
@@ -2409,9 +2590,12 @@ public:
     _workMVNMuStar = params.workMVNMuStar();
     _workLogDetMVNTau = params.workLogDetMVNTau();
     _workSqrtMVNTau = params.workSqrtMVNTau();
+    _RandomEffects = params.RandomEffects();
+    _workLogDetTauLME = params.workLogDetTauLME();
+    _covRE = params.covRE();
     return *this;
   }
-
+*/
 
 
 private:
@@ -2448,6 +2632,9 @@ private:
   vector<MatrixXd> _Sigma;
   vector<MatrixXd> _MVNSigma;
 
+  MatrixXd _RandomEffects;
+  vector<MatrixXd> _covRE;
+
   /// \brief A vector of Eigen dynamic vectors containing covariate precision
   /// matrices for the case of Normal covariates
   vector<MatrixXd> _Tau;
@@ -2459,9 +2646,10 @@ private:
   /// \brief A vector of coefficients for confounding covariates
   vector<vector <double> > _beta;
   vector<vector <double> > _beta_mix;
-   unsigned int _nFixedEffects_mix;
+
   //RJ declare _L
   vector< vector<double> > _L;
+  double _SigmaE;
   vector<double>  _ratio;
   //AR declare _meanGP
   vector< vector<double> > _meanGP;
@@ -2548,11 +2736,11 @@ private:
   /// \brief Working vector of matrices containing matrix square root of Tau
   vector<MatrixXd> _workSqrtTau;
   vector<MatrixXd> _workSqrtMVNTau;
-
+  vector<MatrixXd> _workSqrtTauLME;
   /// \brief Working vector containing the log determinants of Tau
   vector<double> _workLogDetTau;
   vector<double> _workLogDetMVNTau;
-
+  vector<double> _workLogDetTauLME;
   /// \brief vector of CAR spatial random term U
   vector<double> _uCAR;
 
@@ -3127,59 +3315,52 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
                                    const unsigned int& ii){
 
   unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
-  unsigned int nSubjects=dataset.nSubjects();
-
   vector<double> y = dataset.continuousY();
-  vector<double> times = dataset.times();
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
-  vector<double> timesk;
-  VectorXd yk;
-  VectorXd meanVec;
-  MatrixXd Sigma;
-  MatrixXd precMat;
-  double logDetPrecMat =0.0;
-  int sizek = 0;
+
+  //AR for meanGP
+  VectorXd yi;
+  MatrixXd Vi_inv;
   double dmvnorm = 0.0;
-  int counter = 0;
-  // set sizes based on cluster occupation
-  for(unsigned int i=0;i<nSubjects;i++){
-    if(params.z(i) == c && ii!=i){
-      sizek = sizek + tStop[i] - tStart[i] + 1;
-    }
-  }
-  timesk.resize(sizek);
-  yk.resize(sizek);
-  meanVec.resize(sizek);
-  for(unsigned int i=0;i<nSubjects;i++){
-    if(params.z(i) == c && ii!=i){
+  unsigned int ni = 0;
+
+  for(unsigned int i=0; i<dataset.nSubjects(); i++){
+    if((params.z(i) == c &&  ii == dataset.nSubjects()) || ( i == ii ) ){
+
+      ni =  (tStop[i] - tStart[i] + 1);
+      yi.resize(ni);
+
       for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
-        yk(counter+j) = y[tStart[i]-1+j];
-        timesk[counter+j] = times[tStart[i]-1+j];
-        meanVec(counter+j) = 0.0;
+        yi(j) = y[tStart[i]-1+j];
+
         for(unsigned int b=0;b<nFixedEffects;b++){
-          yk(counter+j)-=params.beta(b,0)*dataset.W(i,b);
+          yi(j)-=params.beta(b,0)*dataset.W(i,b);
         }
         for(unsigned int b=0;b<nFixedEffects_mix;b++){
-          yk(counter+j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
+          yi(j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
         }
       }
-      //RJ tidy up vector copying
-      //timesk.insert(timesk.begin()+counter,times.begin()+tStart[i]-1,times.begin()+tStop[i]);
-      counter = counter + tStop[i] - tStart[i] + 1;
+
+      //Random effects of subject i
+      MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
+
+      yi -= block*params.RandomEffects(i);
+
+      MatrixXd Vinv=MatrixXd::Identity(ni, ni) * exp(-params.SigmaE());
+      dmvnorm +=  -0.5*yi.transpose()*Vinv*yi - 0.5*ni*log(2.0*pi<double>())
+        - 0.5*ni*params.SigmaE();
+
+      // If random effects integrated out:
+      // MatrixXd V = block *params.covRE(c)* block.transpose() + MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
+      // LLT<MatrixXd> lltOfA(V); // compute the Cholesky decomposition of A
+      // MatrixXd L = lltOfA.matrixL();
+      // double logDetPrecMat=  2*log(L.determinant());
+      // MatrixXd Vinv = L.inverse().transpose()*L.inverse();
+      //
+      // dmvnorm +=  -0.5*yi.transpose()*Vinv*yi - 0.5*ni*log(2.0*pi<double>())
+      //   - 0.5*logDetPrecMat;
     }
-  }
-  Sigma.setZero(sizek,sizek);
-
-  if(sizek > 0){
-
-    ME_cov(Sigma,params.MEcov(c),timesk); // Sigma ordered;
-    precMat = Sigma.inverse();
-    //det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
-
-    LLT<MatrixXd> lltOfA(Sigma); // compute the Cholesky decomposition of A
-    MatrixXd L = lltOfA.matrixL();
-    dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
   }
   return dmvnorm;
 }
@@ -3283,8 +3464,6 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
                               const mcmcModel<pReMiuMParams,
                                               pReMiuMOptions,
                                               pReMiuMData>& model){
-  std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
-
   const pReMiuMData& dataset = model.dataset();
   const string outcomeType = model.dataset().outcomeType();
   const string kernelType = model.options().kernelType(); //AR
@@ -3314,6 +3493,8 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
 
   double logLikelihood=0.0;
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
+
 
   // Add in contribution from X
   for(unsigned int i=0;i<nSubjects;i++){
@@ -3399,8 +3580,8 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
     }else if(outcomeType.compare("MVN")==0){
       logPYiGivenZiWi = &logPYiGivenZiWiMVN;
     }else if(outcomeType.compare("Longitudinal")==0){
-      if(model.options().sampleGPmean()){//AR
-        logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_meanGP; //AR
+      if(model.options().sampleGPmean()){
+        logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_meanGP;
       }else{
         logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal;
       }
@@ -3408,13 +3589,16 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
         logLikelihood+=logPYiGivenZiWi(params,dataset,nFixedEffects,c,nSubjects);
       }
     }
+    else if(outcomeType.compare("LME")==0){
+      logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_parametric;
+    }
     //RJ logLikelihood is a sum only if Yi are conditionally independent
+
     if(outcomeType.compare("Longitudinal")!=0){
       for(unsigned int i=0;i<nSubjects;i++){
         int zi = params.z(i);
         logLikelihood+=logPYiGivenZiWi(params,dataset,nFixedEffects,zi,i);
       }
-
     }
   }
 
@@ -3624,6 +3808,34 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
       }
     }
 
+     if(outcomeType.compare("LME")==0){
+       std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+       unsigned int nRandomEffects=dataset.nRandomEffects();
+
+       for(unsigned int c=0;c<maxNClusters;c++){
+    //     //logPrior+=logPdfMultivarNormal(nOutcomes,params.MVNmu(c),hyperParams.MVNmu0(),hyperParams.MVNkappa0()*params.MVNTau(c),nOutcomes*hyperParams.MVNkappa0()+params.workLogDetMVNTau(c));
+          logPrior+= logPdfInverseWishart(nRandomEffects, params.covRE(c), -params.workLogDetTauLME(c), hyperParams.SigmaLME_R0(),
+                                 -hyperParams.workLogDetTauLME_R0(),(double)hyperParams.SigmaLME_kappa0());
+
+        // double logPdfInverseWishart(const unsigned int& dimA, const MatrixXd& A, const double& logDetA, const MatrixXd& covR,
+        // const double& logDetR, const double& kappa){
+        // MatrixXd work = covR*A.inverse();
+        // return 0.5*(kappa*logDetR-(kappa+(double)dimA+1)*logDetA-work.trace())
+        //   - (0.5*kappa*(double)dimA*log(2.0)+logMultivarGammaFn(kappa/2.0,dimA));
+         MatrixXd Tau = params.covRE(c).inverse();
+        //logPrior+=logPdfWishart(dataset.nRandomEffects(), Tau, params.workLogDetMVNTau(c)
+        logPrior += logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
+                                              hyperParams.sigmaSigmaE());
+       }
+      for(unsigned int i=0;i<nSubjects;i++){
+        unsigned int zi = params.z(i);
+        VectorXd RE=params.RandomEffects(i);
+        VectorXd mu;
+        mu.setZero(nRandomEffects);
+        logPrior +=  logPdfMultivarNormal(RE.size(),RE,mu,params.workSqrtTauLME(zi),params.workLogDetTauLME(zi));
+    }
+     }
+
     // Prior for TauCAR and UCAR
     if (includeCAR){
       logPrior+=logPdfGamma(params.TauCAR(),hyperParams.shapeTauCAR(),hyperParams.rateTauCAR());
@@ -3828,6 +4040,11 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
     for(unsigned int c=0;c<maxNClusters;c++){
       out+=logPYiGivenZiWi(params,dataset,nFixedEffects,c,nSubjects);
     }
+  }else if(outcomeType.compare("LME")==0){
+    logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_parametric;
+    for(unsigned int c=0;c<maxNClusters;c++){
+      out+=logPYiGivenZiWi(params,dataset,nFixedEffects,c,nSubjects);
+    }
   }
   //RJ logLikelihood is a sum only if Yi are conditionally independent
   if(outcomeType.compare("Longitudinal")!=0){
@@ -3924,6 +4141,43 @@ double logCondPostLambdaiBinomial(const pReMiuMParams& params,
     + logPdfNormal(params.lambda(i),meanVal,1.0/sqrt(params.tauEpsilon()));
 
 }
+
+
+
+  //AR logCondPostSigmaE function definition: p(sigma)p(Y^k|sigma_k,k)
+  //addprior = 0 if prior should not be computed
+  double logCondPostSigmaE(const pReMiuMParams& params,
+                      const mcmcModel<pReMiuMParams,
+                                      pReMiuMOptions,
+                                      pReMiuMData>& model){
+
+    const pReMiuMData& dataset = model.dataset();
+    const pReMiuMHyperParams& hyperParams = params.hyperParams();
+    unsigned int nFixedEffects=dataset.nFixedEffects();
+    unsigned int nSubjects=dataset.nSubjects();
+    unsigned int maxNClusters=params.maxNClusters();
+
+    double logPrior = 0.0;
+    double out = 0;
+
+    logPrior+=logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
+                           hyperParams.sigmaSigmaE());
+
+
+    // double sigma = 1.0/sqrt(params.tauEpsilon());
+    // for(unsigned int i=0;i<nSubjects;i++){
+    //   logPrior+=logPdfNormal(extraVarPriorVal[i],extraVarPriorMean[i],sigma);
+    // }
+    // logPrior+=logPdfGamma(params.tauEpsilon(),hyperParams.shapeTauEpsilon(),
+    //                       hyperParams.rateTauEpsilon());
+
+    for(unsigned int c=0;c<maxNClusters;c++){
+      out +=  logPYiGivenZiWiLongitudinal_parametric(params,dataset,nFixedEffects,c,nSubjects);
+    }
+
+    out += logPrior;
+    return out;
+  }
 
 //RJ logCondPostL function definition: p(sigma)p(Y^k|sigma_k,k)
 //addprior = 0 if prior should not be computed
@@ -4409,6 +4663,12 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       //}else{
       GPSigma= es.eigenvectors().real() * eigenvalues.cwiseSqrt().asDiagonal();
       //}
+
+
+      //LLT<MatrixXd> llt;
+      //MatrixXd B = (llt.compute(covMat)).matrixL();
+      //V = meanVec + B*V;
+
 
       GPmean = postM  +  GPSigma* random_vector;
 

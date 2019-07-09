@@ -1,0 +1,3672 @@
+ Move1 17 vs 18:0.151525 vs 0.0223074
+36 logpsi -3.04693
+48 logpsi -2.73003
+ Move2 4 vs 5:0.890037 vs 0.189714
+ Move3 8 vs 9:0.658213 vs 0.988754
+
+ Move1 17 vs 18:0.151525 vs 0.0223074
+36 logpsi -3.04693
+48 logpsi -2.73003
+ Move2 4 vs 5:0.890037 vs 0.189714
+ Move3 8 vs 9:0.658213 vs 0.988754
+
+ Move1 12 vs 5:0.0123294 vs 0.0533732
+2 logpsi -6.31129
+4 logpsi -4.84606
+ Move2 2 vs 3:0.111079 vs 1.07063
+ Move3 4 vs 5:0.758518 vs 1.52539
+
+ Move1 0 vs 11:0.285388 vs 0
+798 logpsi -0.0133964
+1 logpsi -7.84428
+ Move2 9 vs 10:0.264175 vs 1
+ Move3 7 vs 8:0.97093 vs 1
+
+ Move1 0 vs 4:0.021105 vs 0
+804 logpsi -0.00621596
+2 logpsi -8.2563
+ Move2 2 vs 3:0.548542 vs 1
+ Move3 0 vs 1:0.698352 vs 1.93879e-60
+
+ Move1 1 vs 0:0.512486 vs 0
+1 logpsi -7.02805
+805 logpsi -0.00168457
+ Move2 2 vs 3:0.778819 vs 1
+ Move3 0 vs 1:0.512289 vs 5.32238e-73
+
+ Move1 0 vs 4:0.553815 vs 0
+806 logpsi -0.00478907
+2 logpsi -6.50757
+ Move2 3 vs 4:0.829945 vs 3.71068
+ Move3 2 vs 3:0.268471 vs 3.50682
+
+ Move1 0 vs 2:0.487134 vs 0
+806 logpsi -0.00500453
+2 logpsi -5.86825
+ Move2 0 vs 1:0.891989 vs 1.51273e-197
+ Move3 0 vs 1:0.25507 vs 4.62208e-130
+
+ Move1 0 vs 2:0.192684 vs 0
+806 logpsi -0.00351531
+2 logpsi -6.21763
+ Move2 0 vs 1:0.162192 vs 1.38787e-198
+ Move3 1 vs 2:0.262944 vs 3.87252
+
+ Move1 1 vs 0:0.375477 vs 0
+2 logpsi -4.86063
+806 logpsi -0.00793887
+ Move2 0 vs 1:0.723246 vs 0
+ Move3 0 vs 1:0.090393 vs 1.87299e-129
+
+ Move1 0 vs 1:0.136219 vs 0
+806 logpsi -0.00190315
+2 logpsi -6.26638
+ Move2 0 vs 1:0.650175 vs 0
+ Move3 0 vs 1:0.691036 vs 4.33259e-130
+
+ Move1 17 vs 18:0.151525 vs 0.0223074
+36 logpsi -3.04693
+48 logpsi -2.73003
+ Move2 4 vs 5:0.890037 vs 0.189714
+ Move3 8 vs 9:0.658213 vs 0.988754
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 4 vs 1:0.174226 vs 0.00146286
+8 logpsi -4.26168
+19 logpsi -3.66828
+ Move2 8 vs 9:0.942695 vs 0.998751
+ Move3 10 vs 11:0.728531 vs 1.12241
+
+ Move1 8 vs 10:0.572809 vs 0
+2 logpsi -5.41078
+345 logpsi -0.876087
+ Move2 1 vs 2:0.0494549 vs 1
+ Move3 7 vs 8:0.599161 vs 1.00414
+
+ Move1 15 vs 14:0.414046 vs 4.95162e-297
+3 logpsi -6.29785
+151 logpsi -1.68793
+ Move2 18 vs 19:0.462287 vs 1
+ Move3 11 vs 12:0.614627 vs 0.815273
+
+ Move1 3 vs 15:0.872763 vs 1
+1 logpsi -5.16327
+1 logpsi -5.96736
+ Move2 16 vs 17:0.346841 vs 0.000316298
+ Move3 9 vs 10:0.0864658 vs 216.084
+
+ Move1 12 vs 9:0.356674 vs 0
+1 logpsi -6.12793
+564 logpsi -0.308134
+ Move2 15 vs 16:0.652643 vs 0.0134682
+ Move3 19 vs 20:0.1125 vs 1
+
+ Move1 16 vs 15:0.636835 vs 0
+229 logpsi -1.27569
+4 logpsi -5.19877
+ Move2 21 vs 22:0.112766 vs 1.09408
+ Move3 2 vs 3:0.0326689 vs 1
+
+ Move1 21 vs 9:0.24852 vs 0
+1 logpsi -7.05264
+214 logpsi -1.30114
+ Move2 11 vs 12:0.566759 vs 1.00369
+ Move3 4 vs 5:0.850256 vs 1
+
+ Move1 9 vs 14:0.203514 vs 0.278072
+2 logpsi -6.27806
+3 logpsi -4.99819
+ Move2 4 vs 5:0.686058 vs 1
+ Move3 15 vs 16:0.486925 vs 9.50332e+35
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.73117e-76
+3 logpsi -5.29738
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0390724
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 10 vs 1:0.19459 vs 0
+276 logpsi -1.09757
+7 logpsi -4.52475
+ Move2 15 vs 16:0.050662 vs 1.05454
+ Move3 0 vs 1:0.168563 vs 0.847803
+
+ Move1 15 vs 1:0.71836 vs 3.6223e-10
+26 logpsi -3.10093
+63 logpsi -2.5134
+ Move2 0 vs 1:0.275056 vs 0.978963
+ Move3 9 vs 10:0.521871 vs 15.5906
+
+ Move1 11 vs 9:0.418461 vs 0
+58 logpsi -2.45387
+602 logpsi -0.361325
+ Move2 0 vs 1:0.583232 vs 0.894657
+ Move3 10 vs 11:0.947002 vs 2.25341
+
+ Move1 10 vs 0:0.491817 vs 1.2222e-67
+42 logpsi -3.19822
+1 logpsi -6.95609
+ Move2 15 vs 16:0.309501 vs 0.957794
+ Move3 3 vs 4:0.531467 vs 1
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 10 vs 1:0.19459 vs 0
+276 logpsi -1.09757
+7 logpsi -4.52475
+ Move2 15 vs 16:0.050662 vs 1.06284
+ Move3 0 vs 1:0.168563 vs 0.847803
+
+ Move1 0 vs 17:0.0957214 vs 2.4765e-09
+1 logpsi -6.7696
+10 logpsi -4.56777
+ Move2 15 vs 16:0.949318 vs 0.177668
+ Move3 11 vs 12:0.58009 vs 0.17311
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 10 vs 1:0.19459 vs 0
+276 logpsi -1.09757
+7 logpsi -4.52475
+ Move2 15 vs 16:0.050662 vs 1.06284
+ Move3 0 vs 1:0.168563 vs 0.847803
+
+ Move1 0 vs 17:0.0957214 vs 2.4765e-09
+1 logpsi -6.7696
+10 logpsi -4.56777
+ Move2 15 vs 16:0.949318 vs 0.177668
+ Move3 11 vs 12:0.58009 vs 0.17311
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 10 vs 1:0.19459 vs 0
+276 logpsi -1.09757
+7 logpsi -4.52475
+ Move2 15 vs 16:0.050662 vs 1.06284
+ Move3 0 vs 1:0.168563 vs 0.847803
+
+ Move1 0 vs 17:0.0957214 vs 2.4765e-09
+1 logpsi -6.7696
+10 logpsi -4.56777
+ Move2 15 vs 16:0.949318 vs 0.177668
+ Move3 11 vs 12:0.58009 vs 0.17311
+
+ Move1 6 vs 11:0.578443 vs 1.04616e-32
+3 logpsi -5.70487
+33 logpsi -3.25028
+ Move2 13 vs 14:0.986961 vs 1.46463
+ Move3 10 vs 11:0.73026 vs 0.00570179
+
+ Move1 9 vs 17:0.0672965 vs 0.905504
+5 logpsi -4.93024
+9 logpsi -4.90542
+ Move2 13 vs 14:0.241148 vs 0.46144
+ Move3 7 vs 8:0.426965 vs 1
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 10 vs 1:0.19459 vs 0
+276 logpsi -1.09757
+7 logpsi -4.52475
+ Move2 15 vs 16:0.050662 vs 1.06284
+ Move3 0 vs 1:0.168563 vs 0.847803
+
+ Move1 0 vs 17:0.0957214 vs 2.4765e-09
+1 logpsi -6.7696
+10 logpsi -4.56777
+ Move2 15 vs 16:0.949318 vs 0.177668
+ Move3 11 vs 12:0.58009 vs 0.17311
+
+ Move1 6 vs 11:0.578443 vs 1.04616e-32
+3 logpsi -5.70487
+33 logpsi -3.25028
+ Move2 13 vs 14:0.986961 vs 1.46463
+ Move3 10 vs 11:0.73026 vs 0.00570179
+
+ Move1 9 vs 17:0.0672965 vs 0.905504
+5 logpsi -4.93024
+9 logpsi -4.90542
+ Move2 13 vs 14:0.241148 vs 0.46144
+ Move3 7 vs 8:0.426965 vs 1
+
+ Move1 6 vs 17:0.416116 vs 0.251738
+3 logpsi -5.64008
+5 logpsi -4.9504
+ Move2 5 vs 6:0.427304 vs 1.00855
+ Move3 9 vs 10:0.475882 vs 90959.7
+
+ Move1 5 vs 11:0.679434 vs 0.122388
+5 logpsi -5.15694
+2 logpsi -5.85713
+ Move2 2 vs 3:0.347891 vs 1
+ Move3 0 vs 1:0.240797 vs 1.09351
+
+ Move1 17 vs 11:0.798046 vs 0.0122512
+7 logpsi -4.3161
+3 logpsi -5.41663
+ Move2 0 vs 1:0.897758 vs 0.953775
+ Move3 8 vs 9:0.640313 vs 125180
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 1 vs 0:0.534113 vs 1.41338e-59
+11 logpsi -4.1574
+88 logpsi -2.39758
+ Move2 14 vs 15:0.243809 vs 0.0346816
+ Move3 5 vs 6:0.0191577 vs 0.970389
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 10 vs 1:0.45731 vs 2.01654e-243
+238 logpsi -1.28342
+16 logpsi -3.80066
+ Move2 8 vs 9:0.950949 vs 1.10364
+ Move3 3 vs 4:0.422845 vs 1.00938
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 10 vs 1:0.45731 vs 2.01654e-243
+238 logpsi -1.28342
+16 logpsi -3.80066
+ Move2 8 vs 9:0.950949 vs 1.10364
+ Move3 3 vs 4:0.422845 vs 1.00938
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 12 vs 8:0.235242 vs 4.78923e-76
+3 logpsi -5.29718
+64 logpsi -2.45407
+ Move2 3 vs 4:0.564295 vs 1.02846
+ Move3 2 vs 3:0.872598 vs 0.974513
+
+ Move1 10 vs 1:0.45731 vs 2.01654e-243
+238 logpsi -1.28342
+16 logpsi -3.80066
+ Move2 8 vs 9:0.950949 vs 1.10364
+ Move3 3 vs 4:0.422845 vs 1.00938
+
+ Move1 1 vs 5:0.840276 vs 2.83756e-09
+3 logpsi -5.78601
+15 logpsi -4.14598
+ Move2 0 vs 1:0.0169354 vs 1.05723
+ Move3 3 vs 4:0.072038 vs 0.990999
+
+ Move1 1 vs 5:0.952811 vs 3.61546e-39
+45 logpsi -2.96029
+6 logpsi -5.22992
+ Move2 16 vs 17:0.817923 vs 0.000171091
+ Move3 12 vs 13:0.382941 vs 1
+
+ Move1 10 vs 17:0.537938 vs 0
+634 logpsi -0.277454
+8 logpsi -5.1358
+ Move2 6 vs 7:0.547851 vs 1
+ Move3 11 vs 12:0.713927 vs 0.582416
+
+ Move1 8 vs 11:0.327261 vs 0.332757
+9 logpsi -4.25074
+6 logpsi -4.61752
+ Move2 8 vs 9:0.250183 vs 0.990449
+ Move3 9 vs 10:0.236732 vs 446.011
+
+ Move1 5 vs 17:0.902008 vs 1.42876e-20
+8 logpsi -4.69766
+41 logpsi -3.31297
+ Move2 7 vs 8:0.59504 vs 1
+ Move3 4 vs 5:0.712203 vs 1.01516
+
+ Move1 9 vs 4:0.864629 vs 0
+669 logpsi -0.194072
+16 logpsi -3.96157
+ Move2 12 vs 13:0.432642 vs 1
+ Move3 6 vs 7:0.189548 vs 1
+
+ Move1 9 vs 15:0.890517 vs 0
+704 logpsi -0.16434
+1 logpsi -6.85647
+ Move2 0 vs 1:0.110197 vs 1
+ Move3 12 vs 13:0.984155 vs 1
+
+ Move1 8 vs 2:0.615562 vs 1.26897
+37 logpsi -3.05642
+41 logpsi -3.11597
+ Move2 13 vs 14:0.398515 vs 0.138281
+ Move3 9 vs 10:0.038918 vs 1.10549
+
+ Move1 8 vs 2:0.615562 vs 1.26897
+37 logpsi -3.05642
+41 logpsi -3.11597
+ Move2 13 vs 14:0.398515 vs 0.138281
+ Move3 9 vs 10:0.038918 vs 1.10549
+
+ Move1 14 vs 9:0.122782 vs 2.45547e-07
+15 logpsi -3.67104
+3 logpsi -4.93935
+ Move2 13 vs 14:0.208727 vs 0.818931
+ Move3 13 vs 14:0.197171 vs 0.897891
+
+ Move1 8 vs 9:0.172356 vs 0.41946
+1 logpsi -6.19213
+2 logpsi -5.32335
+ Move2 13 vs 14:0.560039 vs 1.06044
+ Move3 11 vs 12:0.162826 vs 0.781398
+
+ Move1 8 vs 2:0.615562 vs 1.26897
+37 logpsi -3.05642
+41 logpsi -3.11597
+ Move2 13 vs 14:0.398515 vs 0.138281
+ Move3 9 vs 10:0.038918 vs 1.10549
+
+ Move1 14 vs 9:0.122782 vs 2.45547e-07
+15 logpsi -3.67104
+3 logpsi -4.93935
+ Move2 13 vs 14:0.208727 vs 0.818931
+ Move3 13 vs 14:0.197171 vs 0.897891
+
+ Move1 8 vs 9:0.172356 vs 0.41946
+1 logpsi -6.19213
+2 logpsi -5.32335
+ Move2 13 vs 14:0.560039 vs 1.06044
+ Move3 11 vs 12:0.162826 vs 0.781398
+
+ Move1 6 vs 10:0.0997306 vs 7.28921e-11
+65 logpsi -2.41051
+31 logpsi -3.09704
+ Move2 18 vs 19:0.385362 vs 1.22358
+ Move3 9 vs 10:0.656469 vs 1.33757
+
+ Move1 14 vs 17:0.219902 vs 1
+2 logpsi -7.91324
+2 logpsi -6.04181
+ Move2 4 vs 5:0.983875 vs 1
+ Move3 13 vs 14:0.662675 vs 1.01004
+
+ Move1 18 vs 9:0.55428 vs 0
+282 logpsi -1.06608
+14 logpsi -3.94017
+ Move2 8 vs 9:0.971153 vs 1.04329
+ Move3 1 vs 2:0.365381 vs 1
+
+ Move1 6 vs 18:0.367187 vs 0
+643 logpsi -0.226647
+136 logpsi -1.90203
+ Move2 16 vs 17:0.289839 vs 0.993743
+ Move3 6 vs 7:0.382996 vs 0.00961456
+
+ Move1 6 vs 11:0.945348 vs 0
+665 logpsi -0.190964
+10 logpsi -4.32791
+ Move2 11 vs 12:0.012142 vs 0.929978
+ Move3 2 vs 3:0.618044 vs 1
+
+ Move1 6 vs 18:0.441377 vs 0
+666 logpsi -0.175422
+135 logpsi -2.01715
+ Move2 14 vs 15:0.3442 vs 1
+ Move3 15 vs 16:0.887814 vs 1
+
+ Move1 6 vs 18:0.498877 vs 0
+666 logpsi -0.231346
+135 logpsi -1.68586
+ Move2 6 vs 7:0.589952 vs 0.0572742
+ Move3 4 vs 5:0.801384 vs 1
+
+ Move1 8 vs 2:0.615562 vs 1.26897
+37 logpsi -3.05642
+41 logpsi -3.11597
+ Move2 13 vs 14:0.398515 vs 0.138281
+ Move3 9 vs 10:0.038918 vs 1.10549
+
+ Move1 10 vs 17:0.888967 vs 1.10932e-31
+49 logpsi -2.75386
+6 logpsi -4.41145
+ Move2 13 vs 14:0.3575 vs 0.547852
+ Move3 2 vs 3:0.6151 vs 0.950259
+
+ Move1 10 vs 1:0.316677 vs 0.118979
+3 logpsi -4.80134
+2 logpsi -6.93014
+ Move2 14 vs 15:0.702268 vs 0.996919
+ Move3 18 vs 19:0.200432 vs 9.06135e+23
+
+ Move1 13 vs 10:0.298076 vs 0.28346
+1 logpsi -6.5051
+2 logpsi -5.24442
+ Move2 11 vs 12:0.789852 vs 0.220473
+ Move3 12 vs 13:0.416966 vs 1.01854
+
+ Move1 0 vs 18:0.0827085 vs 0
+347 logpsi -0.857048
+30 logpsi -3.45352
+ Move2 1 vs 2:0.144444 vs 1
+ Move3 6 vs 7:0.99363 vs 0.855122
+
+ Move1 11 vs 16:0.227104 vs 0
+641 logpsi -0.239783
+1 logpsi -7.30663
+ Move2 6 vs 7:0.288093 vs 0.999389
+ Move3 10 vs 11:0.278697 vs 2.20525e+09
+
+ Move1 0 vs 18:0.581566 vs 1.85486e-60
+104 logpsi -1.95313
+24 logpsi -3.67234
+ Move2 3 vs 4:0.996454 vs 1
+ Move3 15 vs 16:0.448316 vs 1.06237
+
+ Move1 10 vs 0:0.207325 vs 0
+685 logpsi -0.194554
+106 logpsi -2.00798
+ Move2 14 vs 15:0.736964 vs 1.1573
+ Move3 9 vs 10:0.590262 vs 9.16275e+13
+
+ Move1 14 vs 0:0.115844 vs 4.64258e-259
+1 logpsi -7.35923
+110 logpsi -1.90204
+ Move2 16 vs 17:0.622557 vs 1
+ Move3 9 vs 10:0.747571 vs 5.53172e-22
+
+ Move1 10 vs 14:0.657241 vs 1.86713e-08
+9 logpsi -4.52835
+1 logpsi -6.75289
+ Move2 2 vs 3:0.00216883 vs 1
+ Move3 9 vs 10:0.585026 vs 7.2398e-12
+
+ Move1 8 vs 2:0.615562 vs 1.26897
+37 logpsi -3.05642
+41 logpsi -3.11597
+ Move2 13 vs 14:0.398515 vs 0.138281
+ Move3 9 vs 10:0.038918 vs 1.10549
+
+ Move1 8 vs 17:0.913215 vs 0.427681
+3 logpsi -4.66795
+6 logpsi -4.38482
+ Move2 8 vs 9:0.543583 vs 1.01069
+ Move3 13 vs 14:0.885975 vs 2.48955
+
+ Move1 13 vs 2:0.0109094 vs 0
+200 logpsi -1.40858
+1 logpsi -6.19536
+ Move2 15 vs 16:0.922611 vs 1
+ Move3 9 vs 10:0.487111 vs 1.05768
+
+ Move1 11 vs 9:0.732981 vs 2.54765e-21
+1 logpsi -5.72417
+22 logpsi -3.46612
+ Move2 12 vs 13:0.254318 vs 1.41853
+ Move3 0 vs 1:0.166724 vs 0.998271
+
+ Move1 12 vs 19:0.979771 vs 0
+105 logpsi -2.00496
+687 logpsi -0.203538
+ Move2 16 vs 17:0.00334782 vs 1
+ Move3 18 vs 19:0.937574 vs 1.4304e+153
+
+ Move1 18 vs 13:0.37884 vs 0
+703 logpsi -0.14624
+17 logpsi -4.00964
+ Move2 3 vs 4:0.891967 vs 1
+ Move3 15 vs 16:0.514731 vs 1
+
+ Move1 18 vs 7:0.0638214 vs 0
+761 logpsi -0.0875437
+1 logpsi -5.70266
+ Move2 0 vs 1:0.142142 vs 1
+ Move3 3 vs 4:0.821375 vs 1
+
+ Move1 18 vs 7:0.604779 vs 0
+791 logpsi -0.0431729
+1 logpsi -7.44675
+ Move2 5 vs 6:0.790909 vs 1
+ Move3 14 vs 15:0.865248 vs 1
+
+ Move1 12 vs 18:0.466213 vs 0
+12 logpsi -4.10497
+795 logpsi -0.0418353
+ Move2 13 vs 14:0.640865 vs 0.999925
+ Move3 5 vs 6:0.404649 vs 1
+
+ Move1 14 vs 18:0.901323 vs 0
+1 logpsi -5.40905
+775 logpsi -0.0755261
+ Move2 16 vs 17:0.655092 vs 1
+ Move3 2 vs 3:0.132821 vs 1
+
+ Move1 19 vs 12:0.973951 vs 1.15077
+33 logpsi -3.22963
+34 logpsi -3.37005
+ Move2 7 vs 8:0.590675 vs 0.705028
+ Move3 13 vs 14:0.313631 vs 0.966276
+
+ Move1 16 vs 9:0.747933 vs 0
+347 logpsi -0.952238
+19 logpsi -3.36229
+ Move2 12 vs 13:0.964577 vs 1
+ Move3 7 vs 8:0.141938 vs 0.944131
+
+ Move1 5 vs 9:0.23026 vs 5.57382e-92
+119 logpsi -1.81663
+12 logpsi -3.78037
+ Move2 7 vs 8:0.461231 vs 1.0032
+ Move3 13 vs 14:0.0711187 vs 1.00467
+
+ Move1 16 vs 17:0.543865 vs 0
+519 logpsi -0.48978
+1 logpsi -5.43532
+ Move2 5 vs 6:0.929767 vs 0.263466
+ Move3 10 vs 11:0.997474 vs 1.01648
+
+ Move1 17 vs 6:0.451922 vs 0
+1 logpsi -6.13232
+465 logpsi -0.602399
+ Move2 5 vs 6:0.605219 vs 0.167093
+ Move3 8 vs 9:0.428573 vs 1.10352
+
+ Move1 6 vs 8:0.269942 vs 0
+695 logpsi -0.160621
+16 logpsi -4.08597
+ Move2 9 vs 10:0.325254 vs 1
+ Move3 12 vs 13:0.0498384 vs 1
+
+ Move1 16 vs 6:0.278377 vs 0
+90 logpsi -2.40934
+697 logpsi -0.147158
+ Move2 11 vs 12:0.57005 vs 1
+ Move3 11 vs 12:0.186463 vs 1
+
+ Move1 5 vs 16:0.913519 vs 1.82821e-74
+11 logpsi -4.3202
+94 logpsi -2.27456
+ Move2 13 vs 14:0.836976 vs 1
+ Move3 3 vs 4:0.795549 vs 1
+
+ Move1 16 vs 8:0.351229 vs 1.95489e-137
+131 logpsi -1.99153
+6 logpsi -4.5098
+ Move2 6 vs 7:0.999661 vs 0.504328
+ Move3 6 vs 7:0.655105 vs 0.00422503
+
+ Move1 5 vs 6:0.134849 vs 0
+19 logpsi -3.78801
+687 logpsi -0.182832
+ Move2 4 vs 5:0.165798 vs 1.02133
+ Move3 15 vs 16:0.873584 vs 1.9139e+12
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 6 vs 14:0.848543 vs 4.5675e-119
+125 logpsi -1.97625
+9 logpsi -4.32529
+ Move2 1 vs 2:0.229709 vs 0.350768
+ Move3 13 vs 14:0.572097 vs 0.903112
+
+ Move1 9 vs 0:0.620193 vs 1.56136e-14
+1 logpsi -6.55265
+14 logpsi -4.10722
+ Move2 15 vs 16:0.0390149 vs 0.993639
+ Move3 18 vs 19:0.373344 vs 3.1721e-14
+
+ Move1 5 vs 9:0.937903 vs 4.28677e-12
+14 logpsi -3.9123
+1 logpsi -5.9258
+ Move2 15 vs 16:0.743756 vs 1.00552
+ Move3 4 vs 5:0.241224 vs 0.39638
+
+ Move1 19 vs 14:0.567055 vs 4.13157e-07
+2 logpsi -6.461
+9 logpsi -4.36108
+ Move2 17 vs 18:0.306131 vs 1.35868e-08
+ Move3 15 vs 16:0.274866 vs 0.973553
+
+ Move1 15 vs 5:0.82463 vs 0
+1 logpsi -6.45389
+631 logpsi -0.284733
+ Move2 10 vs 11:0.542708 vs 1.00548
+ Move3 7 vs 8:0.625264 vs 0.766887
+
+ Move1 12 vs 8:0.999101 vs 4.55549
+6 logpsi -5.54015
+4 logpsi -4.78199
+ Move2 12 vs 13:0.648342 vs 0.908291
+ Move3 6 vs 7:0.428904 vs 0.887055
+
+ Move1 17 vs 18:0.923888 vs 7.78268e-08
+8 logpsi -4.66882
+23 logpsi -3.57757
+ Move2 6 vs 7:0.592896 vs 1.02544
+ Move3 4 vs 5:0.229698 vs 772.059
+
+ Move1 18 vs 6:0.738789 vs 6.75005e-13
+25 logpsi -3.71455
+4 logpsi -5.04903
+ Move2 0 vs 1:0.429123 vs 1.04475
+ Move3 12 vs 13:0.147727 vs 1
+
+ Move1 14 vs 18:0.527151 vs 1.30664
+25 logpsi -3.59942
+26 logpsi -3.86687
+ Move2 16 vs 17:0.321987 vs 0.63799
+ Move3 2 vs 3:0.699888 vs 0.996444
+
+ Move1 0 vs 19:0.862413 vs 7.73561e-08
+55 logpsi -2.4834
+33 logpsi -3.22771
+ Move2 7 vs 8:0.263192 vs 1.44283
+ Move3 0 vs 1:0.505332 vs 0.939753
+
+ Move1 6 vs 14:0.848543 vs 4.5675e-119
+125 logpsi -1.97625
+9 logpsi -4.32529
+ Move2 1 vs 2:0.229709 vs 0.350768
+ Move3 13 vs 14:0.572097 vs 0.903112
+
+ Move1 9 vs 0:0.620193 vs 1.56136e-14
+1 logpsi -6.55265
+14 logpsi -4.10722
+ Move2 15 vs 16:0.0390149 vs 0.993639
+ Move3 18 vs 19:0.373344 vs 3.1721e-14
+
+ Move1 5 vs 9:0.937903 vs 4.28677e-12
+14 logpsi -3.9123
+1 logpsi -5.9258
+ Move2 15 vs 16:0.743756 vs 1.00552
+ Move3 4 vs 5:0.241224 vs 0.39638
+
+ Move1 19 vs 14:0.567055 vs 4.13157e-07
+2 logpsi -6.461
+9 logpsi -4.36108
+ Move2 17 vs 18:0.306131 vs 1.35868e-08
+ Move3 15 vs 16:0.274866 vs 0.973553
+
+ Move1 15 vs 5:0.82463 vs 0
+1 logpsi -6.45389
+631 logpsi -0.284733
+ Move2 10 vs 11:0.542708 vs 1.00548
+ Move3 7 vs 8:0.625264 vs 0.766887
+
+ Move1 12 vs 8:0.999101 vs 4.55549
+6 logpsi -5.54015
+4 logpsi -4.78199
+ Move2 12 vs 13:0.648342 vs 0.908291
+ Move3 6 vs 7:0.428904 vs 0.887055
+
+ Move1 17 vs 18:0.923888 vs 7.78268e-08
+8 logpsi -4.66882
+23 logpsi -3.57757
+ Move2 6 vs 7:0.592896 vs 1.02544
+ Move3 4 vs 5:0.229698 vs 772.059
+
+ Move1 18 vs 6:0.738789 vs 6.75005e-13
+25 logpsi -3.71455
+4 logpsi -5.04903
+ Move2 0 vs 1:0.429123 vs 1.04475
+ Move3 12 vs 13:0.147727 vs 1
+
+ Move1 14 vs 18:0.527151 vs 1.30664
+25 logpsi -3.59942
+26 logpsi -3.86687
+ Move2 16 vs 17:0.321987 vs 0.63799
+ Move3 2 vs 3:0.699888 vs 0.996444
+
+ Move1 5 vs 4:0.931381 vs 0
+105 logpsi -2.0193
+660 logpsi -0.207402
+ Move2 7 vs 8:0.587838 vs 1.06381
+ Move3 8 vs 9:0.697784 vs 1.01581
+
+ Move1 3 vs 4:0.248664 vs 0
+2 logpsi -6.56819
+665 logpsi -0.216877
+ Move2 12 vs 13:0.178526 vs 1
+ Move3 9 vs 10:0.4339 vs 1
+
+ Move1 4 vs 16:0.251842 vs 0
+665 logpsi -0.18569
+1 logpsi -7.56295
+ Move2 8 vs 9:0.740029 vs 0.975734
+ Move3 14 vs 15:0.497099 vs 1
+
+ Move1 17 vs 0:0.707596 vs 1
+2 logpsi -7.20253
+2 logpsi -5.4509
+ Move2 8 vs 9:0.669125 vs 1.01265
+ Move3 1 vs 2:0.239095 vs 1
+
+ Move1 5 vs 18:0.0326993 vs 1.75253e-79
+108 logpsi -1.95079
+24 logpsi -4.10963
+ Move2 6 vs 7:0.686457 vs 1.00709
+ Move3 17 vs 18:0.606391 vs 53.0729
+
+ Move1 17 vs 3:0.917877 vs 1.44701e-27
+24 logpsi -4.2316
+1 logpsi -6.91857
+ Move2 10 vs 11:0.888122 vs 1
+ Move3 4 vs 5:0.776017 vs 0.00880866
+
+ Move1 4 vs 15:0.152817 vs 0.581959
+49 logpsi -2.6167
+47 logpsi -2.88738
+ Move2 7 vs 8:0.510016 vs 0.659218
+ Move3 14 vs 15:0.455045 vs 1.21578
+
+ Move1 4 vs 15:0.152817 vs 0.581959
+49 logpsi -2.6167
+47 logpsi -2.88738
+ Move2 7 vs 8:0.510016 vs 0.659218
+ Move3 14 vs 15:0.455045 vs 1.21578
+
+ Move1 15 vs 0:0.771578 vs 0
+543 logpsi -0.440266
+32 logpsi -3.18329
+ Move2 2 vs 3:0.987176 vs 1
+ Move3 0 vs 1:0.847247 vs 0.926973
+
+ Move1 17 vs 14:0.18147 vs 1
+1 logpsi -8.18755
+1 logpsi -6.98781
+ Move2 4 vs 5:0.158784 vs 1
+ Move3 13 vs 14:0.989099 vs 0.999624
+
+ Move1 17 vs 15:0.670446 vs 0
+1 logpsi -6.24226
+806 logpsi -0.0320167
+ Move2 12 vs 13:0.604192 vs 1
+ Move3 9 vs 10:0.950965 vs 1
+
+ Move1 14 vs 15:0.801047 vs 0
+1 logpsi -6.52864
+806 logpsi -0.0237999
+ Move2 0 vs 1:0.839957 vs 1
+ Move3 11 vs 12:0.780364 vs 1
+
+ Move1 17 vs 14:0.250961 vs 1
+1 logpsi -6.9604
+1 logpsi -4.66095
+ Move2 6 vs 7:0.628171 vs 1
+ Move3 10 vs 11:0.675463 vs 1
+
+ Move1 15 vs 17:0.985094 vs 0
+806 logpsi -0.0232964
+1 logpsi -8.60762
+ Move2 7 vs 8:0.320505 vs 1
+ Move3 4 vs 5:0.181167 vs 1
+
+ Move1 17 vs 14:0.748273 vs 1
+1 logpsi -7.25822
+1 logpsi -7.11972
+ Move2 8 vs 9:0.664676 vs 1
+ Move3 9 vs 10:0.49105 vs 1
+
+ Move1 15 vs 14:0.841062 vs 0
+807 logpsi -0.0243194
+1 logpsi -5.52623
+ Move2 0 vs 1:0.401201 vs 1
+ Move3 4 vs 5:0.873272 vs 1
+
+ Move1 15 vs 14:0.844522 vs 0
+807 logpsi -0.0240282
+1 logpsi -5.22123
+ Move2 1 vs 2:0.29781 vs 1
+ Move3 12 vs 13:0.761923 vs 1
+
+ Move1 19 vs 12:0.973951 vs 0.965093
+33 logpsi -3.27396
+34 logpsi -3.23843
+ Move2 7 vs 8:0.590675 vs 0.249231
+ Move3 13 vs 14:0.313631 vs 0.916003
+
+ Move1 7 vs 1:0.0501132 vs 0.477341
+2 logpsi -5.60107
+1 logpsi -6.3406
+ Move2 1 vs 2:0.368679 vs 0.986068
+ Move3 17 vs 18:0.525688 vs 134.125
+
+ Move1 5 vs 12:0.320748 vs 0
+480 logpsi -0.538294
+25 logpsi -3.65947
+ Move2 11 vs 12:0.902577 vs 1.07011
+ Move3 0 vs 1:0.792829 vs 1.02473
+
+ Move1 10 vs 17:0.108206 vs 1.58335e-16
+10 logpsi -4.3257
+1 logpsi -8.36812
+ Move2 9 vs 10:0.353882 vs 1.45281
+ Move3 15 vs 16:0.22449 vs 1009.54
+
+ Move1 1 vs 15:0.0558709 vs 4.26265e-15
+10 logpsi -4.27686
+2 logpsi -8.41297
+ Move2 6 vs 7:0.401788 vs 1
+ Move3 4 vs 5:0.225747 vs 2.75736e+15
+
+ Move1 4 vs 0:0.632255 vs 0
+755 logpsi -0.0732243
+16 logpsi -3.98998
+ Move2 8 vs 9:0.280821 vs 1.13321
+ Move3 1 vs 2:0.806465 vs 0.925255
+
+ Move1 0 vs 4:0.666668 vs 0
+4 logpsi -5.29854
+726 logpsi -0.113771
+ Move2 1 vs 2:0.0422744 vs 1.03401
+ Move3 2 vs 3:0.828816 vs 1
+
+ Move1 0 vs 1:0.413996 vs 1.78839e-166
+8 logpsi -4.40888
+148 logpsi -1.68282
+ Move2 2 vs 3:0.269047 vs 1
+ Move3 0 vs 1:0.883083 vs 1.46515
+
+ Move1 0 vs 4:0.0376949 vs 1.67208e-45
+293 logpsi -1.01236
+494 logpsi -0.499412
+ Move2 0 vs 1:0.92512 vs 0.0272692
+ Move3 3 vs 4:0.24756 vs 4.28809e+161
+
+ Move1 0 vs 1:0.107219 vs 1.65117e-25
+17 logpsi -3.86543
+64 logpsi -2.65132
+ Move2 2 vs 3:0.734363 vs 1.14726
+ Move3 1 vs 2:0.993287 vs 70147.7
+
+ Move1 13 vs 14:0.0683655 vs 0.0501066
+41 logpsi -3.19684
+30 logpsi -3.46898
+ Move2 18 vs 19:0.729332 vs 8.10173e-111
+ Move3 2 vs 3:0.627458 vs 0.981986
+
+ Move1 16 vs 0:0.933788 vs 1.97131e-21
+21 logpsi -3.89083
+57 logpsi -2.56651
+ Move2 11 vs 12:0.141815 vs 0.76965
+ Move3 4 vs 5:0.42622 vs 1.46299
+
+ Move1 11 vs 9:0.265918 vs 0.000913171
+7 logpsi -4.44395
+17 logpsi -3.74409
+ Move2 11 vs 12:0.147839 vs 0.911749
+ Move3 6 vs 7:0.860336 vs 1.22884
+
+ Move1 12 vs 3:0.365899 vs 1.9779e-78
+6 logpsi -4.92126
+75 logpsi -2.32823
+ Move2 7 vs 8:0.895849 vs 0.71035
+ Move3 4 vs 5:0.783088 vs 0.654385
+
+ Move1 6 vs 8:0.171322 vs 0.130697
+155 logpsi -1.82183
+111 logpsi -1.86807
+ Move2 11 vs 12:0.633899 vs 0.873561
+ Move3 10 vs 11:0.697181 vs 0.364789
+
+ Move1 12 vs 17:0.538396 vs 0.0326888
+8 logpsi -4.38357
+16 logpsi -3.95597
+ Move2 0 vs 1:0.999135 vs 1.04113
+ Move3 10 vs 11:0.366609 vs 0.323058
+
+ Move1 11 vs 6:0.940342 vs 5.14476e-126
+12 logpsi -4.29379
+127 logpsi -1.7852
+ Move2 17 vs 18:0.155406 vs 0.000424015
+ Move3 2 vs 3:0.683823 vs 1.15337
+
+ Move1 14 vs 6:0.287122 vs 2.06855e-30
+36 logpsi -2.96692
+108 logpsi -2.01761
+ Move2 17 vs 18:0.287711 vs 0.0731686
+ Move3 15 vs 16:0.165212 vs 1.28999
+
+ Move1 2 vs 14:0.220467 vs 0.0146939
+46 logpsi -2.81894
+38 logpsi -3.34648
+ Move2 1 vs 2:0.901008 vs 1.40887
+ Move3 8 vs 9:0.432125 vs 0.139923
+
+ Move1 12 vs 1:0.41704 vs 2.72509e-17
+13 logpsi -3.92889
+52 logpsi -2.9509
+ Move2 12 vs 13:0.648013 vs 0.838937
+ Move3 3 vs 4:0.449998 vs 1.77998
+
+ Move1 13 vs 14:0.0683655 vs 0.0501066
+41 logpsi -3.19684
+30 logpsi -3.46898
+ Move2 18 vs 19:0.729332 vs 8.10173e-111
+ Move3 2 vs 3:0.627458 vs 0.981986
+
+ Move1 16 vs 0:0.933788 vs 1.96947e-21
+21 logpsi -3.89086
+57 logpsi -2.56651
+ Move2 11 vs 12:0.141815 vs 0.76965
+ Move3 4 vs 5:0.42622 vs 1.46401
+
+ Move1 11 vs 9:0.265918 vs 7.36975e-07
+7 logpsi -4.44421
+22 logpsi -3.50283
+ Move2 11 vs 12:0.147839 vs 0.911964
+ Move3 6 vs 7:0.860336 vs 1.20878
+
+ Move1 12 vs 3:0.365899 vs 3.73408e-86
+5 logpsi -5.08555
+76 logpsi -2.31506
+ Move2 7 vs 8:0.895849 vs 0.975287
+ Move3 4 vs 5:0.783088 vs 0.653588
+
+ Move1 4 vs 12:0.633899 vs 6.86821e-213
+143 logpsi -1.68175
+5 logpsi -5.22177
+ Move2 10 vs 11:0.697181 vs 1.20931
+ Move3 10 vs 11:0.55152 vs 2.51932
+
+ Move1 19 vs 3:0.93883 vs 1.54233e-51
+10 logpsi -5.00836
+60 logpsi -2.66839
+ Move2 1 vs 2:0.165887 vs 0.942935
+ Move3 7 vs 8:0.410612 vs 0.831726
+
+ Move1 14 vs 12:0.201715 vs 1.04464e-20
+35 logpsi -3.13481
+6 logpsi -4.72129
+ Move2 6 vs 7:0.228364 vs 0.0164995
+ Move3 18 vs 19:0.188896 vs 4.58136
+
+ Move1 2 vs 4:0.233882 vs 1.65548e-132
+4 logpsi -5.08094
+103 logpsi -2.01592
+ Move2 6 vs 7:0.954372 vs 1.1127
+ Move3 0 vs 1:0.894251 vs 0.937342
+
+ Move1 10 vs 3:0.978463 vs 3.58275e-41
+127 logpsi -1.91269
+46 logpsi -3.06244
+ Move2 4 vs 5:0.939366 vs 0.709038
+ Move3 16 vs 17:0.589824 vs 0.897837
+
+ Move1 19 vs 16:0.189851 vs 1.03103e-12
+2 logpsi -6.66185
+13 logpsi -4.15272
+ Move2 9 vs 10:0.0980179 vs 0.167906
+ Move3 4 vs 5:0.815112 vs 0.650592
+
+ Move1 10 vs 19:0.834477 vs 0.121577
+3 logpsi -5.23363
+2 logpsi -7.34084
+ Move2 18 vs 19:0.565127 vs 0.0129689
+ Move3 9 vs 10:0.231702 vs 0.241148
+
+ Move1 10 vs 15:0.974126 vs 6.82158e-95
+75 logpsi -2.33204
+3 logpsi -5.3435
+ Move2 9 vs 10:0.536993 vs 1.43524
+ Move3 15 vs 16:0.181136 vs 1.61376
+
+ Move1 5 vs 16:0.0193633 vs 1.32512e-47
+45 logpsi -2.63728
+2 logpsi -5.14751
+ Move2 18 vs 19:0.0364527 vs 2.71028e-07
+ Move3 18 vs 19:0.482481 vs 0.15355
+
+ Move1 18 vs 9:0.0790939 vs 3.97134e-50
+10 logpsi -4.75809
+60 logpsi -2.48309
+ Move2 8 vs 9:0.2405 vs 1.59478
+ Move3 12 vs 13:0.493589 vs 0.899525
+
+ Move1 19 vs 4:0.74198 vs 0
+1 logpsi -8.15151
+521 logpsi -0.438256
+ Move2 12 vs 13:0.0447344 vs 1.01655
+ Move3 10 vs 11:0.276844 vs 1.72489
+
+ Move1 18 vs 14:0.507996 vs 4.06226e-07
+13 logpsi -4.01561
+32 logpsi -3.24106
+ Move2 11 vs 12:0.879498 vs 1.06072
+ Move3 13 vs 14:0.631908 vs 3.59297
+
+ Move1 7 vs 10:0.684881 vs 7.91495e-44
+1 logpsi -5.99268
+34 logpsi -2.98526
+ Move2 3 vs 4:0.894323 vs 6.34185e-16
+ Move3 2 vs 3:0.387075 vs 1.19274
+
+ Move1 9 vs 11:0.540236 vs 1.83669
+36 logpsi -2.95063
+46 logpsi -3.01142
+ Move2 9 vs 10:0.80456 vs 1.27927
+ Move3 13 vs 14:0.27687 vs 0.916003
+
+ Move1 16 vs 12:0.0450238 vs 1
+1 logpsi -5.75968
+1 logpsi -5.34949
+ Move2 10 vs 11:0.0938596 vs 0.281351
+ Move3 12 vs 13:0.872737 vs 2.47658
+
+ Move1 3 vs 13:0.197171 vs 1.28221e-94
+1 logpsi -5.62517
+68 logpsi -2.39839
+ Move2 5 vs 6:0.78433 vs 0.00226049
+ Move3 1 vs 2:0.551151 vs 0.912771
+
+ Move1 5 vs 6:0.7287 vs 9.12157e-196
+113 logpsi -1.97476
+2 logpsi -6.02068
+ Move2 3 vs 4:0.188436 vs 1.01045
+ Move3 0 vs 1:0.611595 vs 0.91159
+
+ Move1 2 vs 15:0.0314018 vs 6.41404e-102
+66 logpsi -2.4731
+2 logpsi -6.11381
+ Move2 16 vs 17:0.274533 vs 2.51976
+ Move3 1 vs 2:0.971892 vs 1.17647
+
+ Move1 10 vs 13:0.0279835 vs 3.66622e-39
+9 logpsi -4.38152
+62 logpsi -2.71168
+ Move2 12 vs 13:0.334735 vs 4.16637
+ Move3 13 vs 14:0.749904 vs 0.709719
+
+ Move1 18 vs 5:0.211814 vs 5.62952e-13
+69 logpsi -2.46029
+116 logpsi -1.86017
+ Move2 9 vs 10:0.444778 vs 3.47314
+ Move3 16 vs 17:0.381037 vs 0.465478
+
+ Move1 4 vs 8:0.209708 vs 0
+516 logpsi -0.448093
+91 logpsi -2.27801
+ Move2 2 vs 3:0.0379196 vs 0.997608
+ Move3 12 vs 13:0.138507 vs 0.420981
+
+ Move1 3 vs 5:0.754528 vs 7.84744e-16
+25 logpsi -3.21658
+72 logpsi -2.47656
+ Move2 16 vs 17:0.127624 vs 1.00325
+ Move3 2 vs 3:0.101698 vs 1.06464
+
+ Move1 5 vs 2:0.249429 vs 3.15343e-73
+4 logpsi -5.67821
+59 logpsi -2.64294
+ Move2 2 vs 3:0.321319 vs 0.954741
+ Move3 1 vs 2:0.768988 vs 1
+
+ Move1 16 vs 12:0.606172 vs 2.64314e-12
+18 logpsi -4.08948
+1 logpsi -5.65766
+ Move2 17 vs 18:0.91658 vs 413.43
+ Move3 6 vs 7:0.288267 vs 1
+
+ Move1 7 vs 11:0.196902 vs 5.61609e-141
+114 logpsi -2.12029
+3 logpsi -5.02965
+ Move2 9 vs 10:0.505262 vs 1.04843
+ Move3 16 vs 17:0.0726841 vs 1
+
+ Move1 12 vs 8:0.999349 vs 1.84136e-249
+1 logpsi -7.10328
+115 logpsi -2.07931
+ Move2 3 vs 4:0.946016 vs 0.825916
+ Move3 0 vs 1:0.937994 vs 1.1541
+
+ Move1 5 vs 8:0.1246 vs 5.20079e-38
+42 logpsi -2.75104
+140 logpsi -1.87503
+ Move2 13 vs 14:0.944286 vs 0.306103
+ Move3 1 vs 2:0.579521 vs 1
+
+ Move1 17 vs 16:0.618444 vs 1.12884
+20 logpsi -3.65347
+18 logpsi -3.59287
+ Move2 5 vs 6:0.853933 vs 0.934466
+ Move3 2 vs 3:0.850418 vs 1.00116
+
+ Move1 16 vs 4:0.0214986 vs 3.56771e-164
+23 logpsi -3.46441
+211 logpsi -1.46253
+ Move2 8 vs 9:0.281942 vs 0.983429
+ Move3 14 vs 15:0.533034 vs 1.02544
+
+ Move1 13 vs 11:0.358507 vs 1.41385e-69
+52 logpsi -2.69147
+2 logpsi -5.86211
+ Move2 1 vs 2:0.700073 vs 1
+ Move3 2 vs 3:0.459864 vs 1.1687
+
+ Move1 13 vs 0:0.587281 vs 3.27202e-05
+29 logpsi -3.45954
+45 logpsi -2.81407
+ Move2 3 vs 4:0.247618 vs 1.02626
+ Move3 10 vs 11:0.928485 vs 1.94733
+
+ Move1 9 vs 7:0.0223605 vs 9.71059e-65
+49 logpsi -3.01472
+2 logpsi -6.15078
+ Move2 4 vs 5:0.669025 vs 1
+ Move3 2 vs 3:0.462548 vs 0.96144
+
+ Move1 16 vs 0:0.690994 vs 2.25109e-06
+23 logpsi -3.6796
+42 logpsi -2.99518
+ Move2 11 vs 12:0.374497 vs 0.857972
+ Move3 4 vs 5:0.0394432 vs 1
+
+ Move1 11 vs 10:0.911542 vs 1.00536e-51
+1 logpsi -6.20584
+39 logpsi -3.11567
+ Move2 9 vs 10:0.494528 vs 1.20839e-75
+ Move3 7 vs 8:0.393904 vs 1
+
+ Move1 10 vs 12:0.902693 vs 2.45193e-38
+39 logpsi -3.02087
+4 logpsi -5.49519
+ Move2 15 vs 16:0.671069 vs 1.4001
+ Move3 1 vs 2:0.969091 vs 1
+
+ Move1 15 vs 10:0.433249 vs 5.74251e-07
+23 logpsi -3.66077
+39 logpsi -2.76264
+ Move2 0 vs 1:0.818801 vs 0.998133
+ Move3 4 vs 5:0.642935 vs 1
+
+ Move1 14 vs 17:0.607698 vs 1.45824e-32
+1 logpsi -7.58118
+22 logpsi -4.09044
+ Move2 4 vs 5:0.542042 vs 1
+ Move3 16 vs 17:0.818106 vs 306.554
+
+ Move1 13 vs 10:0.624106 vs 0.693013
+48 logpsi -2.76775
+43 logpsi -2.84109
+ Move2 4 vs 5:0.732687 vs 1
+ Move3 7 vs 8:0.42161 vs 1
+
+ Move1 13 vs 11:0.441943 vs 5.0396e-69
+43 logpsi -3.13991
+1 logpsi -6.88422
+ Move2 9 vs 10:0.998471 vs 1.33216e-115
+ Move3 14 vs 15:0.242274 vs 2.85837
+
+ Move1 9 vs 15:0.393681 vs 0
+666 logpsi -0.19448
+1 logpsi -4.92879
+ Move2 4 vs 5:0.283595 vs 1
+ Move3 14 vs 15:0.220884 vs 0.415531
+
+ Move1 9 vs 16:0.963743 vs 0
+666 logpsi -0.210833
+23 logpsi -3.4025
+ Move2 4 vs 5:0.885658 vs 1
+ Move3 15 vs 16:0.231665 vs 1.13858
+
+ Move1 14 vs 10:0.365723 vs 1.14707e-71
+1 logpsi -6.34681
+48 logpsi -2.87136
+ Move2 3 vs 4:0.813304 vs 1
+ Move3 10 vs 11:0.971253 vs 0.445033
+
+ Move1 12 vs 16:0.416154 vs 8.80942e-13
+4 logpsi -5.11543
+23 logpsi -3.65449
+ Move2 8 vs 9:0.225321 vs 1.05422
+ Move3 8 vs 9:0.0909494 vs 0.00479525
+
+ Move1 12 vs 8:0.787254 vs 0
+4 logpsi -5.55675
+665 logpsi -0.19978
+ Move2 9 vs 10:0.94523 vs 2.74463
+ Move3 15 vs 16:0.128383 vs 0.867636
+
+ Move1 11 vs 12:0.556477 vs 0.735519
+1 logpsi -5.06394
+4 logpsi -4.96154
+ Move2 10 vs 11:0.0669042 vs 1.00836
+ Move3 3 vs 4:0.389562 vs 1
+
+ Move1 8 vs 14:0.170698 vs 0
+664 logpsi -0.195627
+1 logpsi -6.2622
+ Move2 2 vs 3:0.277702 vs 1
+ Move3 13 vs 14:0.28659 vs 0.204817
+
+ Move1 10 vs 12:0.604536 vs 0.0460669
+4 logpsi -5.80653
+1 logpsi -6.83242
+ Move2 1 vs 2:0.391128 vs 1
+ Move3 1 vs 2:0.804227 vs 1
+
+ Move1 15 vs 8:0.9116 vs 0
+23 logpsi -3.55944
+664 logpsi -0.214362
+ Move2 6 vs 7:0.638507 vs 1
+ Move3 9 vs 10:0.0937807 vs 0.65623
+
+ Move1 8 vs 12:0.829433 vs 0
+647 logpsi -0.226142
+1 logpsi -6.91094
+ Move2 9 vs 10:0.117807 vs 0.786606
+ Move3 0 vs 1:0.872294 vs 1
+
+ Move1 15 vs 9:0.420325 vs 5.61966e-13
+23 logpsi -3.38586
+52 logpsi -2.41319
+ Move2 10 vs 11:0.194428 vs 0.980136
+ Move3 4 vs 5:0.500187 vs 1
+
+ Move1 14 vs 13:0.527527 vs 1.16962e-190
+1 logpsi -6.17272
+109 logpsi -2.12333
+ Move2 6 vs 7:0.353069 vs 1
+ Move3 5 vs 6:0.454652 vs 1
+
+ Move1 14 vs 8:0.75687 vs 0
+1 logpsi -8.23233
+457 logpsi -0.563442
+ Move2 1 vs 2:0.673809 vs 1
+ Move3 12 vs 13:0.129903 vs 11.9532
+
+ Move1 16 vs 9:0.132114 vs 3.45287e-87
+48 logpsi -2.85386
+184 logpsi -1.39
+ Move2 1 vs 2:0.611169 vs 1
+ Move3 11 vs 12:0.542724 vs 20.1861
+
+ Move1 14 vs 11:0.438645 vs 0
+1 logpsi -6.43264
+244 logpsi -1.1655
+ Move2 13 vs 14:0.0428711 vs 1.03511
+ Move3 12 vs 13:0.639909 vs 0.944694
+
+ Move1 12 vs 8:0.744443 vs 1.34822e-98
+1 logpsi -5.01924
+81 logpsi -2.20231
+ Move2 0 vs 1:0.282155 vs 1
+ Move3 1 vs 2:0.396763 vs 1
+
+ Move1 14 vs 8:0.151807 vs 6.8667e-181
+1 logpsi -8.34199
+72 logpsi -2.49915
+ Move2 8 vs 9:0.806701 vs 1.54376e-10
+ Move3 13 vs 14:0.348264 vs 0.942282
+
+ Move1 8 vs 12:0.0671074 vs 4.86878e-141
+74 logpsi -2.40813
+1 logpsi -6.8339
+ Move2 3 vs 4:0.0532472 vs 1
+ Move3 6 vs 7:0.186956 vs 1
+
+ Move1 16 vs 11:0.282605 vs 3.42861e-114
+170 logpsi -1.57548
+28 logpsi -3.41535
+ Move2 15 vs 16:0.792985 vs 2.19181e-35
+ Move3 3 vs 4:0.644834 vs 1
+
+ Move1 9 vs 8:0.116471 vs 0
+509 logpsi -0.465328
+46 logpsi -2.80615
+ Move2 8 vs 9:0.432871 vs 1.44319e-09
+ Move3 3 vs 4:0.385397 vs 1
+
+ Move1 12 vs 14:0.649003 vs 0.00197541
+1 logpsi -7.27997
+4 logpsi -5.20431
+ Move2 7 vs 8:0.775308 vs 1.0209
+ Move3 10 vs 11:0.891152 vs 1.19798
+
+ Move1 10 vs 9:0.962257 vs 0
+29 logpsi -3.24756
+459 logpsi -0.563956
+ Move2 4 vs 5:0.66062 vs 1
+ Move3 6 vs 7:0.618097 vs 1.08825
+
+ Move1 15 vs 16:0.14229 vs 0
+26 logpsi -3.64225
+315 logpsi -1.0248
+ Move2 5 vs 6:0.894293 vs 1.01104
+ Move3 10 vs 11:0.039161 vs 0.773712
+
+ Move1 11 vs 14:0.829721 vs 1.00827e-72
+89 logpsi -2.16423
+9 logpsi -4.23645
+ Move2 13 vs 14:0.780806 vs 0.988078
+ Move3 3 vs 4:0.470749 vs 1
+
+ Move1 14 vs 11:0.210483 vs 0
+1 logpsi -7.4169
+146 logpsi -1.73447
+ Move2 15 vs 16:0.294754 vs 8.27423e-50
+ Move3 1 vs 2:0.239461 vs 1
+
+ Move1 15 vs 5:0.94176 vs 1.0235e-15
+26 logpsi -3.47775
+7 logpsi -5.29436
+ Move2 5 vs 6:0.294011 vs 0.975346
+ Move3 14 vs 15:0.903822 vs 1.09869
+
+ Move1 13 vs 16:0.0888125 vs 0
+14 logpsi -4.17597
+363 logpsi -0.779085
+ Move2 1 vs 2:0.11773 vs 1
+ Move3 10 vs 11:0.417234 vs 4.07658
+
+ Move1 10 vs 12:0.715908 vs 0
+504 logpsi -0.491085
+1 logpsi -7.41603
+ Move2 7 vs 8:0.676083 vs 1
+ Move3 0 vs 1:0.960722 vs 1
+
+ Move1 6 vs 9:0.512118 vs 0.81602
+7 logpsi -4.97329
+8 logpsi -4.76998
+ Move2 2 vs 3:0.775589 vs 1
+ Move3 8 vs 9:0.745602 vs 1.01734
+
+ Move1 12 vs 10:0.92147 vs 0
+1 logpsi -6.25502
+637 logpsi -0.268347
+ Move2 7 vs 8:0.582364 vs 1.00221
+ Move3 15 vs 16:0.592889 vs 1.82183e+06
+
+ Move1 10 vs 15:0.648203 vs 0
+572 logpsi -0.371876
+25 logpsi -3.37587
+ Move2 1 vs 2:0.350899 vs 1
+ Move3 9 vs 10:0.440668 vs 24.1085
+
+ Move1 13 vs 14:0.735786 vs 1.25966e-293
+295 logpsi -1.03613
+29 logpsi -3.57157
+ Move2 14 vs 15:0.0422566 vs 4.50381e-40
+ Move3 13 vs 14:0.91833 vs 0.00357473
+
+ Move1 13 vs 9:0.712605 vs 3.49893e-36
+458 logpsi -0.6018
+283 logpsi -1.06832
+ Move2 5 vs 6:0.0930858 vs 1
+ Move3 6 vs 7:0.507851 vs 1.03052
+
+ Move1 13 vs 14:0.90611 vs 0
+598 logpsi -0.311812
+29 logpsi -3.70022
+ Move2 10 vs 11:0.0339388 vs 1
+ Move3 9 vs 10:0.455284 vs 0.670991
+
+ Move1 6 vs 12:0.323236 vs 0.0238421
+6 logpsi -5.48588
+1 logpsi -6.23314
+ Move2 8 vs 9:0.878841 vs 1
+ Move3 4 vs 5:0.343602 vs 1
+
+ Move1 15 vs 14:0.952375 vs 0.996976
+28 logpsi -3.23543
+29 logpsi -3.2324
+ Move2 12 vs 13:0.084275 vs 0.213647
+ Move3 13 vs 14:0.227267 vs 3.61783
+
+ Move1 14 vs 12:0.797863 vs 0
+1 logpsi -5.91801
+698 logpsi -0.135403
+ Move2 5 vs 6:0.207166 vs 1.00681
+ Move3 10 vs 11:0.39532 vs 0.886314
+
+ Move1 11 vs 5:0.798297 vs 1.4216
+18 logpsi -3.84585
+13 logpsi -3.77549
+ Move2 14 vs 15:0.721855 vs 0.235702
+ Move3 13 vs 14:0.233857 vs 0.310069
+
+ Move1 14 vs 13:0.647222 vs 2.64105e-23
+21 logpsi -4.01057
+1 logpsi -6.60998
+ Move2 4 vs 5:0.555812 vs 1.00102
+ Move3 4 vs 5:0.858367 vs 0.998754
+
+ Move1 14 vs 11:0.0640832 vs 3.99277e-57
+5 logpsi -5.45867
+52 logpsi -2.69563
+ Move2 6 vs 7:0.0500479 vs 1
+ Move3 4 vs 5:0.298761 vs 1
+
+ Move1 12 vs 14:0.876626 vs 0
+714 logpsi -0.152007
+1 logpsi -6.81497
+ Move2 1 vs 2:0.805444 vs 1
+ Move3 2 vs 3:0.291783 vs 1
+
+ Move1 11 vs 12:0.548162 vs 0
+82 logpsi -2.30395
+688 logpsi -0.183375
+ Move2 0 vs 1:0.192969 vs 1
+ Move3 14 vs 15:0.535445 vs 991247
+
+ Move1 11 vs 12:0.280739 vs 0
+130 logpsi -1.79049
+641 logpsi -0.278806
+ Move2 1 vs 2:0.325508 vs 1
+ Move3 9 vs 10:0.364136 vs 1
+
+ Move1 14 vs 11:0.633654 vs 8.72065e-162
+36 logpsi -2.97211
+253 logpsi -1.26311
+ Move2 3 vs 4:0.915326 vs 1
+ Move3 11 vs 12:0.652467 vs 4.37203
+
+ Move1 14 vs 11:0.292098 vs 2.01517e-314
+36 logpsi -3.4009
+325 logpsi -0.901553
+ Move2 10 vs 11:0.920532 vs 1.04493
+ Move3 5 vs 6:0.164049 vs 1
+
+ Move1 12 vs 13:0.748617 vs 0
+731 logpsi -0.130889
+1 logpsi -5.47243
+ Move2 2 vs 3:0.127255 vs 1
+ Move3 0 vs 1:0.537266 vs 1
+
+ Move1 10 vs 13:0.443949 vs 5.84795e-53
+39 logpsi -2.74439
+1 logpsi -5.90942
+ Move2 3 vs 4:0.877937 vs 1
+ Move3 12 vs 13:0.528274 vs 6.16081e-09
+
+ Move1 14 vs 13:0.951331 vs 2.83267e-50
+36 logpsi -3.24807
+1 logpsi -6.50773
+ Move2 0 vs 1:0.262211 vs 1
+ Move3 12 vs 13:0.097392 vs 5.70815e-09
+
+ Move1 13 vs 12:0.869356 vs 0
+1 logpsi -8.52681
+744 logpsi -0.0899054
+ Move2 11 vs 12:0.97678 vs 1.55317
+ Move3 7 vs 8:0.395553 vs 1
+
+ Move1 14 vs 13:0.960661 vs 5.59981e-47
+36 logpsi -2.95779
+1 logpsi -6.00061
+ Move2 2 vs 3:0.850862 vs 1
+ Move3 13 vs 14:0.318133 vs 3814.11
+
+ Move1 14 vs 13:0.778749 vs 1.03502e-71
+1 logpsi -7.64245
+36 logpsi -2.97248
+ Move2 0 vs 1:0.135021 vs 1
+ Move3 0 vs 1:0.295188 vs 1
+
+ Move1 14 vs 10:0.475737 vs 1.0324e-42
+1 logpsi -6.14303
+31 logpsi -2.92048
+ Move2 5 vs 6:0.57406 vs 1
+ Move3 5 vs 6:0.771716 vs 1
+
+ Move1 11 vs 10:0.816671 vs 0
+740 logpsi -0.138233
+31 logpsi -2.94874
+ Move2 1 vs 2:0.00848163 vs 1
+ Move3 7 vs 8:0.65518 vs 1
+
+ Move1 10 vs 11:0.193515 vs 0
+35 logpsi -3.10557
+735 logpsi -0.108386
+ Move2 4 vs 5:0.642219 vs 1
+ Move3 6 vs 7:0.0856211 vs 1
+
+ Move1 10 vs 13:0.151192 vs 0.935719
+38 logpsi -3.1097
+37 logpsi -3.17614
+ Move2 0 vs 1:0.792463 vs 1
+ Move3 2 vs 3:0.0905982 vs 1
+
+ Move1 10 vs 11:0.982217 vs 0
+37 logpsi -2.8862
+729 logpsi -0.119854
+ Move2 8 vs 9:0.915997 vs 1
+ Move3 8 vs 9:0.678765 vs 1
+
+ Move1 13 vs 11:0.219369 vs 0
+41 logpsi -2.93442
+729 logpsi -0.131898
+ Move2 13 vs 14:0.432511 vs 4.04204e-20
+ Move3 3 vs 4:0.0472172 vs 1
+
+ Move1 10 vs 13:0.0528135 vs 0.664615
+37 logpsi -2.98663
+41 logpsi -2.88449
+ Move2 5 vs 6:0.525246 vs 1
+ Move3 7 vs 8:0.408085 vs 1
+
+ Move1 11 vs 14:0.116637 vs 0
+724 logpsi -0.124518
+1 logpsi -9.69318
+ Move2 2 vs 3:0.726826 vs 1
+ Move3 6 vs 7:0.0997782 vs 1
+
+ Move1 10 vs 11:0.202628 vs 0
+59 logpsi -2.66534
+711 logpsi -0.133827
+ Move2 12 vs 13:0.815359 vs 2.31563
+ Move3 6 vs 7:0.479222 vs 1
+
+ Move1 10 vs 11:0.560014 vs 0
+63 logpsi -2.37225
+707 logpsi -0.148892
+ Move2 7 vs 8:0.0678789 vs 1
+ Move3 8 vs 9:0.722038 vs 1
+
+ Move1 11 vs 10:0.0249939 vs 0
+699 logpsi -0.178229
+71 logpsi -2.35925
+ Move2 4 vs 5:0.162769 vs 1
+ Move3 12 vs 13:0.87867 vs 0.000162973
+
+ Move1 14 vs 11:0.1909 vs 0
+1 logpsi -6.44955
+671 logpsi -0.220774
+ Move2 6 vs 7:0.0808532 vs 1
+ Move3 5 vs 6:0.621578 vs 1
+
+ Move1 11 vs 14:0.796519 vs 0
+703 logpsi -0.177586
+1 logpsi -7.6369
+ Move2 8 vs 9:0.0543061 vs 1
+ Move3 9 vs 10:0.762694 vs 1.18124
+
+ Move1 12 vs 14:0.488469 vs 9.4874e-85
+40 logpsi -3.17682
+1 logpsi -8.13758
+ Move2 0 vs 1:0.937974 vs 1
+ Move3 7 vs 8:0.335672 vs 1
+
+ Move1 12 vs 11:0.0124662 vs 0
+40 logpsi -2.78158
+734 logpsi -0.117392
+ Move2 8 vs 9:0.0892356 vs 1.06307
+ Move3 1 vs 2:0.0405373 vs 1
+
+ Move1 12 vs 11:0.0823754 vs 0
+41 logpsi -2.94322
+738 logpsi -0.107797
+ Move2 4 vs 5:0.262068 vs 1
+ Move3 8 vs 9:0.331841 vs 0.932552
+
+ Move1 14 vs 12:0.600868 vs 1.72858e-62
+2 logpsi -6.52003
+42 logpsi -2.9647
+ Move2 9 vs 10:0.804893 vs 0.985046
+ Move3 11 vs 12:0.163357 vs 1.97338e-07
+
+ Move1 12 vs 11:0.171795 vs 0
+46 logpsi -3.12475
+732 logpsi -0.100026
+ Move2 13 vs 14:0.0622389 vs 1.0598
+ Move3 10 vs 11:0.776516 vs 17558.1
+
+ Move1 10 vs 13:0.671293 vs 0
+712 logpsi -0.147411
+4 logpsi -5.03988
+ Move2 0 vs 1:0.45586 vs 1
+ Move3 11 vs 12:0.0184306 vs 3.74666
+
+ Move1 12 vs 10:0.363903 vs 0
+34 logpsi -3.30881
+686 logpsi -0.169889
+ Move2 1 vs 2:0.970216 vs 1
+ Move3 9 vs 10:0.208628 vs 563.978
+
+ Move1 11 vs 9:0.900245 vs 0
+124 logpsi -1.98644
+632 logpsi -0.219406
+ Move2 11 vs 12:0.995544 vs 1.99232e-67
+ Move3 11 vs 12:0.445163 vs 0.108201
+
+ Move1 13 vs 9:0.860567 vs 0
+5 logpsi -5.44985
+539 logpsi -0.432983
+ Move2 7 vs 8:0.137873 vs 1
+ Move3 12 vs 13:0.0797257 vs 0.000450431
+
+ Move1 12 vs 11:0.401279 vs 2.46263e-268
+70 logpsi -2.54862
+405 logpsi -0.709246
+ Move2 10 vs 11:0.120636 vs 1.54741
+ Move3 7 vs 8:0.166635 vs 1
+
+ Move1 10 vs 9:0.298862 vs 0
+681 logpsi -0.191959
+34 logpsi -3.06063
+ Move2 2 vs 3:0.409208 vs 1
+ Move3 1 vs 2:0.473712 vs 1
+
+ Move1 10 vs 9:0.332442 vs 0
+666 logpsi -0.206312
+32 logpsi -3.42897
+ Move2 2 vs 3:0.0749928 vs 1
+ Move3 6 vs 7:0.824325 vs 1
+
+ Move1 10 vs 9:0.603757 vs 0
+711 logpsi -0.148129
+27 logpsi -3.31304
+ Move2 4 vs 5:0.00835395 vs 1
+ Move3 8 vs 9:0.288955 vs 1.06519
+
+ Move1 13 vs 10:0.0235196 vs 0
+10 logpsi -4.36627
+709 logpsi -0.159451
+ Move2 3 vs 4:0.493596 vs 1
+ Move3 11 vs 12:0.500395 vs 464.961
+
+ Move1 10 vs 13:0.965885 vs 0
+720 logpsi -0.137723
+15 logpsi -3.90407
+ Move2 10 vs 11:0.340029 vs 0
+ Move3 10 vs 11:0.647076 vs 7.02725e-05
+
+ Move1 11 vs 13:0.937757 vs 0.000960026
+41 logpsi -2.94496
+25 logpsi -3.37924
+ Move2 9 vs 10:0.418895 vs 1.59294
+ Move3 2 vs 3:0.965989 vs 1
+
+ Move1 8 vs 11:0.732241 vs 1.19349e-39
+2 logpsi -5.95
+33 logpsi -3.05891
+ Move2 10 vs 11:0.82492 vs 1.26929
+ Move3 2 vs 3:0.794519 vs 1
+
+ Move1 10 vs 9:0.452092 vs 0
+26 logpsi -3.38665
+750 logpsi -0.0830093
+ Move2 12 vs 13:0.286308 vs 1.27844
+ Move3 8 vs 9:0.642089 vs 643451
+
+ Move1 12 vs 10:0.560483 vs 5.83219
+30 logpsi -3.72675
+24 logpsi -3.43285
+ Move2 8 vs 9:0.243325 vs 9.16265e-35
+ Move3 7 vs 8:0.0417262 vs 1.01128e+06
+
+ Move1 7 vs 9:0.203603 vs 0
+752 logpsi -0.0878283
+1 logpsi -5.2291
+ Move2 8 vs 9:0.499178 vs 1.01288
+ Move3 3 vs 4:0.963648 vs 1
+
+ Move1 8 vs 10:0.205873 vs 3.80178e-56
+1 logpsi -7.37507
+31 logpsi -3.12143
+ Move2 2 vs 3:0.663979 vs 1
+ Move3 8 vs 9:0.374731 vs 0.991225
+
+ Move1 9 vs 10:0.81302 vs 1.70445e-45
+1 logpsi -6.65404
+31 logpsi -3.21794
+ Move2 3 vs 4:0.627212 vs 1
+ Move3 3 vs 4:0.414921 vs 1
+
+ Move1 9 vs 12:0.857178 vs 3.58836e-18
+1 logpsi -5.58174
+20 logpsi -3.46759
+ Move2 3 vs 4:0.752028 vs 1
+ Move3 11 vs 12:0.870055 vs 121175
+
+ Move1 11 vs 10:0.847874 vs 0.0445652
+20 logpsi -3.66876
+31 logpsi -3.38596
+ Move2 8 vs 9:0.0247721 vs 1.03076
+ Move3 5 vs 6:0.244604 vs 1
+
+ Move1 10 vs 11:0.902355 vs 0.000222722
+31 logpsi -3.12664
+20 logpsi -3.89115
+ Move2 6 vs 7:0.245067 vs 1.11846
+ Move3 1 vs 2:0.456503 vs 1
+
+ Move1 8 vs 6:0.797217 vs 0
+1 logpsi -6.5528
+756 logpsi -0.0696015
+ Move2 0 vs 1:0.688069 vs 1
+ Move3 9 vs 10:0.5898 vs 7.20186
+
+ Move1 9 vs 11:0.396242 vs 0.000257092
+31 logpsi -3.19896
+20 logpsi -3.95043
+ Move2 0 vs 1:0.0826064 vs 1
+ Move3 5 vs 6:0.936786 vs 2.92013e+06
+
+ Move1 8 vs 5:0.419622 vs 0
+1 logpsi -8.06483
+754 logpsi -0.0919888
+ Move2 8 vs 9:0.159506 vs 0.387657
+ Move3 6 vs 7:0.316316 vs 1
+
+ Move1 9 vs 5:0.304318 vs 0
+1 logpsi -5.89291
+752 logpsi -0.0845733
+ Move2 6 vs 7:0.183694 vs 1
+ Move3 5 vs 6:0.342257 vs 9.29559e-07
+
+ Move1 11 vs 5:0.504593 vs 0
+33 logpsi -3.58989
+743 logpsi -0.087381
+ Move2 6 vs 7:0.130708 vs 1
+ Move3 2 vs 3:0.734696 vs 1
+
+ Move1 5 vs 8:0.16165 vs 0
+730 logpsi -0.105412
+31 logpsi -3.58735
+ Move2 6 vs 7:0.939262 vs 1
+ Move3 3 vs 4:0.811689 vs 1
+
+ Move1 11 vs 9:0.162587 vs 5.00521e-143
+79 logpsi -2.55973
+1 logpsi -6.76048
+ Move2 1 vs 2:0.132146 vs 1
+ Move3 0 vs 1:0.26072 vs 1
+
+ Move1 11 vs 8:0.277895 vs 1.71179e-32
+96 logpsi -2.25265
+33 logpsi -3.41369
+ Move2 6 vs 7:0.623616 vs 1
+ Move3 3 vs 4:0.602455 vs 1
+
+ Move1 5 vs 8:0.779021 vs 0
+673 logpsi -0.193909
+33 logpsi -3.11614
+ Move2 4 vs 5:0.572686 vs 2.18173
+ Move3 6 vs 7:0.0272782 vs 1
+
+ Move1 11 vs 9:0.755712 vs 1.01742e-287
+153 logpsi -1.68608
+1 logpsi -6.03361
+ Move2 1 vs 2:0.306277 vs 1
+ Move3 8 vs 9:0.886928 vs 0.644364
+
+ Move1 11 vs 9:0.788703 vs 0
+259 logpsi -1.22469
+1 logpsi -5.56704
+ Move2 3 vs 4:0.316995 vs 1.22313
+ Move3 5 vs 6:0.458457 vs 1
+
+ Move1 8 vs 9:0.363852 vs 1.87119e-78
+61 logpsi -2.58762
+1 logpsi -5.57054
+ Move2 8 vs 9:0.86758 vs 0.743848
+ Move3 2 vs 3:0.719229 vs 2.64189
+
+ Move1 11 vs 8:0.55273 vs 0
+629 logpsi -0.279163
+98 logpsi -2.01693
+ Move2 2 vs 3:0.548272 vs 0.953299
+ Move3 1 vs 2:0.261399 vs 1
+
+ Move1 3 vs 11:0.685978 vs 0
+14 logpsi -3.95575
+562 logpsi -0.376539
+ Move2 0 vs 1:0.574213 vs 1
+ Move3 6 vs 7:0.121455 vs 1
+
+ Move1 9 vs 3:0.900655 vs 6.66909e-11
+1 logpsi -5.72547
+13 logpsi -3.77289
+ Move2 2 vs 3:0.575789 vs 1.02209
+ Move3 9 vs 10:0.0804601 vs 0.994647
+
+ Move1 10 vs 8:0.194634 vs 0
+1 logpsi -6.33679
+743 logpsi -0.104168
+ Move2 5 vs 6:0.994347 vs 1
+ Move3 7 vs 8:0.894114 vs 1.30221e+06
+
+ Move1 10 vs 7:0.34589 vs 0
+1 logpsi -7.42475
+770 logpsi -0.0494226
+ Move2 8 vs 9:0.164178 vs 1
+ Move3 0 vs 1:0.43076 vs 1
+
+ Move1 10 vs 2:0.333726 vs 2.59489e-14
+1 logpsi -7.45959
+12 logpsi -4.61571
+ Move2 1 vs 2:0.667641 vs 1.00769
+ Move3 5 vs 6:0.723449 vs 1
+
+ Move1 10 vs 1:0.0348649 vs 3.171e-12
+1 logpsi -6.53806
+12 logpsi -4.13106
+ Move2 2 vs 3:0.706046 vs 1
+ Move3 8 vs 9:0.718105 vs 1
+
+ Move1 11 vs 7:0.199522 vs 0
+6 logpsi -5.49555
+795 logpsi -0.0304681
+ Move2 7 vs 8:0.152912 vs 1.6981e-27
+ Move3 8 vs 9:0.75925 vs 1
+
+ Move1 10 vs 1:0.21503 vs 0.0807848
+1 logpsi -5.58801
+5 logpsi -4.95902
+ Move2 2 vs 3:0.73027 vs 1
+ Move3 5 vs 6:0.972541 vs 1
+
+ Move1 1 vs 10:0.853302 vs 0.0233383
+5 logpsi -5.2496
+1 logpsi -6.18902
+ Move2 7 vs 8:0.0392275 vs 0.0322824
+ Move3 3 vs 4:0.39333 vs 1
+
+ Move1 11 vs 1:0.551499 vs 0.595733
+6 logpsi -5.04592
+3 logpsi -5.21857
+ Move2 5 vs 6:0.82454 vs 1
+ Move3 10 vs 11:0.829447 vs 3.27526
+
+ Move1 4 vs 11:0.156267 vs 0.147778
+2 logpsi -6.13271
+1 logpsi -8.04476
+ Move2 0 vs 1:0.0609963 vs 1.00519
+ Move3 7 vs 8:0.136045 vs 1.96773e-68
+
+ Move1 4 vs 0:0.400673 vs 0.542988
+2 logpsi -5.62722
+4 logpsi -5.32188
+ Move2 3 vs 4:0.427855 vs 1.00217
+ Move3 7 vs 8:0.61879 vs 4.53526e-43
+
+ Move1 11 vs 10:0.397404 vs 0.0064271
+1 logpsi -6.59873
+5 logpsi -5.33692
+ Move2 1 vs 2:0.880338 vs 1
+ Move3 1 vs 2:0.132114 vs 1
+
+ Move1 10 vs 1:0.0392621 vs 5.70053e-05
+8 logpsi -4.92078
+1 logpsi -6.31684
+ Move2 0 vs 1:0.357518 vs 1.0012
+ Move3 1 vs 2:0.178947 vs 1
+
+ Move1 11 vs 10:0.0211229 vs 3.27085e-13
+1 logpsi -8.03971
+11 logpsi -5.16486
+ Move2 6 vs 7:0.0901047 vs 1.08848
+ Move3 2 vs 3:0.318626 vs 1
+
+ Move1 10 vs 11:0.855679 vs 1.64385e-06
+4 logpsi -6.46803
+1 logpsi -10.9075
+ Move2 1 vs 2:0.863127 vs 1
+ Move3 4 vs 5:0.714399 vs 0.972542
+
+ Move1 5 vs 6:0.887534 vs 0
+27 logpsi -3.18515
+775 logpsi -0.0557792
+ Move2 9 vs 10:0.28433 vs 1.01669
+ Move3 10 vs 11:0.509164 vs 2.57791
+
+ Move1 5 vs 6:0.0861471 vs 0
+68 logpsi -2.4061
+736 logpsi -0.105488
+ Move2 5 vs 6:0.507786 vs 3.41733e-148
+ Move3 7 vs 8:0.186232 vs 1
+
+ Move1 2 vs 6:0.052057 vs 0
+1 logpsi -6.18911
+713 logpsi -0.126237
+ Move2 5 vs 6:0.991107 vs 4.47585e-133
+ Move3 1 vs 2:0.854823 vs 1.00228
+
+ Move1 10 vs 9:0.54631 vs 0.00402369
+1 logpsi -8.04596
+3 logpsi -5.28818
+ Move2 1 vs 2:0.759641 vs 0.995427
+ Move3 2 vs 3:0.842977 vs 0.992778
+
+ Move1 10 vs 5:0.404903 vs 0
+1 logpsi -6.0242
+290 logpsi -1.07861
+ Move2 6 vs 7:0.802142 vs 1.87749e-61
+ Move3 9 vs 10:0.196045 vs 0.618983
+
+ Move1 9 vs 10:0.314789 vs 1
+1 logpsi -6.03104
+1 logpsi -7.77599
+ Move2 2 vs 3:0.453531 vs 1.0008
+ Move3 4 vs 5:0.802204 vs 17.0818
+
+ Move1 2 vs 4:0.900932 vs 0
+4 logpsi -6.07128
+801 logpsi -0.0062414
+ Move2 0 vs 1:0.61397 vs 1
+ Move3 2 vs 3:0.867476 vs 0.991254
+
+ Move1 6 vs 4:0.22186 vs 0
+1 logpsi -7.24971
+802 logpsi -0.0138739
+ Move2 1 vs 2:0.128592 vs 1
+ Move3 8 vs 9:0.673421 vs 1
+
+ Move1 4 vs 10:0.143508 vs 0
+802 logpsi -0.0201249
+1 logpsi -9.05651
+ Move2 6 vs 7:0.521469 vs 0.759083
+ Move3 9 vs 10:0.870552 vs 1.50263
+
+ Move1 3 vs 7:0.0911651 vs 0.00104451
+4 logpsi -4.77095
+1 logpsi -7.05902
+ Move2 1 vs 2:0.535692 vs 1
+ Move3 8 vs 9:0.958449 vs 2.18295
+
+ Move1 3 vs 8:0.270464 vs 9.49537e-06
+6 logpsi -4.09994
+1 logpsi -6.41289
+ Move2 1 vs 2:0.428025 vs 1
+ Move3 5 vs 6:0.39909 vs 1
+
+ Move1 4 vs 3:0.175885 vs 0
+794 logpsi -0.0328569
+13 logpsi -3.80836
+ Move2 2 vs 3:0.178702 vs 1.0259
+ Move3 1 vs 2:0.695767 vs 1.02958
+
+ Move1 1 vs 8:0.336049 vs 3.26146e-88
+40 logpsi -3.03503
+1 logpsi -8.2003
+ Move2 2 vs 3:0.981906 vs 1
+ Move3 0 vs 1:0.235208 vs 1.09355
+
+ Move1 8 vs 0:0.645428 vs 1.40689e-166
+1 logpsi -7.39953
+76 logpsi -2.3077
+ Move2 6 vs 7:0.434715 vs 1
+ Move3 2 vs 3:0.721275 vs 1
+
+ Move1 8 vs 4:0.166826 vs 0
+1 logpsi -7.34175
+807 logpsi -0.00978564
+ Move2 7 vs 8:0.325969 vs 1.98957
+ Move3 2 vs 3:0.3452 vs 1
+
+ Move1 7 vs 4:0.854564 vs 0
+1 logpsi -8.77703
+807 logpsi -0.00377874
+ Move2 3 vs 4:0.420372 vs 1.15719
+ Move3 1 vs 2:0.112145 vs 1
+
+ Move1 3 vs 7:0.353157 vs 0
+807 logpsi -0.00992818
+1 logpsi -8.42945
+ Move2 2 vs 3:0.289462 vs 157.073
+ Move3 3 vs 4:0.901762 vs 1
+
+ Move1 2 vs 7:0.849824 vs 0
+807 logpsi -0.00397696
+1 logpsi -9.29603
+ Move2 6 vs 7:0.499394 vs 2.59233
+ Move3 5 vs 6:0.0290781 vs 2.16463
+
+ Move1 2 vs 5:0.378744 vs 0
+807 logpsi -0.00468541
+1 logpsi -8.94555
+ Move2 0 vs 1:0.97906 vs 1
+ Move3 4 vs 5:0.564267 vs 3.58578
+
+ Move1 4 vs 2:0.777338 vs 0
+1 logpsi -7.01287
+807 logpsi -0.00192561
+ Move2 3 vs 4:0.983478 vs 1.1347
+ Move3 1 vs 2:0.250679 vs 7.35215e+167
+
+ Move1 1 vs 3:0.722671 vs 0
+807 logpsi -0.00181873
+1 logpsi -8.23597
+ Move2 2 vs 3:0.539424 vs 1.28109
+ Move3 1 vs 2:0.687574 vs 1.21037e-168
+
+ Move1 2 vs 1:0.939373 vs 0
+1 logpsi -9.27317
+807 logpsi -0.00137355
+ Move2 0 vs 1:0.932846 vs 2.70722
+ Move3 0 vs 1:0.254475 vs 1.09159e-168
+
+ Move1 2 vs 0:0.381734 vs 0
+1 logpsi -7.39046
+807 logpsi -0.001456
+ Move2 1 vs 2:0.682485 vs 1.52345
+ Move3 0 vs 1:0.547983 vs 1.45612e-168
+
+ Move1 0 vs 1:0.449266 vs 0
+807 logpsi -0.00191301
+1 logpsi -6.47
+ Move2 0 vs 1:0.344606 vs 0
+ Move3 0 vs 1:0.879842 vs 1.7564e-168
+
+ Move1 0 vs 1:0.388039 vs 0
+807 logpsi -0.000236097
+1 logpsi -8.35323
+ Move2 0 vs 1:0.203719 vs 0
+ Move3 0 vs 1:0.170269 vs 1.06741e-212
+
+ Move1 1 vs 0:0.130429 vs 0
+2 logpsi -6.02543
+806 logpsi -0.00244264
+ Move2 0 vs 1:0.206906 vs 0
+ Move3 0 vs 1:0.0965936 vs 9.90878e-132
+
+ Move1 0 vs 1:0.985768 vs 0
+803 logpsi -0.00451293
+5 logpsi -5.58092
+ Move2 0 vs 1:0.864847 vs 0
+ Move3 0 vs 1:0.708492 vs 3.24549e-62
+
+ Move1 1 vs 0:0.344098 vs 0
+8 logpsi -4.55555
+800 logpsi -0.0106461
+ Move2 0 vs 1:0.253276 vs 0
+ Move3 0 vs 1:0.10815 vs 6.31823e-40
+
+ Move1 0 vs 1:0.257174 vs 0
+795 logpsi -0.0240316
+13 logpsi -3.74062
+ Move2 0 vs 1:0.128934 vs 0
+ Move3 0 vs 1:0.395563 vs 3.36852e-25
+
+ Move1 1 vs 0:0.510891 vs 0
+41 logpsi -2.87251
+767 logpsi -0.058426
+ Move2 0 vs 1:0.82885 vs 0
+ Move3 0 vs 1:0.624768 vs 1.35682e-08
+
+ Move1 0 vs 1:0.504547 vs 0
+727 logpsi -0.125745
+81 logpsi -2.15215
+ Move2 0 vs 1:0.135913 vs 0
+ Move3 0 vs 1:0.283263 vs 0.000185452
+
+ Move1 0 vs 1:0.455306 vs 2.35571e-273
+643 logpsi -0.238517
+165 logpsi -1.5518
+ Move2 0 vs 1:0.271687 vs 0
+ Move3 0 vs 1:0.696985 vs 0.0279374
+
+ Move1 1 vs 0:0.887984 vs 5.54236e-16
+350 logpsi -0.86907
+458 logpsi -0.543802
+ Move2 0 vs 1:0.470184 vs 0
+ Move3 0 vs 1:0.469038 vs 0.54807
+
+ Move1 0 vs 1:0.700638 vs 0
+678 logpsi -0.199681
+130 logpsi -1.73722
+ Move2 0 vs 1:0.576905 vs 0
+ Move3 0 vs 1:0.452513 vs 0.00762978
+
+ Move1 0 vs 1:0.147527 vs 5.50086e-75
+529 logpsi -0.410166
+279 logpsi -1.09412
+ Move2 0 vs 1:0.774245 vs 0
+ Move3 0 vs 1:0.404492 vs 0.243959
+
+ Move1 0 vs 1:0.234741 vs 3.18317e-75
+279 logpsi -1.09454
+529 logpsi -0.408397
+ Move2 0 vs 1:0.197797 vs 0
+ Move3 0 vs 1:0.251441 vs 4.0859
+
+ Move1 1 vs 0:0.435215 vs 0
+3 logpsi -5.23151
+805 logpsi -0.00546458
+ Move2 0 vs 1:0.449485 vs 0
+ Move3 0 vs 1:0.891745 vs 1.94143e-87
+
+ Move1 1 vs 0:0.697594 vs 0
+9 logpsi -4.15687
+799 logpsi -0.0163942
+ Move2 0 vs 1:0.693671 vs 0
+ Move3 0 vs 1:0.353153 vs 3.5434e-35
+
+ Move1 1 vs 0:0.912745 vs 0
+21 logpsi -3.63016
+787 logpsi -0.0275408
+ Move2 0 vs 1:0.830012 vs 0
+ Move3 0 vs 1:0.0873478 vs 3.08778e-16
+
+ Move1 1 vs 0:0.724612 vs 0
+46 logpsi -2.66356
+762 logpsi -0.0735659
+ Move2 0 vs 1:0.765163 vs 0
+ Move3 0 vs 1:0.206704 vs 1.20144e-07
+
+ Move1 2 vs 0:0.344175 vs 0
+1 logpsi -6.05929
+707 logpsi -0.130354
+ Move2 1 vs 2:0.401458 vs 1.17305e-100
+ Move3 0 vs 1:0.419772 vs 0.00106447
+
+ Move1 1 vs 2:0.0721658 vs 0
+194 logpsi -1.3859
+1 logpsi -7.22303
+ Move2 0 vs 1:0.378409 vs 0
+ Move3 0 vs 1:0.469726 vs 0.0628625
+
+ Move1 0 vs 1:0.0749354 vs 1.35946e-06
+438 logpsi -0.602017
+369 logpsi -0.797791
+ Move2 1 vs 2:0.366592 vs 0
+ Move3 0 vs 1:0.746292 vs 0.691134
+
+ Move1 0 vs 2:0.274369 vs 5.4144e-129
+67 logpsi -2.54456
+1 logpsi -7.01947
+ Move2 0 vs 1:0.0156331 vs 3.18804e-169
+ Move3 1 vs 2:0.140003 vs 9.31546e-161
+
+ Move1 2 vs 1:0.0898798 vs 0
+1 logpsi -6.34865
+807 logpsi -0.0020011
+ Move2 0 vs 1:0.162409 vs 1.21424
+ Move3 1 vs 2:0.569463 vs 4.32678
+
+ Move1 1 vs 0:0.0662815 vs 0
+1 logpsi -9.25054
+807 logpsi -0.000120556
+ Move2 0 vs 1:0.597238 vs 0
+ Move3 0 vs 1:0.612319 vs 2.93262e-171
+
+ Move1 1 vs 0:0.51881 vs 0
+1 logpsi -6.52472
+807 logpsi -0.00419185
+ Move2 0 vs 1:0.821051 vs 1.14358e-149
+ Move3 0 vs 1:0.544904 vs 9.86427e-153
+
+ Move1 0 vs 1:0.819074 vs 0
+806 logpsi -0.00476926
+1 logpsi -7.17564
+ Move2 1 vs 2:0.935413 vs 0.29928
+ Move3 0 vs 1:0.729693 vs 1.64435e-106
+
+ Move1 1 vs 0:0.698718 vs 0
+1 logpsi -6.51579
+804 logpsi -0.00549281
+ Move2 0 vs 1:0.162272 vs 1.97136e-108
+ Move3 0 vs 1:0.398076 vs 1.39523e-66
+
+ Move1 0 vs 1:0.812745 vs 0
+801 logpsi -0.0142301
+1 logpsi -6.26179
+ Move2 0 vs 1:0.299458 vs 2.45297e-49
+ Move3 1 vs 2:0.119663 vs 15.0781
+
+ Move1 0 vs 2:0.784979 vs 0
+791 logpsi -0.0220315
+1 logpsi -6.70261
+ Move2 1 vs 2:0.55307 vs 1.53773e-23
+ Move3 0 vs 1:0.642518 vs 1.68996e-19
+
+ Move1 2 vs 0:0.700893 vs 0
+1 logpsi -7.55005
+779 logpsi -0.0316702
+ Move2 1 vs 2:0.431862 vs 4.42714e-22
+ Move3 0 vs 1:0.961512 vs 5.99847e-12
+
+ Move1 2 vs 1:0.667145 vs 4.03361e-92
+1 logpsi -6.75461
+52 logpsi -2.62827
+ Move2 0 vs 1:0.603841 vs 0
+ Move3 1 vs 2:0.00960526 vs 8.54036e-11
+
+ Move1 2 vs 0:0.471455 vs 0
+1 logpsi -6.28772
+684 logpsi -0.166667
+ Move2 0 vs 1:0.981254 vs 0
+ Move3 1 vs 2:0.0789965 vs 1.17061e-26
+
+ Move1 0 vs 1:0.212548 vs 4.14829e-111
+556 logpsi -0.361243
+251 logpsi -1.19457
+ Move2 1 vs 2:0.0506463 vs 0
+ Move3 1 vs 2:0.978201 vs 9.32497e-62
+
+ Move1 0 vs 1:0.274129 vs 1.98808e-38
+303 logpsi -0.934147
+504 logpsi -0.502251
+ Move2 1 vs 2:0.148249 vs 0
+ Move3 1 vs 2:0.821023 vs 1.18395e-122
+
+ Move1 2 vs 1:0.207118 vs 0
+1 logpsi -6.81865
+807 logpsi -0.00396771
+ Move2 0 vs 1:0.502851 vs 10.1422
+ Move3 1 vs 2:0.916497 vs 6.71235
+
+ Move1 0 vs 1:0.792868 vs 0
+807 logpsi -0.00031237
+1 logpsi -8.41601
+ Move2 0 vs 1:0.235558 vs 0
+ Move3 0 vs 1:0.195841 vs 3.91688e-196
+
+ Move1 1 vs 0:0.0138735 vs 0
+1 logpsi -5.86074
+807 logpsi -0.00289417
+ Move2 0 vs 1:0.973234 vs 0
+ Move3 0 vs 1:0.458377 vs 9.71348e-196
+
+ Move1 1 vs 0:0.0968716 vs 0
+1 logpsi -7.44059
+807 logpsi -0.000608355
+ Move2 0 vs 1:0.0865183 vs 0
+ Move3 0 vs 1:0.942304 vs 4.44419e-196
+
+ Move1 0 vs 1:0.791424 vs 0
+807 logpsi -0.000978483
+1 logpsi -6.97136
+ Move2 0 vs 1:0.371553 vs 0
+ Move3 0 vs 1:0.936864 vs 5.01796e-196
+
+ Move1 1 vs 0:0.0584308 vs 0
+1 logpsi -6.8895
+807 logpsi -0.00101989
+ Move2 0 vs 1:0.787436 vs 0
+ Move3 0 vs 1:0.838595 vs 5.15862e-196
+
+ Move1 1 vs 0:0.150645 vs 0
+1 logpsi -7.17674
+807 logpsi -0.000766914
+ Move2 0 vs 1:0.164806 vs 0
+ Move3 0 vs 1:0.313678 vs 2.40453e-215
+
+ Move1 0 vs 1:0.282802 vs 0
+806 logpsi -0.00624176
+2 logpsi -5.07961
+ Move2 0 vs 1:0.489614 vs 0
+ Move3 0 vs 1:0.286401 vs 2.4954e-132
+
+ Move1 0 vs 1:0.123477 vs 0
+799 logpsi -0.0116698
+9 logpsi -4.57754
+ Move2 0 vs 1:0.161663 vs 0
+ Move3 0 vs 1:0.362854 vs 1.16987e-36
+
+ Move1 1 vs 0:0.728168 vs 0
+16 logpsi -4.08673
+792 logpsi -0.0180216
+ Move2 0 vs 1:0.820544 vs 0
+ Move3 0 vs 1:0.0929287 vs 1.97984e-21
+
+ Move1 0 vs 1:0.891452 vs 0
+776 logpsi -0.036541
+32 logpsi -3.32753
+ Move2 0 vs 1:0.132464 vs 0
+ Move3 0 vs 1:0.108619 vs 5.23824e-11
+
+ Move1 0 vs 1:0.649128 vs 0
+750 logpsi -0.0729652
+58 logpsi -2.65588
+ Move2 0 vs 1:0.682725 vs 0
+ Move3 0 vs 1:0.565965 vs 3.05373e-06
+
+ Move1 1 vs 0:0.739929 vs 0
+111 logpsi -2.06613
+697 logpsi -0.1355
+ Move2 0 vs 1:0.448877 vs 0
+ Move3 0 vs 1:0.64581 vs 0.00209079
+
+ Move1 1 vs 0:0.621186 vs 6.80269e-160
+214 logpsi -1.28936
+594 logpsi -0.324899
+ Move2 0 vs 1:0.911308 vs 0
+ Move3 0 vs 1:0.993821 vs 0.0950693
+
+ Move1 0 vs 1:0.396124 vs 0.00300844
+366 logpsi -0.732086
+442 logpsi -0.655686
+ Move2 0 vs 1:0.645174 vs 0
+ Move3 0 vs 1:0.283771 vs 1.30177
+
+ Move1 0 vs 1:0.515323 vs 0
+806 logpsi -0.00488657
+2 logpsi -5.35726
+ Move2 0 vs 1:0.479486 vs 0
+ Move3 0 vs 1:0.291132 vs 2.83652e-122
+
+ Move1 0 vs 1:0.542278 vs 0
+807 logpsi -0.00223387
+1 logpsi -6.14834
+ Move2 0 vs 1:0.856681 vs 0
+ Move3 0 vs 1:0.335472 vs 6.14628e-178
+
+ Move1 1 vs 0:0.284618 vs 0
+1 logpsi -5.78036
+807 logpsi -0.00309246
+ Move2 0 vs 1:0.847265 vs 0
+ Move3 0 vs 1:0.477561 vs 8.34207e-178
+
+ Move1 2 vs 0:0.631609 vs 0
+1 logpsi -12.3568
+807 logpsi -0.00157637
+ Move2 1 vs 2:0.676718 vs 177.639
+ Move3 0 vs 1:0.14185 vs 1.6342e-195
+
+ Move1 1 vs 0:0.465732 vs 0
+1 logpsi -9.87551
+807 logpsi -5.26469e-05
+ Move2 0 vs 1:0.0528425 vs 0
+ Move3 0 vs 1:0.752269 vs 2.79377e-192
+
+ Move1 0 vs 1:0.510199 vs 0
+807 logpsi -0.00285764
+1 logpsi -5.93145
+ Move2 0 vs 1:0.872522 vs 0
+ Move3 0 vs 1:0.29074 vs 6.77852e-192
+
+ Move1 1 vs 0:0.125137 vs 0
+4 logpsi -6.60225
+804 logpsi -0.00138324
+ Move2 0 vs 1:0.485779 vs 0
+ Move3 0 vs 1:0.648773 vs 6.85259e-73
+
+ Move1 0 vs 1:0.584933 vs 0
+804 logpsi -0.00791408
+4 logpsi -4.84307
+ Move2 0 vs 1:0.0158081 vs 0
+ Move3 0 vs 1:0.543094 vs 1.83757e-72
+
+ Move1 0 vs 1:0.778616 vs 0
+794 logpsi -0.0192546
+14 logpsi -4.01424
+ Move2 0 vs 1:0.0754047 vs 0
+ Move3 0 vs 1:0.597294 vs 6.33732e-24
+
+ Move1 1 vs 0:0.958103 vs 0
+26 logpsi -3.26006
+782 logpsi -0.0393098
+ Move2 0 vs 1:0.503735 vs 0
+ Move3 0 vs 1:0.0632218 vs 2.74559e-13
+
+ Move1 1 vs 0:0.0385429 vs 0
+50 logpsi -2.58154
+758 logpsi -0.0787914
+ Move2 0 vs 1:0.587699 vs 0
+ Move3 0 vs 1:0.37322 vs 4.43953e-07
+
+ Move1 0 vs 1:0.743104 vs 0
+698 logpsi -0.130586
+110 logpsi -2.10065
+ Move2 0 vs 1:0.784949 vs 0
+ Move3 0 vs 1:0.145634 vs 0.00190107
+
+ Move1 0 vs 1:0.375715 vs 8.50621e-186
+605 logpsi -0.298255
+203 logpsi -1.3583
+ Move2 0 vs 1:0.287236 vs 0
+ Move3 0 vs 1:0.46028 vs 0.073795
+
+ Move1 1 vs 0:0.592912 vs 0.923824
+408 logpsi -0.689747
+400 logpsi -0.699651
+ Move2 0 vs 1:0.335208 vs 0
+ Move3 0 vs 1:0.299764 vs 0.987734
+
+ Move1 1 vs 0:0.384525 vs 0
+796 logpsi -0.0172733
+12 logpsi -4.07281
+ Move2 0 vs 1:0.00858642 vs 6.09044e-43
+ Move3 0 vs 1:0.903377 vs 6.29347e+26
+
+ Move1 1 vs 0:0.356558 vs 0
+2 logpsi -6.28817
+806 logpsi -0.00186027
+ Move2 0 vs 1:0.788747 vs 0
+ Move3 0 vs 1:0.627954 vs 8.47451e-124
+
+ Move1 1 vs 0:0.447042 vs 0
+2 logpsi -5.75798
+806 logpsi -0.00343489
+ Move2 0 vs 1:0.760582 vs 0
+ Move3 0 vs 1:0.966868 vs 1.15782e-123
+
+ Move1 1 vs 0:0.337006 vs 0
+2 logpsi -5.72532
+806 logpsi -0.00328236
+ Move2 0 vs 1:0.302863 vs 0
+ Move3 0 vs 1:0.991459 vs 1.18709e-123
+
+ Move1 1 vs 0:0.737066 vs 0
+2 logpsi -6.22405
+806 logpsi -0.00228514
+ Move2 0 vs 1:0.62628 vs 0
+ Move3 0 vs 1:0.451821 vs 8.72974e-124
+
+ Move1 0 vs 1:0.50583 vs 0
+806 logpsi -0.00100211
+2 logpsi -6.91821
+ Move2 0 vs 1:0.912822 vs 0
+ Move3 0 vs 1:0.331042 vs 6.88036e-124
+
+ Move1 1 vs 0:0.209187 vs 0
+2 logpsi -6.65717
+806 logpsi -0.00145867
+ Move2 0 vs 1:0.907055 vs 0
+ Move3 0 vs 1:0.349221 vs 6.66314e-126
+
+ Move1 1 vs 0:0.435582 vs 0
+2 logpsi -5.75517
+806 logpsi -0.00331406
+ Move2 0 vs 1:0.0425381 vs 0
+ Move3 0 vs 1:0.0323085 vs 2.30979e-123
+
+ Move1 1 vs 0:0.0316645 vs 0
+2 logpsi -5.70225
+806 logpsi -0.00371572
+ Move2 0 vs 1:0.916059 vs 0
+ Move3 0 vs 1:0.136822 vs 2.40746e-123
+
+ Move1 0 vs 1:0.0670629 vs 0
+806 logpsi -0.00176538
+2 logpsi -6.43608
+ Move2 0 vs 1:0.0614825 vs 0
+ Move3 0 vs 1:0.354132 vs 4.56601e-119
+
+ Move1 1 vs 0:0.330565 vs 0
+2 logpsi -7.41097
+806 logpsi -0.00129969
+ Move2 0 vs 1:0.274983 vs 3.25624e-214
+ Move3 0 vs 1:0.218054 vs 9.07991e-115
+
+ Move1 1 vs 0:0.759267 vs 0
+2 logpsi -5.17452
+806 logpsi -0.00693571
+ Move2 0 vs 1:0.979743 vs 0
+ Move3 0 vs 1:0.115196 vs 2.83484e-114
+
+ Move1 0 vs 1:0.324553 vs 0
+802 logpsi -0.0109253
+6 logpsi -4.6355
+ Move2 0 vs 1:0.220833 vs 0
+ Move3 0 vs 1:0.101135 vs 2.50134e-49
+
+ Move1 0 vs 1:0.609088 vs 0
+793 logpsi -0.024973
+15 logpsi -3.84408
+ Move2 0 vs 1:0.605743 vs 0
+ Move3 0 vs 1:0.438387 vs 6.63673e-22
+
+ Move1 0 vs 1:0.533116 vs 0
+774 logpsi -0.0433108
+34 logpsi -3.16467
+ Move2 0 vs 1:0.745345 vs 0
+ Move3 0 vs 1:0.239362 vs 2.70215e-10
+
+ Move1 1 vs 0:0.737488 vs 0
+63 logpsi -2.47723
+745 logpsi -0.0882494
+ Move2 0 vs 1:0.207844 vs 0
+ Move3 0 vs 1:0.666417 vs 1.02639e-05
+
+ Move1 1 vs 0:0.695512 vs 0
+136 logpsi -1.66962
+672 logpsi -0.208955
+ Move2 0 vs 1:0.403177 vs 0
+ Move3 0 vs 1:0.386361 vs 0.0104284
+
+ Move1 1 vs 0:0.0664964 vs 1.09925e-42
+298 logpsi -0.948406
+510 logpsi -0.492679
+ Move2 0 vs 1:0.856083 vs 0
+ Move3 0 vs 1:0.497994 vs 0.35222
+
+ Move1 1 vs 0:0.669206 vs 3.85579e-245
+627 logpsi -0.252791
+181 logpsi -1.51464
+ Move2 0 vs 1:0.35674 vs 0
+ Move3 0 vs 1:0.656568 vs 23.7531
+
+ Move1 2 vs 0:0.306786 vs 0
+1 logpsi -6.74205
+806 logpsi -0.00525736
+ Move2 1 vs 2:0.474787 vs 0.808434
+ Move3 0 vs 1:0.29193 vs 1.97602e-101
+
+ Move1 0 vs 1:0.785414 vs 0
+805 logpsi -0.00284605
+3 logpsi -6.75262
+ Move2 0 vs 1:0.11114 vs 4.28925e-178
+ Move3 0 vs 1:0.984377 vs 4.82227e-79
+
+ Move1 1 vs 0:0.0467831 vs 0
+7 logpsi -4.67865
+801 logpsi -0.0098414
+ Move2 0 vs 1:0.40574 vs 0
+ Move3 0 vs 1:0.592392 vs 4.34652e-41
+
+ Move1 1 vs 0:0.571619 vs 0
+14 logpsi -5.18538
+794 logpsi -0.00647811
+ Move2 0 vs 1:0.570329 vs 0
+ Move3 0 vs 1:0.928335 vs 1.02916e-23
+
+ Move1 0 vs 1:0.0687465 vs 0
+789 logpsi -0.0325504
+19 logpsi -3.45776
+ Move2 0 vs 1:0.318495 vs 0
+ Move3 0 vs 1:0.923579 vs 1.17635e-17
+
+ Move1 1 vs 0:0.823573 vs 0
+49 logpsi -2.78591
+759 logpsi -0.0636579
+ Move2 0 vs 1:0.461694 vs 0
+ Move3 0 vs 1:0.674534 vs 2.84073e-07
+
+ Move1 1 vs 0:0.183974 vs 0
+118 logpsi -1.96796
+690 logpsi -0.152289
+ Move2 0 vs 1:0.574044 vs 0
+ Move3 0 vs 1:0.394636 vs 0.00340947
+
+ Move1 0 vs 1:0.969356 vs 1.04034e-165
+585 logpsi -0.300229
+223 logpsi -1.34964
+ Move2 0 vs 1:0.0684465 vs 0
+ Move3 0 vs 1:0.660799 vs 0.0982521
+
+ Move1 0 vs 1:0.663645 vs 0.00453141
+390 logpsi -0.794166
+418 logpsi -0.601426
+ Move2 0 vs 1:0.0115693 vs 0
+ Move3 0 vs 1:0.420285 vs 1.29532
+
+ Move1 1 vs 0:0.744167 vs 0
+2 logpsi -7.07026
+806 logpsi -0.000981282
+ Move2 0 vs 1:0.334169 vs 0
+ Move3 0 vs 1:0.644338 vs 3.52685e-131
+
+ Move1 0 vs 1:0.784625 vs 0
+806 logpsi -0.00349054
+2 logpsi -5.82624
+ Move2 0 vs 1:0.450972 vs 0
+ Move3 0 vs 1:0.271791 vs 5.98393e-131
+
+ Move1 1 vs 0:0.696275 vs 0
+2 logpsi -5.4342
+806 logpsi -0.00437434
+ Move2 0 vs 1:0.255197 vs 0
+ Move3 0 vs 1:0.347919 vs 1.01246e-131
+
+ Move1 1 vs 0:0.354798 vs 0
+5 logpsi -5.40902
+803 logpsi -0.00463739
+ Move2 0 vs 1:0.705645 vs 0
+ Move3 0 vs 1:0.429454 vs 9.81824e-62
+
+ Move1 1 vs 0:0.696544 vs 0
+6 logpsi -4.9535
+802 logpsi -0.00715521
+ Move2 0 vs 1:0.0692623 vs 0
+ Move3 0 vs 1:0.155513 vs 7.78964e-54
+
+ Move1 2 vs 0:0.0524718 vs 0
+1 logpsi -6.55538
+798 logpsi -0.0110671
+ Move2 1 vs 2:0.670936 vs 1.06427e-09
+ Move3 1 vs 2:0.726392 vs 0.00458873
+
+ Move1 0 vs 2:0.644158 vs 0
+796 logpsi -0.0226015
+1 logpsi -6.36399
+ Move2 0 vs 1:0.903434 vs 0
+ Move3 1 vs 2:0.398876 vs 0.00119827
+
+ Move1 2 vs 1:0.906283 vs 9.9343e-22
+4 logpsi -5.7876
+25 logpsi -3.4847
+ Move2 0 vs 1:0.753087 vs 0
+ Move3 1 vs 2:0.804784 vs 0.00388108
+
+ Move1 2 vs 0:0.299539 vs 0
+9 logpsi -4.72495
+762 logpsi -0.0474915
+ Move2 0 vs 1:0.99813 vs 0
+ Move3 0 vs 1:0.315215 vs 6.34529e-08
+
+ Move1 0 vs 2:0.0913318 vs 0
+727 logpsi -0.0932162
+21 logpsi -3.9164
+ Move2 0 vs 1:0.441556 vs 0
+ Move3 0 vs 1:0.61788 vs 0.000112089
+
+ Move1 2 vs 1:0.556765 vs 0.0160555
+55 logpsi -2.68393
+77 logpsi -2.49613
+ Move2 1 vs 2:0.625771 vs 1.71972e-192
+ Move3 0 vs 1:0.930335 vs 0.00440502
+
+ Move1 0 vs 2:0.0372835 vs 1.49765e-196
+595 logpsi -0.30487
+189 logpsi -1.41547
+ Move2 1 vs 2:0.277941 vs 1.29518e-75
+ Move3 1 vs 2:0.657368 vs 2633.07
+
+ Move1 2 vs 0:0.63513 vs 0
+3 logpsi -5.93573
+413 logpsi -0.709035
+ Move2 0 vs 1:0.846129 vs 0
+ Move3 1 vs 2:0.297999 vs 3.85851e-40
+
+ Move1 1 vs 0:0.789061 vs 0
+806 logpsi -0.00106369
+2 logpsi -6.90357
+ Move2 0 vs 1:0.326442 vs 7.82016e-09
+ Move3 0 vs 1:0.441229 vs 1.21149e+105
+
+ Move1 0 vs 1:0.418943 vs 0
+806 logpsi -0.000417596
+2 logpsi -7.85874
+ Move2 0 vs 1:0.860725 vs 0
+ Move3 0 vs 1:0.791246 vs 3.77788e-120
+
+ Move1 0 vs 1:0.414363 vs 0
+807 logpsi -0.00237262
+1 logpsi -6.32633
+ Move2 0 vs 1:0.945196 vs 0
+ Move3 0 vs 1:0.0264943 vs 7.14158e-183
+
+ Move1 0 vs 1:0.152139 vs 0
+807 logpsi -0.000534896
+1 logpsi -7.53487
+ Move2 0 vs 1:0.547983 vs 0
+ Move3 0 vs 1:0.718499 vs 4.73101e-183
+
+ Move1 0 vs 1:0.9153 vs 0
+807 logpsi -0.0016963
+1 logpsi -7.69425
+ Move2 0 vs 1:0.357785 vs 1.22205e-107
+ Move3 0 vs 1:0.729437 vs 8.17356e-190
+
+ Move1 1 vs 0:0.425338 vs 0
+1 logpsi -8.43239
+807 logpsi -0.000221963
+ Move2 0 vs 1:0.284857 vs 0
+ Move3 0 vs 1:0.66473 vs 7.54273e-190
+
+ Move1 1 vs 0:0.00988748 vs 0
+1 logpsi -5.25221
+807 logpsi -0.00535163
+ Move2 0 vs 1:0.35622 vs 0
+ Move3 0 vs 1:0.0988399 vs 4.10113e-189
+
+ Move1 0 vs 1:0.80436 vs 0
+805 logpsi -0.00427937
+3 logpsi -5.45609
+ Move2 0 vs 1:0.814597 vs 0
+ Move3 0 vs 1:0.835992 vs 3.40094e-94
+
+ Move1 0 vs 1:0.0890801 vs 0
+800 logpsi -0.0124006
+8 logpsi -4.40821
+ Move2 0 vs 1:0.759826 vs 0
+ Move3 0 vs 1:0.553386 vs 2.2607e-40
+
+ Move1 1 vs 0:0.63316 vs 0
+19 logpsi -3.70997
+789 logpsi -0.0253777
+ Move2 0 vs 1:0.685296 vs 0
+ Move3 0 vs 1:0.671917 vs 4.58414e-18
+
+ Move1 1 vs 0:0.566197 vs 0
+34 logpsi -3.25317
+774 logpsi -0.0395104
+ Move2 0 vs 1:0.562521 vs 0
+ Move3 0 vs 1:0.100501 vs 1.98854e-10
+
+ Move1 0 vs 1:0.752074 vs 0
+749 logpsi -0.079211
+59 logpsi -2.57807
+ Move2 0 vs 1:0.76982 vs 0
+ Move3 0 vs 1:0.194723 vs 3.98803e-06
+
+ Move1 0 vs 1:0.397731 vs 0
+692 logpsi -0.139806
+116 logpsi -2.0379
+ Move2 0 vs 1:0.0133238 vs 0
+ Move3 0 vs 1:0.53852 vs 0.00280579
+
+ Move1 0 vs 1:0.686989 vs 1.3862e-153
+593 logpsi -0.332258
+215 logpsi -1.26339
+ Move2 0 vs 1:0.165932 vs 0
+ Move3 0 vs 1:0.484605 vs 0.0995591
+
+ Move1 1 vs 0:0.596714 vs 2.5538e-06
+431 logpsi -0.581568
+377 logpsi -0.820048
+ Move2 0 vs 1:0.527305 vs 0
+ Move3 0 vs 1:0.576696 vs 1.44704
+
+ Move1 1 vs 0:0.290627 vs 0
+61 logpsi -2.71763
+747 logpsi -0.0683124
+ Move2 0 vs 1:0.885456 vs 0
+ Move3 0 vs 1:0.788758 vs 5.0425e-06
+
+ Move1 1 vs 0:0.128244 vs 0
+44 logpsi -3.15604
+764 logpsi -0.043528
+ Move2 0 vs 1:0.619419 vs 0
+ Move3 0 vs 1:0.526139 vs 2.9905e-08
+
+ Move1 1 vs 0:0.9566 vs 0
+22 logpsi -3.70513
+786 logpsi -0.0249557
+ Move2 0 vs 1:0.2124 vs 0
+ Move3 0 vs 1:0.439813 vs 8.35474e-16
+
+ Move1 1 vs 0:0.74089 vs 0
+32 logpsi -3.29987
+776 logpsi -0.0377441
+ Move2 0 vs 1:0.0931592 vs 0
+ Move3 0 vs 1:0.0872024 vs 4.60608e-11
+
+ Move1 1 vs 0:0.908557 vs 0
+62 logpsi -2.64058
+746 logpsi -0.0739908
+ Move2 0 vs 1:0.336466 vs 0
+ Move3 0 vs 1:0.341105 vs 6.72183e-06
+
+ Move1 1 vs 0:0.25111 vs 0
+126 logpsi -1.7555
+682 logpsi -0.189733
+ Move2 0 vs 1:0.87977 vs 0
+ Move3 0 vs 1:0.184581 vs 0.00621265
+
+ Move1 1 vs 0:0.355319 vs 2.53447e-60
+273 logpsi -0.989265
+535 logpsi -0.465505
+ Move2 0 vs 1:0.246699 vs 0
+ Move3 0 vs 1:0.376901 vs 0.273293
+
+ Move1 0 vs 1:0.648936 vs 1.69633e-151
+219 logpsi -1.26852
+589 logpsi -0.330247
+ Move2 0 vs 1:0.219685 vs 0
+ Move3 0 vs 1:0.249834 vs 9.55505
+
+ Move1 1 vs 0:0.341887 vs 0
+19 logpsi -4.01629
+789 logpsi -0.0203123
+ Move2 0 vs 1:0.597599 vs 0
+ Move3 0 vs 1:0.531277 vs 2.92029e-18
+
+ Move1 1 vs 0:0.0823884 vs 0
+3 logpsi -5.3754
+805 logpsi -0.00561577
+ Move2 0 vs 1:0.803659 vs 0
+ Move3 0 vs 1:0.135767 vs 5.05825e-85
+
+ Move1 1 vs 0:0.727273 vs 0
+1 logpsi -6.57206
+807 logpsi -0.00188717
+ Move2 0 vs 1:0.35596 vs 0
+ Move3 0 vs 1:0.550696 vs 2.57347e-165
+
+ Move1 3 vs 0:0.999473 vs 0
+1 logpsi -8.37197
+807 logpsi -0.00383925
+ Move2 1 vs 2:0.291062 vs 1
+ Move3 0 vs 1:0.924707 vs 1.71862e-185
+
+ Move1 2 vs 3:0.499828 vs 1
+1 logpsi -6.60771
+1 logpsi -6.80243
+ Move2 0 vs 1:0.787316 vs 9.296e-45
+ Move3 2 vs 3:0.927245 vs 0.700152
+
+ Move1 2 vs 3:0.0108785 vs 1
+1 logpsi -7.52048
+1 logpsi -7.55105
+ Move2 0 vs 1:0.275389 vs 1.25401e-149
+ Move3 1 vs 2:0.964911 vs 1.388
+
+ Move1 3 vs 1:0.280418 vs 0.436248
+1 logpsi -7.78171
+2 logpsi -6.95216
+ Move2 1 vs 2:0.0591061 vs 0.646076
+ Move3 1 vs 2:0.668867 vs 1.29889
+
+ Move1 3 vs 0:0.196397 vs 0
+2 logpsi -7.18539
+805 logpsi -0.00289517
+ Move2 2 vs 3:0.0996657 vs 1.81686
+ Move3 0 vs 1:0.599044 vs 1.43772e-87
+
+ Move1 2 vs 0:0.711394 vs 0
+2 logpsi -5.47667
+805 logpsi -0.00562716
+ Move2 0 vs 1:0.896496 vs 7.29874e-42
+ Move3 1 vs 2:0.0352729 vs 3.21757
+
+ Move1 0 vs 1:0.130811 vs 0
+803 logpsi -0.00349145
+5 logpsi -5.66262
+ Move2 0 vs 1:0.270313 vs 0
+ Move3 0 vs 1:0.151285 vs 1.58067e-61
+
+ Move1 1 vs 0:0.537375 vs 0
+7 logpsi -5.01382
+801 logpsi -0.00739168
+ Move2 0 vs 1:0.122727 vs 0
+ Move3 0 vs 1:0.696326 vs 1.54632e-43
+
+ Move1 1 vs 0:0.720548 vs 0
+13 logpsi -3.93799
+795 logpsi -0.0201686
+ Move2 0 vs 1:0.228136 vs 0
+ Move3 0 vs 1:0.482953 vs 4.56711e-25
+
+ Move1 0 vs 1:0.622309 vs 0
+776 logpsi -0.0392287
+32 logpsi -3.26136
+ Move2 0 vs 1:0.687182 vs 0
+ Move3 0 vs 1:0.194585 vs 6.6239e-11
+
+ Move1 1 vs 0:0.437851 vs 0
+72 logpsi -2.30913
+736 logpsi -0.104699
+ Move2 0 vs 1:0.537228 vs 0
+ Move3 0 vs 1:0.196049 vs 5.22324e-05
+
+ Move1 0 vs 1:0.0669685 vs 0
+674 logpsi -0.172598
+134 logpsi -1.84185
+ Move2 0 vs 1:0.434946 vs 0
+ Move3 0 vs 1:0.424722 vs 0.00768349
+
+ Move1 1 vs 0:0.209865 vs 2.04761e-134
+245 logpsi -1.29066
+563 logpsi -0.322643
+ Move2 0 vs 1:0.675612 vs 0
+ Move3 0 vs 1:0.069565 vs 0.136412
+
+ Move1 0 vs 1:0.909884 vs 4.04378e-05
+443 logpsi -0.633057
+365 logpsi -0.762746
+ Move2 0 vs 1:0.150853 vs 0
+ Move3 0 vs 1:0.813507 vs 0.720728
+
+ Move1 1 vs 0:0.255616 vs 0
+15 logpsi -4.47084
+793 logpsi -0.0119252
+ Move2 0 vs 1:0.349167 vs 0
+ Move3 0 vs 1:0.927477 vs 6.89132e-23
+
+ Move1 0 vs 1:0.480002 vs 0
+805 logpsi -0.00600298
+3 logpsi -5.1185
+ Move2 0 vs 1:0.838322 vs 0
+ Move3 0 vs 1:0.0331207 vs 3.14976e-97
+
+ Move1 1 vs 0:0.182241 vs 0
+3 logpsi -4.71542
+805 logpsi -0.00899641
+ Move2 0 vs 1:0.581852 vs 0
+ Move3 0 vs 1:0.0767114 vs 5.64112e-97
+
+ Move1 0 vs 1:0.95224 vs 0
+807 logpsi -0.00134116
+1 logpsi -6.61863
+ Move2 0 vs 1:0.948846 vs 0
+ Move3 0 vs 1:0.598508 vs 3.08648e-221
+
+ Move1 0 vs 1:0.204683 vs 0
+807 logpsi -0.00235706
+1 logpsi -6.65443
+ Move2 0 vs 1:0.474842 vs 8.56372e-276
+ Move3 0 vs 1:0.616561 vs 3.03378e-221
+
+ Move1 0 vs 1:0.628385 vs 0
+807 logpsi -0.000714101
+1 logpsi -7.78674
+ Move2 0 vs 1:0.262004 vs 5.40255e-303
+ Move3 0 vs 1:0.989764 vs 1.28205e-190
+
+ Move1 1 vs 0:0.264354 vs 0
+1 logpsi -6.32566
+807 logpsi -0.00179159
+ Move2 0 vs 1:0.184916 vs 0
+ Move3 0 vs 1:0.927004 vs 7.09982e-206
+
+ Move1 0 vs 1:0.0236608 vs 0
+807 logpsi -0.000155326
+1 logpsi -8.77291
+ Move2 0 vs 1:0.856539 vs 0
+ Move3 0 vs 1:0.387057 vs 3.95078e-206
+
+ Move1 0 vs 1:0.257658 vs 0
+807 logpsi -0.00205547
+1 logpsi -6.37457
+ Move2 0 vs 1:0.0952035 vs 0
+ Move3 0 vs 1:0.99779 vs 6.88708e-206
+
+ Move1 0 vs 1:0.864359 vs 0
+807 logpsi -0.00201371
+1 logpsi -6.45888
+ Move2 0 vs 1:0.542091 vs 0
+ Move3 0 vs 1:0.541222 vs 6.55521e-206
+
+ Move1 0 vs 1:0.0131484 vs 0
+807 logpsi -0.00105442
+1 logpsi -6.8605
+ Move2 0 vs 1:0.146209 vs 0
+ Move3 0 vs 1:0.957865 vs 4.20767e-184
+
+ Move1 1 vs 0:0.936888 vs 0
+1 logpsi -7.84733
+807 logpsi -0.00047453
+ Move2 0 vs 1:0.67027 vs 0
+ Move3 0 vs 1:0.0636624 vs 3.38806e-184
+
+ Move1 1 vs 0:0.934785 vs 0
+1 logpsi -6.95612
+807 logpsi -0.00105683
+ Move2 0 vs 1:0.265126 vs 0
+ Move3 0 vs 1:0.861861 vs 4.07731e-184
+
+ Move1 0 vs 1:0.675613 vs 0
+807 logpsi -0.00335031
+1 logpsi -5.70048
+ Move2 0 vs 1:0.837682 vs 0
+ Move3 0 vs 1:0.943363 vs 8.96942e-184
+
+ Move1 1 vs 0:0.236448 vs 0
+1 logpsi -9.42385
+807 logpsi -0.000104136
+ Move2 0 vs 1:0.0213073 vs 0
+ Move3 0 vs 1:0.714839 vs 1.80996e-220
+
+ Move1 1 vs 0:0.947464 vs 0
+1 logpsi -6.41814
+807 logpsi -0.00239165
+ Move2 0 vs 1:0.777018 vs 0
+ Move3 0 vs 1:0.258714 vs 1.08197e-161
+
+ Move1 0 vs 1:0.942592 vs 0
+807 logpsi -0.00695608
+1 logpsi -4.99644
+ Move2 0 vs 1:0.11247 vs 0
+ Move3 0 vs 1:0.410494 vs 4.99907e-161
+
+ Move1 1 vs 0:0.54657 vs 0
+1 logpsi -7.54508
+807 logpsi -0.0012752
+ Move2 0 vs 1:0.579846 vs 1.16991e-185
+ Move3 0 vs 1:0.0558154 vs 6.19896e-173
+
+ Move1 0 vs 1:0.9054 vs 0
+807 logpsi -0.00232771
+1 logpsi -6.07334
+ Move2 0 vs 1:0.984453 vs 0
+ Move3 0 vs 1:0.844076 vs 1.08205e-172
+
+ Move1 0 vs 1:0.681137 vs 0
+807 logpsi -0.00188563
+1 logpsi -6.27995
+ Move2 0 vs 1:0.482613 vs 0
+ Move3 0 vs 1:0.761259 vs 9.45381e-173
+
+ Move1 0 vs 1:0.229865 vs 0
+807 logpsi -0.00148544
+1 logpsi -6.52661
+ Move2 0 vs 1:0.367312 vs 0
+ Move3 0 vs 1:0.502301 vs 8.31314e-173
+
+ Move1 1 vs 0:0.0167207 vs 0
+1 logpsi -6.21566
+807 logpsi -0.00217344
+ Move2 0 vs 1:0.460519 vs 0
+ Move3 0 vs 1:0.622429 vs 1.1242e-178
+
+ Move1 1 vs 0:0.29877 vs 0
+1 logpsi -6.77989
+807 logpsi -0.00126962
+ Move2 0 vs 1:0.681595 vs 0
+ Move3 0 vs 1:0.698669 vs 2.69772e-170
+
+ Move1 0 vs 1:0.718718 vs 0
+807 logpsi -0.00274232
+1 logpsi -5.9674
+ Move2 0 vs 1:0.754248 vs 0
+ Move3 0 vs 1:0.712543 vs 1.66377e-162
+
+ Move1 1 vs 0:0.863584 vs 0
+1 logpsi -8.0254
+807 logpsi -0.000607965
+ Move2 0 vs 1:0.15034 vs 3.1801e-268
+ Move3 0 vs 1:0.674962 vs 8.52322e-163
+
+ Move1 1 vs 0:0.134437 vs 0
+1 logpsi -6.66421
+807 logpsi -0.00191416
+ Move2 0 vs 1:0.714758 vs 0
+ Move3 0 vs 1:0.627386 vs 2.07668e-209
+
+ Move1 1 vs 0:0.491494 vs 0
+1 logpsi -10.5061
+807 logpsi -0.00198088
+ Move2 0 vs 1:0.707435 vs 0.00664716
+ Move3 0 vs 1:0.678662 vs 2.53837e-211
+
+ Move1 1 vs 0:0.754963 vs 0
+1 logpsi -11.0622
+807 logpsi -6.87995e-05
+ Move2 0 vs 1:0.256902 vs 2.59716e-87
+ Move3 0 vs 1:0.666288 vs 8.11092e-231
+
+ Move1 1 vs 0:0.751747 vs 0
+1 logpsi -6.96327
+807 logpsi -0.000947123
+ Move2 0 vs 1:0.380185 vs 0
+ Move3 0 vs 1:0.974896 vs 6.58541e-208
+
+ Move1 1 vs 0:0.443245 vs 0
+1 logpsi -6.74259
+807 logpsi -0.00200569
+ Move2 0 vs 1:0.108904 vs 2.05911e-309
+ Move3 0 vs 1:0.315731 vs 7.16729e-208
+
+ Move1 1 vs 0:0.358266 vs 0
+1 logpsi -6.4939
+807 logpsi -0.00151378
+ Move2 0 vs 1:0.54341 vs 0
+ Move3 0 vs 1:0.71607 vs 1.80843e-212
+
+ Move1 0 vs 1:0.164268 vs 0
+807 logpsi -0.000414408
+1 logpsi -7.78939
+ Move2 0 vs 1:0.0588439 vs 0
+ Move3 0 vs 1:0.0506586 vs 1.20858e-212
+
+ Move1 1 vs 0:0.517061 vs 0
+1 logpsi -7.08112
+807 logpsi -0.000877261
+ Move2 0 vs 1:0.526103 vs 0
+ Move3 0 vs 1:0.985341 vs 1.41338e-212
+
+ Move1 0 vs 1:0.294582 vs 0
+807 logpsi -0.00158188
+1 logpsi -6.69542
+ Move2 0 vs 1:0.333803 vs 0
+ Move3 0 vs 1:0.292294 vs 1.63446e-212
+
+ Move1 0 vs 1:0.794929 vs 0
+807 logpsi -0.000529844
+1 logpsi -7.54371
+ Move2 0 vs 1:0.930848 vs 0
+ Move3 0 vs 1:0.64218 vs 1.97032e-206
+
+ Move1 1 vs 0:0.346291 vs 0
+1 logpsi -8.00721
+807 logpsi -0.000339994
+ Move2 0 vs 1:0.491303 vs 0
+ Move3 0 vs 1:0.0693449 vs 1.83624e-206
+
+ Move1 1 vs 0:0.528791 vs 0
+1 logpsi -7.85023
+807 logpsi -0.00102904
+ Move2 0 vs 1:0.145151 vs 1.22958e-164
+ Move3 0 vs 1:0.279032 vs 1.69846e-187
+
+ Move1 0 vs 1:0.64792 vs 0
+807 logpsi -0.000480378
+1 logpsi -7.84373
+ Move2 0 vs 1:0.277377 vs 0
+ Move3 0 vs 1:0.758242 vs 1.69978e-187
+
+ Move1 0 vs 1:0.5538 vs 0
+807 logpsi -0.00340501
+1 logpsi -5.68963
+ Move2 0 vs 1:0.632949 vs 0
+ Move3 0 vs 1:0.0154274 vs 1.36349e-198
+
+ Move1 0 vs 1:0.709645 vs 0
+807 logpsi -0.00162948
+1 logpsi -6.43966
+ Move2 0 vs 1:0.619742 vs 0
+ Move3 0 vs 1:0.750945 vs 6.10598e-195
+
+ Move1 1 vs 0:0.892032 vs 0
+1 logpsi -6.85587
+807 logpsi -0.00137837
+ Move2 0 vs 1:0.875871 vs 0
+ Move3 0 vs 1:0.510415 vs 5.06419e-195
+
+ Move1 0 vs 1:0.0258214 vs 0
+807 logpsi -0.00251141
+1 logpsi -6.12777
+ Move2 0 vs 1:0.629147 vs 0
+ Move3 0 vs 1:0.947272 vs 7.46904e-195
+
+ Move1 0 vs 1:0.247985 vs 0
+807 logpsi -0.00241443
+1 logpsi -6.0275
+ Move2 0 vs 1:0.0731554 vs 0
+ Move3 0 vs 1:0.420394 vs 9.76588e-202
+
+ Move1 0 vs 1:0.469759 vs 0
+807 logpsi -0.000681369
+1 logpsi -7.68131
+ Move2 0 vs 1:0.932927 vs 0
+ Move3 0 vs 1:0.724171 vs 4.90281e-202
+
+ Move1 0 vs 1:0.992567 vs 0
+807 logpsi -0.000404897
+1 logpsi -7.85996
+ Move2 0 vs 1:0.049037 vs 0
+ Move3 0 vs 1:0.634949 vs 4.78904e-217
+
+ Move1 1 vs 0:0.0170257 vs 0
+1 logpsi -6.37343
+807 logpsi -0.00170836
+ Move2 0 vs 1:0.143023 vs 0
+ Move3 0 vs 1:0.931088 vs 7.83055e-217
+
+ Move1 1 vs 0:0.248644 vs 0
+1 logpsi -6.15909
+807 logpsi -0.00211641
+ Move2 0 vs 1:0.915585 vs 0
+ Move3 0 vs 1:0.436397 vs 9.1155e-217
+
+ Move1 1 vs 0:0.670599 vs 0
+1 logpsi -6.88555
+807 logpsi -0.00102301
+ Move2 0 vs 1:0.917568 vs 0
+ Move3 0 vs 1:0.591184 vs 6.06987e-217
+
+ Move1 0 vs 1:0.544104 vs 0
+807 logpsi -0.00290214
+1 logpsi -5.85696
+ Move2 0 vs 1:0.634154 vs 0
+ Move3 0 vs 1:0.798938 vs 1.20361e-216
+
+ Move1 0 vs 1:0.543718 vs 0
+807 logpsi -0.000722036
+1 logpsi -7.52014
+ Move2 0 vs 1:0.936907 vs 0
+ Move3 0 vs 1:0.936753 vs 9.96077e-214
+
+ Move1 1 vs 0:0.964627 vs 0
+1 logpsi -6.93704
+807 logpsi -0.000971612
+ Move2 0 vs 1:0.783115 vs 0
+ Move3 0 vs 1:0.169193 vs 8.78111e-229
+
+ Move1 1 vs 0:0.456198 vs 0
+1 logpsi -7.77602
+807 logpsi -0.000419769
+ Move2 0 vs 1:0.134299 vs 0
+ Move3 0 vs 1:0.635998 vs 7.09431e-229
+
+ Move1 1 vs 0:0.0633302 vs 0
+1 logpsi -8.30629
+807 logpsi -0.000247069
+ Move2 0 vs 1:0.255307 vs 0
+ Move3 0 vs 1:0.830084 vs 2.51967e-219
+
+ Move1 0 vs 1:0.288874 vs 0
+807 logpsi -0.000408745
+1 logpsi -7.80682
+ Move2 0 vs 1:0.833056 vs 0
+ Move3 0 vs 1:0.499804 vs 2.6755e-219
+
+ Move1 0 vs 1:0.739738 vs 0
+807 logpsi -2.81738e-05
+1 logpsi -10.4772
+ Move2 0 vs 1:0.146791 vs 0
+ Move3 0 vs 1:0.556756 vs 2.32118e-219
+
+ Move1 0 vs 1:0.506291 vs 0
+807 logpsi -0.00210358
+1 logpsi -6.18757
+ Move2 0 vs 1:0.592321 vs 0
+ Move3 0 vs 1:0.0654621 vs 4.19572e-224
+
+ Move1 1 vs 0:0.291421 vs 0
+1 logpsi -6.74762
+807 logpsi -0.0012523
+ Move2 0 vs 1:0.178509 vs 0
+ Move3 0 vs 1:0.4112 vs 6.53134e-193
+
+ Move1 1 vs 0:0.741241 vs 0
+1 logpsi -7.3135
+807 logpsi -0.000673846
+ Move2 0 vs 1:0.630384 vs 0
+ Move3 0 vs 1:0.0600751 vs 5.78877e-227
+
+ Move1 0 vs 1:0.104643 vs 0
+807 logpsi -0.000344539
+1 logpsi -8.45011
+ Move2 0 vs 1:0.703545 vs 0
+ Move3 0 vs 1:0.964939 vs 3.81211e-217
+
+ Move1 0 vs 1:0.157968 vs 0
+807 logpsi -0.000562958
+1 logpsi -7.48677
+ Move2 0 vs 1:0.563425 vs 0
+ Move3 0 vs 1:0.59494 vs 4.33718e-217
+
+ Move1 1 vs 0:0.716283 vs 0
+1 logpsi -6.52226
+807 logpsi -0.00227326
+ Move2 0 vs 1:0.46748 vs 0
+ Move3 0 vs 1:0.933204 vs 6.08952e-217
+
+ Move1 0 vs 1:0.51887 vs 0
+807 logpsi -0.00193252
+1 logpsi -6.27621
+ Move2 0 vs 1:0.8454 vs 0
+ Move3 0 vs 1:0.416107 vs 7.09214e-217
+
+ Move1 1 vs 0:0.240011 vs 0
+1 logpsi -6.5494
+807 logpsi -0.00143224
+ Move2 0 vs 1:0.850598 vs 0
+ Move3 0 vs 1:0.566851 vs 5.99824e-217
+
+ Move1 0 vs 1:0.251079 vs 0
+807 logpsi -0.00538786
+1 logpsi -5.25759
+ Move2 0 vs 1:0.863856 vs 0
+ Move3 0 vs 1:0.245021 vs 2.45336e-216
+
+ Move1 0 vs 1:0.101094 vs 0
+807 logpsi -0.00224597
+1 logpsi -6.09996
+ Move2 0 vs 1:0.760827 vs 0
+ Move3 0 vs 1:0.748276 vs 1.25459e-192
+
+ Move1 1 vs 0:0.711674 vs 0
+1 logpsi -7.40714
+807 logpsi -0.000610678
+ Move2 0 vs 1:0.928773 vs 0
+ Move3 0 vs 1:0.189922 vs 7.1776e-193
+
+ Move1 0 vs 1:0.561459 vs 0
+807 logpsi -0.00263003
+1 logpsi -5.97476
+ Move2 0 vs 1:0.159404 vs 0
+ Move3 0 vs 1:0.0316728 vs 1.38962e-192
+
+ Move1 0 vs 1:0.76295 vs 0
+807 logpsi -0.000795659
+1 logpsi -7.15129
+ Move2 0 vs 1:0.766359 vs 0
+ Move3 0 vs 1:0.124632 vs 7.62433e-193
+
+ Move1 0 vs 1:0.598056 vs 0
+807 logpsi -0.00249362
+1 logpsi -6.35977
+ Move2 0 vs 1:0.539203 vs 0
+ Move3 0 vs 1:0.319727 vs 1.05343e-192
+
+ Move1 1 vs 0:0.806849 vs 0
+1 logpsi -9.42747
+807 logpsi -8.04866e-05
+ Move2 0 vs 1:0.341791 vs 0
+ Move3 0 vs 1:0.117424 vs 5.99762e-193
+
+ Move1 0 vs 1:0.655448 vs 0
+807 logpsi -0.00336207
+1 logpsi -5.69688
+ Move2 0 vs 1:0.444776 vs 0
+ Move3 0 vs 1:0.52536 vs 1.39227e-238
+
+ Move1 1 vs 0:0.118569 vs 0
+1 logpsi -6.21797
+807 logpsi -0.00199529
+ Move2 0 vs 1:0.752245 vs 0
+ Move3 0 vs 1:0.967158 vs 8.07843e-239
+
+ Move1 0 vs 1:0.319168 vs 0
+807 logpsi -0.00218149
+1 logpsi -6.12884
+ Move2 0 vs 1:0.978615 vs 0
+ Move3 0 vs 1:0.148423 vs 1.17362e-221
+
+ Move1 1 vs 0:0.969423 vs 0
+1 logpsi -7.65747
+807 logpsi -0.000614238
+ Move2 0 vs 1:0.0121108 vs 0
+ Move3 0 vs 1:0.480254 vs 4.32544e-200
+
+ Move1 1 vs 0:0.409297 vs 0
+1 logpsi -7.03307
+807 logpsi -0.000882612
+ Move2 0 vs 1:0.59221 vs 0
+ Move3 0 vs 1:0.078957 vs 4.99376e-200
+
+ Move1 0 vs 1:0.144176 vs 0
+807 logpsi -0.00223522
+1 logpsi -6.10457
+ Move2 0 vs 1:0.920647 vs 0
+ Move3 0 vs 1:0.220767 vs 3.56433e-223
+
+ Move1 1 vs 0:0.78802 vs 0
+1 logpsi -6.37569
+807 logpsi -0.00174169
+ Move2 0 vs 1:0.0934605 vs 0
+ Move3 0 vs 1:0.800164 vs 2.91324e-223
+

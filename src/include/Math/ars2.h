@@ -12,7 +12,7 @@
 #define _ARS_H_
 
 //standard includes
-//#include <R.h>
+#include <R.h>
 //#include <Rmath.h>
 //#include <Rdefines.h>
 #include <iostream>

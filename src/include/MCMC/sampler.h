@@ -243,12 +243,14 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 
 		/// \brief Member function to initialise the MCMC chain
 		void initialiseChain(){
+
 			modelParamType tmpModelParams;
 			_model.initialiseParams(_rndGenerator,tmpModelParams);
 			vector<double> logPostVec;
 			logPostVec = _model.logPosterior(tmpModelParams);
 			mcmcState<modelParamType> tmpState(tmpModelParams,logPostVec);
 			_chain.currentState(tmpState);
+			modelParamType params=_chain.currentState().parameters();
 		}
 
 		/// \brief Member function to initialise the proposal parameters
@@ -390,7 +392,6 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::
 	// Now set the indicator whether the model has missing data
 	_model.hasMissingData(false);
 
-
 }
 
 /// \brief Member function to set the model for the sampler for problems
@@ -522,6 +523,9 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 	// This is the main function that runs the sampler
 
+	//std::fstream fout("sampler.txt", std::ios::in | std::ios::out | std::ios::app);
+
+
 	// Define a uniform random number generator
 	randomUniform unifRand(0,1);
 
@@ -548,7 +552,7 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 				if(unifRand(_rndGenerator)<it->proposalWeight()){
 					// Update the chain state
 					it->updateParameters(_chain,_model,_rndGenerator);
-				//	std::cout <<"prop " << it->proposalName().c_str()<<endl;
+					//fout << "prop " << it->proposalName().c_str()<<endl;
 				}
 			}
 		}

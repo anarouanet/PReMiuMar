@@ -221,6 +221,12 @@ double logPdfWishart(const unsigned int& dimA, const MatrixXd& A, const double& 
 			  - (0.5*kappa*(double)dimA*log(2.0)+logMultivarGammaFn(kappa/2.0,dimA));
 }
 
+double logPdfInverseWishart(const unsigned int& dimA, const MatrixXd& A, const double& logDetA, const MatrixXd& covR, const double& logDetR, const double& kappa){
+  MatrixXd work = covR*A.inverse();
+  return 0.5*(kappa*logDetR-(kappa+(double)dimA+1)*logDetA-work.trace())
+    - (0.5*kappa*(double)dimA*log(2.0)+logMultivarGammaFn(kappa/2.0,dimA));
+}
+
 double logPdfIntrinsicCAR(const vector<double>& x, const vector<vector<unsigned int> >& Neighbours, const double& precision){
 	// compute xtPx with P the precision Matrix of the intrinsic CAR
 	double sumCAR1 = 0.0;

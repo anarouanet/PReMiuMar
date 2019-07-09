@@ -38,6 +38,14 @@
 #include<string>
 #include<stdexcept>
 
+
+#include<Eigen/Core>
+#include<Eigen/Cholesky>
+#include<Eigen/LU>
+#include<Eigen/CholmodSupport>
+#include <Eigen/Eigenvalues>
+
+using namespace Eigen;
 using std::vector;
 using std::ifstream;
 using std::string;
@@ -48,7 +56,7 @@ class pReMiuMData{
 
 	public:
 		/// \brief Default constructor //RJ add _nTimes
-		pReMiuMData():  _nSubjects(0), _nTimes(0), _nTimes_unique(0), _nCovariates(0), _nFixedEffects(0),_nFixedEffects_mix(0), _nCategoriesY(0), _nPredictSubjects(0) {};
+		pReMiuMData():  _nSubjects(0), _nTimes(0), _nTimes_unique(0), _nCovariates(0), _nFixedEffects(0),_nFixedEffects_mix(0), _nRandomEffects(0), _nCategoriesY(0), _nPredictSubjects(0) {};
 
 		/// \brief Default destructor
 		~pReMiuMData(){};
@@ -145,18 +153,19 @@ class pReMiuMData{
 		}
 
 		/// \brief Return the number of fixed effectss
-		unsigned int& nFixedEffects_mix(){
+		unsigned int &nFixedEffects_mix(){
 		  return _nFixedEffects_mix;
 		}
 
 		unsigned int nFixedEffects_mix() const{
 			return _nFixedEffects_mix;
 		}
+
 		void nFixedEffects_mix(const unsigned int& nConf){
 		  _nFixedEffects_mix = nConf;
 		}
 
-		unsigned int& nFixedEffects(){
+		unsigned int &nFixedEffects(){
 			return _nFixedEffects;
 		}
 
@@ -166,6 +175,18 @@ class pReMiuMData{
 
 		void nFixedEffects(const unsigned int& nConf){
 			_nFixedEffects = nConf;
+		}
+
+		unsigned int& nRandomEffects(){
+		  return _nRandomEffects;
+		}
+
+		unsigned int nRandomEffects()const{
+		  return _nRandomEffects;
+		}
+
+		void nRandomEffects(const unsigned int& nConf){
+		  _nRandomEffects = nConf;
 		}
 
 		//RJ handling functions for equalTimes
@@ -256,17 +277,16 @@ class pReMiuMData{
 		}
 
 		/// \brief Return name for covariate j
-		string covariateNames(const unsigned int& j) const{
+		const string& covariateNames(const unsigned int& j) const{
 			return _covariateNames[j];
 		}
 
-		/// \brief Return the vector of the fixed effects names
-		vector<string> fixedEffectNames() const{
-			return _fixedEffectNames;
+		vector<string> fixedEffectNames() const {
+		  return _fixedEffectNames;
 		}
 
 		/// \brief Return the vector of the fixed effects names
-		vector<string>& fixedEffectNames(){
+	 vector<string>& fixedEffectNames() {
 			return _fixedEffectNames;
 		}
 
@@ -278,18 +298,17 @@ class pReMiuMData{
 		}
 
 		/// \brief Return name for fixed effects j
-		string fixedEffectNames(const unsigned int& j) const{
+		const string& fixedEffectNames(const unsigned int& j) const{
 		  return _fixedEffectNames[j];
 		}
 
-
 		/// \brief Return the vector of the fixed effects names
-		vector<string> fixedEffectNames_mix() const{
+	  vector<string> fixedEffectNames_mix() const {
 		  return _fixedEffectNames_mix;
 		}
 
 		/// \brief Return the vector of the fixed effects names
-		vector<string>& fixedEffectNames_mix(){
+		vector<string>& fixedEffectNames_mix()  {
 		  return _fixedEffectNames_mix;
 		}
 
@@ -301,8 +320,28 @@ class pReMiuMData{
 		}
 
 		/// \brief Return name for fixed effects j
-		string fixedEffectNames_mix(const unsigned int& j) const{
+		const string& fixedEffectNames_mix(const unsigned int& j) const{
 			return _fixedEffectNames_mix[j];
+		}
+
+		vector<string> randomEffectNames() const{
+		  return _randomEffectNames;
+		}
+		vector<string>& randomEffectNames() {
+		  return _randomEffectNames;
+		}
+
+		 void randomEffectNames(const vector<string>& fixEffNames){
+		   _randomEffectNames.clear();
+		   _randomEffectNames.resize(fixEffNames.size());
+		   _randomEffectNames.insert(_randomEffectNames.begin(),fixEffNames.begin(),fixEffNames.end());
+		 }
+
+		string randomEffectNames(const unsigned int& j) const{
+		   return _randomEffectNames[j];
+		 }
+		string& randomEffectNames(const unsigned int& j) {
+		  return _randomEffectNames[j];
 		}
 
 
@@ -568,6 +607,57 @@ class pReMiuMData{
 		  return _W_mix[i][j];
 		}
 
+		/// \brief Return the jth covariate for subject i
+		double W_RE(const unsigned int& i,const unsigned int& j) const{
+		  return _W_RE(i,j);
+		}
+
+		const MatrixXd& W_RE() const{
+		  return _W_RE;
+		}
+
+		/// \brief Return the fixed effects matrix
+		MatrixXd& W_RE(){
+		  return _W_RE;
+		}
+
+//
+// 		void W_RE(const unsigned int& i,const unsigned int& j, const double& temp){
+// 		   _W_RE(i,j)=temp;
+// 		}
+//
+// 		// const Matrix2d& W_RE() const{
+// 		//   return _W_RE;
+// 		// }
+//
+// 		MatrixXd W_RE() const{
+// 		  return _W_RE;
+// 		}
+//
+// 		VectorXd W_RE(const unsigned int& i) const{
+// 		  return _W_RE.row(i);
+// 		}
+
+		// MatrixXd W_RE(const unsigned int& i) {
+		//
+		//   MatrixXd r(_tStop[i]-_tStart[i], _W_RE.cols());
+		//   for(unsigned int j=0;j<_tStop[i]-_tStart[i]+1;j++){
+		//     r.row(j) << _W_RE.row(_tStop[i]+j);
+		//   }
+		//   return r;
+		// }
+
+		VectorXd W_RE(const unsigned int& i) const{
+		  return _W_RE.row(i);
+		}
+
+		MatrixXd W_RE(const unsigned int& i,const unsigned int& j,const unsigned int& n,const unsigned int& m) const{
+		  return _W_RE.block(i, j, n, m);
+		}
+
+		/// \brief Return the fixed effects matrix
+
+
 		/// \brief Return the logOffset vector
 		const vector<double>& logOffset() const{
 			return _logOffset;
@@ -702,6 +792,7 @@ class pReMiuMData{
 		/// \brief The number of fixed effects covariates
 		unsigned int _nFixedEffects;
 		unsigned int _nFixedEffects_mix;
+		unsigned int _nRandomEffects;
 
 		//RJ indicator: 0, unequal times; 1, equal times
 		unsigned int _equalTimes;
@@ -762,9 +853,12 @@ class pReMiuMData{
 		/// \note This may need to changed to be signed or double
 		vector<vector<double> > _W;
 		vector<vector<double> > _W_mix;
+		MatrixXd _W_RE;
+
 		/// \brief A vector of fixed effects names
 		vector<string> _fixedEffectNames;
 		vector<string> _fixedEffectNames_mix;
+		vector<string> _randomEffectNames;
 
 		/// \brief A vector of logOffsets (only used in the Poisson model)
 		vector<double> _logOffset;

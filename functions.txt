@@ -1,0 +1,12 @@
+initialisePReMiuM in PReMiuMIO.h
+
+writePReMiuMOutput in PReMiuMIO.h
+
+pReMiuMPropParams in PReMiuMProposals.h
+pReMiuMHyperParams and pReMiuMParams in PReMiuMModel
+
+sampleGPmean =0 when in Get_Sigma_inv_GP_cov, det(Lambda)=0 (use of grid to inverse variance matrix) 
+
+
+initialise
+MH for betamix

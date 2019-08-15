@@ -25,7 +25,7 @@
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNames_clust=NULL, randomEffectsNames=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
+profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_clust=NULL, randomEffectsNames=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
                    output="output", hyper, predict, predictType="RaoBlackwell", nSweeps=1000,
                    nBurn=1000, nProgress=500, nFilter=1, nClusInit, seed, yModel="Bernoulli",
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,

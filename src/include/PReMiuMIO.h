@@ -369,7 +369,6 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 	vector<vector<unsigned int> >& neighbours=dataset.neighbours();
 	vector<unsigned int>& nNeighbours=dataset.nNeighbours();
 	bool& includeCAR=dataset.includeCAR();
-
 	bool wasError=false;
 
 	// Get the number of subjects
@@ -414,7 +413,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 	if(outcomeType.compare("LME")==0){
 	  inputFile >> nRandomEffects;
 	  confNames_RE.resize(nRandomEffects);
-	  for(unsigned int i=0;i<nRandomEffects-1;i++){
+	  for(unsigned int i=0;i<nRandomEffects;i++){
 	    inputFile >> confNames_RE[i];
 	  }
 	}
@@ -554,10 +553,12 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 
 	//RJ Read in timepoints and longitudinal data
 	if(outcomeType.compare("Longitudinal")==0 || outcomeType.compare("LME")==0){
+
 		for(unsigned int i=0; i<nSubjects; i++){
 			inputFile >> tStart[i];
 			inputFile >> tStop[i];
 		}
+
 		for(unsigned int i=0; i<nTimes; i++){
 			inputFile >> times[i];
 			inputFile >> continuousY[i];
@@ -571,6 +572,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 		}
 
 		if(outcomeType.compare("LME")==0){
+
 	    W_RE.setZero(nTimes,nRandomEffects);
 		  for(unsigned int i=0;i<nTimes;i++){
 		    for(unsigned int k=0;k<nRandomEffects;k++){
@@ -1094,6 +1096,36 @@ void readHyperParamsFromFile(const string& filename,pReMiuMHyperParams& hyperPar
 			}
 			hyperParams.initAlloc(initAl);
 		}
+		else if(inString.find("initL")==0){
+		  size_t pos = inString.find("=")+1;
+		  string tmpStr = inString.substr(pos,inString.size()-pos);
+		  vector<double> LVec;
+		  while(tmpStr.find(" ")!=string::npos){
+		    pos = tmpStr.find(" ");
+		    if(pos==(tmpStr.size()-1)){
+		      string elem = tmpStr.substr(0,pos);
+		      LVec.push_back((double)atof(elem.c_str()));
+		      tmpStr = tmpStr.substr(pos+1,tmpStr.size());
+		      break;
+		    }
+		    string elem = tmpStr.substr(0,pos);
+		    LVec.push_back((double)atof(elem.c_str()));
+		    tmpStr = tmpStr.substr(pos+1,tmpStr.size()-pos-1);
+		  }
+
+		  unsigned int nL=4;
+		  if(!hyperParams.muL().empty()){ //AR
+		    nL=3;
+		  }
+		  unsigned int dim = (unsigned int)(double)LVec.size()/nL;
+		  MatrixXd L0=MatrixXd::Zero(dim,nL);
+		  for(unsigned int j1=0;j1<dim;j1++){
+		    for(unsigned int j2=0;j2<nL;j2++){
+		      L0(j1,j2)=LVec[j1*nL+j2];
+		    }
+		  }
+		  hyperParams.initL(L0);
+		}
 
 	}
 
@@ -1233,7 +1265,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 			}
 		}
 	}
-
 	params.workNXInCluster(nXInCluster);
 	params.workMaxZi(maxZ);
 
@@ -1784,26 +1815,35 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 		    nL=4;
 		  }
 
-			for (unsigned int c=0;c<maxNClusters;c++){
-				for(unsigned int l=0;l<nL;l++){
-					randomNormal normalRand(hyperParams.muL(l),hyperParams.sigmaL(l));
-					params.L(c,l,normalRand(rndGenerator));
-				}
+		  if (hyperParams.initL().size()==0){
+  			for (unsigned int c=0;c<maxNClusters;c++){
+  				for(unsigned int l=0;l<nL;l++){
+  					randomNormal normalRand(hyperParams.muL(l),hyperParams.sigmaL(l));
+  					params.L(c,l,normalRand(rndGenerator));
+  				}
 
-				if(options.sampleGPmean()){ //AR
-				  VectorXd Fval(dataset.nTimes_unique());
+  				if(options.sampleGPmean()){ //AR
+  				  VectorXd Fval(dataset.nTimes_unique());
 
-				  Fval =  Sample_GPmean(params, dataset, c, rndGenerator,1);
-				  for(unsigned int j=0;j<dataset.nTimes_unique();j++){
-				    params.meanGP(c,j, Fval(j));
-				  }
+  				  Fval =  Sample_GPmean(params, dataset, c, rndGenerator,1);
+  				  for(unsigned int j=0;j<dataset.nTimes_unique();j++){
+  				    params.meanGP(c,j, Fval(j));
+  				  }
 
-				  if(options.estim_ratio()){
-				    double vVal = betaRand(rndGenerator,hyperParams.aRatio(),hyperParams.bRatio());
-				    params.ratio(c, vVal);
-				  }
-				}
-			}
+  				  if(options.estim_ratio()){
+  				    double vVal = betaRand(rndGenerator,hyperParams.aRatio(),hyperParams.bRatio());
+  				    params.ratio(c, vVal);
+  				  }
+  				}
+  			}
+		  }else{
+		    for (unsigned int c=0;c<maxNClusters;c++){
+		      VectorXd lval =hyperParams.initL(c);
+		      for(unsigned int l=0;l<nL;l++){
+		        params.L(c,l,lval(l));
+		      }
+		    }
+		  }
 		}
 
 		// And also the extra variation values if necessary
@@ -1994,9 +2034,11 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 					outFiles.push_back(new ofstream(fileName.c_str()));
 				}
 				if(outcomeType.compare("LME")==0){
-				  fileName = fileStem + "_TauLME.txt";
+				  fileName = fileStem + "_cov_RandomEffects_LME.txt";
 				  outFiles.push_back(new ofstream(fileName.c_str()));
 				  fileName = fileStem + "_epsilonLME.txt";
+				  outFiles.push_back(new ofstream(fileName.c_str()));
+				  fileName = fileStem + "_RandomEffectsLME.txt";
 				  outFiles.push_back(new ofstream(fileName.c_str()));
 				}
 				if(responseExtraVar){
@@ -2050,7 +2092,7 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 		//RJ add L and MVN to indices
 		int thetaInd=-1,betaInd=-1,betamixInd=-1,thetaPropInd=-1,betaPropInd=-1,sigmaSqYInd=-1,nuInd=-1,LInd=-1,
 		          meanGPInd=-1,estim_ratioInd=-1,MVNmuInd=-1,MVNSigmaInd=-1,epsilonInd=-1,
-		          SigmaLMEInd=-1, EpsilonLMEInd=-1;//LME
+		          CovRELMEInd=-1, EpsilonLMEInd=-1, RandomEffectsLMEInd=-1 ;//LME
 
 		//betamixPropInd=-1,
 		int sigmaEpsilonInd=-1,epsilonPropInd=-1,omegaInd=-1,rhoInd=-1;
@@ -2110,8 +2152,9 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 				MVNSigmaInd=r++;
 			}
 			if(outcomeType.compare("LME")==0){//AR
-			  SigmaLMEInd=r++;
+			  CovRELMEInd=r++;
 			  EpsilonLMEInd=r++;
+			  RandomEffectsLMEInd=r++;
 			}
 
 			if(responseExtraVar){
@@ -2403,18 +2446,26 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			    for(unsigned int c=0;c< maxNClusters;c++){
 			      for(unsigned int l=0;l<nRandomEffects;l++){
   			      for(unsigned int l2=0;l2<=l;l2++){
-  			        *(outFiles[SigmaLMEInd]) << ""<< params.covRE(c,l,l2);
+  			        *(outFiles[CovRELMEInd]) << ""<< params.covRE(c,l,l2);
   			        if(c<maxNClusters-1 || l2<(nRandomEffects-1)){
-  			          *(outFiles[SigmaLMEInd]) << " ";
+  			          *(outFiles[CovRELMEInd]) << " ";
   			        }else{
-  			          *(outFiles[SigmaLMEInd]) << endl;
+  			          *(outFiles[CovRELMEInd]) << endl;
   			        }
   			      }
 			      }
 			    }
-			    cout << " LME : write sampled bi "<<endl;
 
-			    *(outFiles[EpsilonLMEInd]) << ""<< params.SigmaE(); //params.sigmakInd(c);
+			    *(outFiles[EpsilonLMEInd]) << " "<< params.SigmaE(); //params.sigmakInd(c);
+
+			    for(unsigned int i=0;i<nSubjects;i++){
+			      *(outFiles[RandomEffectsLMEInd]) << " "<< params.RandomEffects(i).transpose(); //params.sigmakInd(c);
+			      if(i<nSubjects-1){
+			        *(outFiles[RandomEffectsLMEInd]) << " ";
+			      }else{
+			        *(outFiles[RandomEffectsLMEInd]) << endl;
+			      }
+			    }
 			  }
 
 			  // Print beta

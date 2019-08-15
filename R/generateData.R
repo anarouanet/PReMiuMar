@@ -543,7 +543,7 @@ clusSummaryLongitudinalDiscrete<-function(ng=2){##//RJ summary generation functi
    'clusterSizes'=c(30,30),##//RJ
    'includeCAR'=FALSE,
    'TauCAR'=100,
-   'clusterData'=list(list('theta'=list('mu'=c(9,8.5,7,6,5,4,3),
+   'clusterData'=list(list('theta'=list('mu'=c(11,10,9,8,6,5,4),
 			  	        			    'L'=c(-0.5,-0.1,-0.5)),
                            'covariateProbs'=list(c(0.8,0.1,0.1),
                                                  c(0.8,0.1,0.1),

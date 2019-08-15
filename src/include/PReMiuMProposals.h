@@ -4171,6 +4171,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
           vector<double> timesk;
 
           if( !model.options().sampleGPmean() && i==0 && outcomeType.compare("Longitudinal")==0 ){//for first person, calculate all marginals
+
             if(Ana!=1)
               clusterMarginal[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
 
@@ -4208,9 +4209,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
                 det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
                 //fout <<  " B "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
-
                 clusterMarginal[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],nSubjects);
-                //fout <<  " C "<<c << " det_M0 "<< det_M0[c]<< " clusterMarg "<< clusterMarginal[c] <<endl;
               }
 
               if(Ana==2&abs(temp- clusterMarginal[c])>pow (1.0, -5.0)){
@@ -4219,7 +4218,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
               }
             }
           }//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
           if(u[i]<testBound[c]){
 
@@ -4295,6 +4293,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
         }
       }
     }
+
 
     for(unsigned int c=0;c<maxNClusters;c++){
       if(u[i]<testBound[c]){

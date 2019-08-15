@@ -43,8 +43,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 
   #assign(names(clusObjRunInfoObj)[4],min(nSweeps1,clusObjRunInfoObj[[4]]))
 
-
-
   if (nClusters==1) stop("Cannot produce plots because only one cluster has been found.")
 
   plotRiskFlag <- 2
@@ -52,7 +50,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     if(yModel=="Normal"){
       showRelativeRisk<-F
     }
-    if(yModel=="Longitudinal"||yModel=="MVN"){
+    if(yModel=="Longitudinal"||yModel=="MVN"||yModel=="LME"){
       plotRiskFlag <- 1
     }
   }
@@ -135,7 +133,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     # Set up the layout for the plot
     ##//RJ remove 'Risk' from Longitudinal summary
     plotLayout<-grid.layout(ncol = nCovariates+plotRiskFlag, nrow = 6)
-
     grid.newpage()
     pushViewport(viewport(layout = plotLayout))
     if(!orderProvided){
@@ -202,12 +199,22 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     if(includeResponse){
       # Reorder the risk matrix
       riskDim<-dim(risk)
-      risk<-array(risk[,meanSortIndex,],dim=riskDim)
-      if(showRelativeRisk){
-        for(c in nClusters:1){
-          risk[,c,]<-risk[,c,]/risk[,1,]
+      if (!is.element(yModel,c("Longitudinal","LME"))){
+        risk<-array(risk[,meanSortIndex,],dim=riskDim)
+        if(showRelativeRisk){
+          for(c in nClusters:1){
+            risk[,c,]<-risk[,c,]/risk[,1,]
+          }
+        }
+      }else{
+        risk<-array(risk[,meanSortIndex],dim=riskDim)
+        if(showRelativeRisk){
+          for(c in nClusters:1){
+            risk[,c]<-risk[,c]/risk[,1]
+          }
         }
       }
+
       # reorder the nu matrix
       if (yModel=="Survival"&&!weibullFixedShape){
         nuDim<-dim(nuArray)
@@ -221,12 +228,14 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
           GPmeanDim<-dim(GPmeanArray)
           GPmeanArray<-array(GPmeanArray[,meanSortIndex,],dim=GPmeanDim)
         }
-      }
-      if (yModel=="MVN"){
+      }else if (yModel=="MVN"){
         MVNmuDim<-dim(MVNmuArray)
         MVNSigmaDim<-dim(MVNSigmaArray)
         MVNmuArray<-array(MVNmuArray[,meanSortIndex,],dim=MVNmuDim)
         MVNSigmaArray<-array(MVNSigmaArray[,meanSortIndex,],dim=MVNSigmaDim)
+      }else if (yModel=="LME"){
+        covREArray<-array(covREArray[,meanSortIndex,],dim=dim(covREArray))
+        RE_LMEArray<-array(RE_LMEArray[,meanSortIndex,],dim=dim(RE_LMEArray))
       }
     }
 
@@ -294,6 +303,11 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
         MVNmuUpper<-apply(MVNmuArray,2,quantile,0.95)
         MVNmuDF<-data.frame("MVNmu"=c(),"cluster"=c(),"meanMVNmu"=c(),
                             "lowerMVNmu"=c(),"upperMVNmu"=c(),"fillColor"=c())
+      }
+      if (yModel=="LME"){
+        LMEmuMean
+        LMEmuLower
+        LMEmuUpper
       }
 
     }else{

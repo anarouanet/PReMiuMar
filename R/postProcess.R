@@ -25,14 +25,14 @@
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5)  abs(x - round(x)) < tol
 
-profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_clust=NULL, randomEffectsNames=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
+profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNames_clust=NULL, randomEffectsNames=NULL, outcome="outcome", outcomeT=NA, data, longData=NULL,
                    output="output", hyper, predict, predictType="RaoBlackwell", nSweeps=1000,
                    nBurn=1000, nProgress=500, nFilter=1, nClusInit, seed, yModel="Bernoulli",
                    xModel="Discrete", sampler="SliceDependent", alpha=-2, dPitmanYor=0, excludeY=FALSE, extraYVar=FALSE,
                    varSelectType="None", entropy,reportBurnIn=FALSE, run=TRUE, discreteCovs, continuousCovs,
                    whichLabelSwitch="123", includeCAR=FALSE, neighboursFile="Neighbours.txt",
                    weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,
-                   kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL, ngrid=0){
+                   kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL, ngrid=0, timevar=NULL){
 
   # suppress scientific notation
   options(scipen=999)
@@ -82,7 +82,8 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     #stop("The argument formula must be specified in LME ymodel")
   if (missing(longData) & yModel %in% c("Longitudinal","MVN", "LME"))
     stop("The argument data should be specified and defined as a data.frame")
-      print(" LME : formula option")
+  if(yModel == "LME")
+    print("LME : formula option")
 
 #  if (yModel == "LME" & class(formula) != "formula")
 #    stop("The argument fixed must be a formula")
@@ -223,10 +224,15 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     FEIndeces_mix<-vector()
     for (i in 1:nFixedEffects_mix){
       tmpIndex_mix<-which(colnames(data)==fixedEffectsNames_clust[i])
-      if (length(tmpIndex_mix)==0) stop("ERROR: cluster-specific fixed effects names in data.frame provided do not correspond to list of fixed effects for profile regression")
+      if (length(tmpIndex_mix)==0 && !is.element(fixedEffectsNames_clust[i],timevar)) stop("ERROR: cluster-specific fixed effects names in data.frame provided do not correspond to list of fixed effects for profile regression, nor to timevar for yModel=LME")
       FEIndeces_mix<-append(FEIndeces_mix,tmpIndex_mix)
     }
     fixedEffects_mix<-data[,FEIndeces_mix]
+    browser()
+    if(length(intersect(timevar,fixedEffectsNames_clust))>0){
+      #FEIndeces_mix<- c()
+    }
+
     if (sum(is.na(fixedEffects_mix))>0) stop("ERROR: cluster-specific fixed effects cannot have missing values. Use an imputation method before using profRegr().")
     dataMatrix<-cbind(dataMatrix,fixedEffects_mix)
     for (i in dim(fixedEffects_mix)[2]){
@@ -255,6 +261,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
       }
     } else {
       nRandomEffects<-0
+      randomEffectsNames <-c()
       #if (yModel=="Survival") stop("ERROR: For the current implementation of Survival outcome the fixed effects must be provided. ")
     }
   }
@@ -302,6 +309,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
   }
   if(yModel=="LME"){
     write(nRandomEffects+1, fileName,append=T,ncolumns=1)
+    randomEffectsNames <- c("intercept",randomEffectsNames)
     if (nRandomEffects>0){
       write(t(randomEffectsNames), fileName,append=T,ncolumns=1)
     }
@@ -387,7 +395,6 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
 
     if(yModel=="LME"){
       wMat_RE<-data.frame("intercept"=rep(1,dim(randomEffects)[1]),randomEffects)#longData[,(2+nCovariates+nFixedEffects+nFixedEffects_mix):(1+nCovariates+nFixedEffects+nFixedEffects_mix+nRandomEffects)]
-      #dataMatrix <- cbind(dataMatrix, wMat_RE)
       write(t(wMat_RE), fileName,append=T, ncolumns=dim(wMat_RE)[2])
     }
 
@@ -591,7 +598,11 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
       write(paste("initAlloc=",paste(hyper$initAlloc,collapse=" ")," ",sep=""),hyperFile,append=T)
       if(sum(is.wholenumber(hyper$initAlloc))!=nSubjects) stop("The vector initAlloc has not been initialised properly: the vector must contain integers and have as many elements as there are observations in the dataset (nSubjects).")
       nClusInit<-max(hyper$initAlloc)
-
+    }
+    if (!is.null(hyper$initL)){
+      write(paste("initL=",paste(hyper$initL,collapse=" ")," ",sep=""),hyperFile,append=T)
+      nl=ifelse(kernel=="SQexponential",3,4)
+      if(length(hyper$initL)!=ifelse(is.null(hyper$initAlloc),nClusInit,ifelse(min(hyper$initAlloc)==0,nClusInit+1,nClusInit))*nl) stop("The vector initL has not been initialised properly: the vector must contain hyperpriors for min(nClusInit,max(initAlloc)+ifelse(min(initAlloc)==0,1,0)) clusters. Note that 0 is a potential value for the cluster labels")
 
     }
   }
@@ -694,46 +705,50 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames, fixedEffectsNames_c
     useNIWP<-useNormInvWishPrior
   }
 
+  liste<-list("directoryPath"=directoryPath,
+             "fileStem"=fileStem,
+             "inputFileName"=fileName,
+             "nSweeps"=nSweeps,
+             "nBurn"=nBurn,
+             "reportBurnIn"=reportBurnIn,
+             "nFilter"=nFilter,
+             "nProgress"=nProgress,
+             "nSubjects"=nSubjects,
+             "nPredictSubjects"=nPreds,
+             "fullPredictFile"=fullPredictFile,
+             "predictType"=predictType,
+             "alpha"=alpha,
+             "dPitmanYor"=dPitmanYor,
+             "covNames"=covNames,
+             "discreteCovs"=discreteTmp,
+             "continuousCovs"=contTmp,
+             "xModel"=xModel,
+             "includeResponse"=includeResponse,
+             "outcome"=outcome,
+             "whichLabelSwitch"=whichLabelSwitch,
+             "yModel"=yModel,
+             "varSelect"=varSelect,
+             "varSelectType"=varSelType,
+             "nCovariates"=nCovariates,
+             "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
+             "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
+             "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
+             "fixedEffectsNames"=fixedEffectsNames, "fixedEffectsNames_clust"=fixedEffectsNames_clust,
+             "nCategoriesY"=yLevels,
+             "nCategories"=xLevels,
+             "extraYVar"=extraYVar,
+             "includeCAR"=includeCAR,
+             "weibullFixedShape"=weibullFixedShape,
+             "useNormInvWishPrior"=useNIWP,
+             "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
+             "longMat"=longMat,"longMean"=longMean,"tMat"=tMat)
 
-  return(list("directoryPath"=directoryPath,
-              "fileStem"=fileStem,
-              "inputFileName"=fileName,
-              "nSweeps"=nSweeps,
-              "nBurn"=nBurn,
-              "reportBurnIn"=reportBurnIn,
-              "nFilter"=nFilter,
-              "nProgress"=nProgress,
-              "nSubjects"=nSubjects,
-              "nPredictSubjects"=nPreds,
-              "fullPredictFile"=fullPredictFile,
-              "predictType"=predictType,
-              "alpha"=alpha,
-              "dPitmanYor"=dPitmanYor,
-              "covNames"=covNames,
-              "discreteCovs"=discreteTmp,
-              "continuousCovs"=contTmp,
-              "xModel"=xModel,
-              "includeResponse"=includeResponse,
-              "outcome"=outcome,
-              "whichLabelSwitch"=whichLabelSwitch,
-              "yModel"=yModel,
-              "varSelect"=varSelect,
-              "varSelectType"=varSelType,
-              "nCovariates"=nCovariates,
-              "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
-              "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
-              "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
-              "randomEffectsNames"=randomEffectsNames,
-              "nCategoriesY"=yLevels,
-              "nCategories"=xLevels,
-              "extraYVar"=extraYVar,
-              "includeCAR"=includeCAR,
-              "weibullFixedShape"=weibullFixedShape,
-              "useNormInvWishPrior"=useNIWP,
-              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
-              "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,
-              "kernel"=kernel, "sampleGPmean"= sampleGPmean,  "estim_ratio"=estim_ratio,
-              "nTimes_unique"=length(all_times), "all_times"=all_times, "times_corr"=times_corr))
+  if(yModel == 'LME')
+    liste<- c(liste, list("randomEffectsNames"=randomEffectsNames,"nRandomEffects"=nRandomEffects+1))
+  if(yModel == 'Longitudinal')
+    liste<- c(liste, list("kernel"=kernel, "sampleGPmean"= sampleGPmean,  "estim_ratio"=estim_ratio,
+              "nTimes_unique"=length(all_times) , "all_times"=all_times,"times_corr"=times_corr))
+  return(liste)
 
   }
 
@@ -3239,7 +3254,11 @@ margModelPosterior<-function(runInfoObj,allocation){
 
 }
 
-setHyperparams<-function(shapeAlpha=NULL,rateAlpha=NULL,aPhi=NULL,mu0=NULL,Tau0=NULL,R0=NULL,                         kappa0=NULL,nu0=NULL,muTheta=NULL,sigmaTheta=NULL,dofTheta=NULL,muBeta=NULL,sigmaBeta=NULL,dofBeta=NULL,shapeTauEpsilon=NULL,rateTauEpsilon=NULL,aRho=NULL,bRho=NULL,atomRho=NULL,shapeSigmaSqY=NULL,scaleSigmaSqY=NULL,                     rSlice=NULL,truncationEps=NULL,shapeTauCAR=NULL,rateTauCAR=NULL,shapeNu=NULL,scaleNu=NULL,initAlloc=NULL,                       muLSignal=0,sigmaLSignal=0,muLLengthscale=0,sigmaLLengthscale=0,muLNoise=0,sigmaLNoise=0,MVNmu0=NULL,MVNTau0=NULL,MVNR0=NULL,                         MVNkappa0=NULL,MVNnu0=NULL){
+setHyperparams<-function(shapeAlpha=NULL,rateAlpha=NULL,aPhi=NULL,mu0=NULL,Tau0=NULL,R0=NULL,kappa0=NULL,nu0=NULL,muTheta=NULL,sigmaTheta=NULL,dofTheta=NULL,
+                         muBeta=NULL,sigmaBeta=NULL,dofBeta=NULL,shapeTauEpsilon=NULL,rateTauEpsilon=NULL,aRho=NULL,bRho=NULL,atomRho=NULL,shapeSigmaSqY=NULL,
+                         scaleSigmaSqY=NULL,rSlice=NULL,truncationEps=NULL,shapeTauCAR=NULL,rateTauCAR=NULL,shapeNu=NULL,scaleNu=NULL,initAlloc=NULL,initL=NULL,
+                         muLSignal=0,sigmaLSignal=0,muLLengthscale=0,sigmaLLengthscale=0,muLNoise=0,sigmaLNoise=0,MVNmu0=NULL,MVNTau0=NULL,MVNR0=NULL,
+                         MVNkappa0=NULL,MVNnu0=NULL){
   out<-list()
   if (!is.null(shapeAlpha)){
     out$shapeAlpha<-shapeAlpha
@@ -3324,6 +3343,9 @@ setHyperparams<-function(shapeAlpha=NULL,rateAlpha=NULL,aPhi=NULL,mu0=NULL,Tau0=
   }
   if (!is.null(initAlloc)){
     out$initAlloc<-initAlloc
+  }
+  if (!is.null(initL)){
+    out$initL<-initL
   }
   ##//RJ add L to setHyperparameters
   if (!is.null(muLSignal)){

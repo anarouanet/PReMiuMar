@@ -710,6 +710,17 @@ public:
     return _initAlloc[j];
   }
 
+  VectorXd initL(const unsigned int& i) const{
+      return _initL.row(i);
+  }
+
+  MatrixXd initL() const{
+    return _initL;
+  }
+
+  void initL(const MatrixXd& L0) {
+    _initL = L0;
+  }
   // Copy operator
   // pReMiuMHyperParams& operator=(const pReMiuMHyperParams& hyperParams){
   //   _shapeAlpha = hyperParams.shapeAlpha();
@@ -874,7 +885,7 @@ private:
 
   // Initial allocations
   vector<double> _initAlloc;
-
+  MatrixXd _initL;
 };
 
 
@@ -2841,12 +2852,9 @@ double logPYiGivenZiWiPoissonSpatial(const pReMiuMParams& params, const pReMiuMD
   return logPdfPoisson(dataset.discreteY(i),mu);
 }
 
-//RJ logPYiGivenZiWiLongitudinal function definition
 double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMData& dataset,
                                    const unsigned int& nFixedEffects, const int& c,
                                    const unsigned int& ii){
-  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
-
   unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nSubjects=dataset.nSubjects();
   const string kernelType = dataset.kernelType(); //AR
@@ -2921,18 +2929,6 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       //   }
       //   dmvnorm = -0.5*sumY.transpose()*precMat*sumY -0.5*sumY2*invNoise - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
     }else{
-      fout << "timesk "<< c <<endl;
-      for(unsigned int ii=0;ii<timesk.size();ii++)
-        fout << timesk[ii]<< " ";
-
-      fout << endl;
-
-      fout << "yk "<<endl;
-      for(unsigned int ii=0;ii<timesk.size();ii++)
-        fout << yk[ii]<< " ";
-
-      fout << endl;
-
 
       // sort yk and times with corresponding ordering in idx
       std::vector<int> idx(timesk.size());
@@ -2947,26 +2943,6 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       for(unsigned int j=0;j<sizek;j++)
         yk_sorted(j)=yk(idx[j]);
       yk=yk_sorted;
-
-
-      fout << "idx"<<endl;
-      for(unsigned int ii=0;ii<timesk.size();ii++)
-        fout << idx[ii]<< " ";
-
-      fout << endl;
-
-      fout << "timesk sorted"<<endl;
-      for(unsigned int ii=0;ii<timesk.size();ii++)
-        fout << timesk[ii]<< " ";
-
-      fout << endl;
-
-      fout << "yk sorted"<<endl;
-      for(unsigned int ii=0;ii<timesk.size();ii++)
-        fout << yk[ii]<< " ";
-
-      fout << endl;
-
 
       GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),kernelType,1); // Sigma ordered;
       logDetPrecMat=Get_Sigma_inv_GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),dataset.times_unique(),kernelType);
@@ -2987,9 +2963,6 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       // }
       //logDetPrecMat = -log(precMat.determinant());//log(Sigma.determinant());
       dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
-
-      fout << "Kuu det "<< logDetPrecMat <<" vs LLT "<<2*log(L.determinant()) << " dnorm "<< dmvnorm<<endl;
-
     }
   }
   return dmvnorm;
@@ -3019,9 +2992,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
   int sizek = 0;
   double dmvnorm = 0.0;
   int counter = 0;
-
   unsigned int ind_permut;
-  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   sizek=size_k;
 
@@ -3222,13 +3193,14 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
     dmvnorm=0;
   }
 
-  if(isinf(dmvnorm))
+  if(isinf(dmvnorm)){
+    std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+
     fout << " dmvnorm  "<< dmvnorm<< " logdetprecMat "<<logDetPrecMat << endl<<
       " zi "<<  params.z(ii) << " c "<< c <<endl<<
         " prod "<< yk.transpose()*precMat*yk <<
           " sizek "<<sizek<<endl;
-  //<<" yk "<< endl<< yk.transpose()<<endl<<endl<<
-  //          " precMat "<<endl<< precMat<<endl<< endl;
+  }
 
   return dmvnorm;
 }
@@ -3316,6 +3288,7 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
 
   unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   vector<double> y = dataset.continuousY();
+  vector<double> times = dataset.times();
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
 
@@ -3333,6 +3306,8 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
 
       for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
         yi(j) = y[tStart[i]-1+j];
+
+        //ADD TIMES yi(j)-= times[tStart[i]-1+j];;
 
         for(unsigned int b=0;b<nFixedEffects;b++){
           yi(j)-=params.beta(b,0)*dataset.W(i,b);

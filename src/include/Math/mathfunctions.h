@@ -315,10 +315,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
   }
 
   if(*std::max_element(std::begin(grid), std::end(grid))==0 || grid.size()==nTimes){
-    //MatrixXd L_inv = Mat.llt().solve(MatrixXd::Identity(Mat.rows(), Mat.rows()));
-    //det=  log(L_inv.determinant());
-
-    //fout << "det L_inv 1 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+//if(2>1){
     LLT<MatrixXd> lltOfA(Mat); // compute the Cholesky decomposition of A
     MatrixXd L = lltOfA.matrixL();
     det=  2*log(L.determinant());
@@ -359,7 +356,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     for(int i=0;i<grid.size();i++){
       if(kernel.compare("SQexponential")==0){
-        Kuu(i,i) = Kuu(i,i) + eL0;//
+        Kuu(i,i) = Kuu(i,i) + eL0;//+0.00;
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
@@ -368,18 +365,24 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
       }
     }
 
+    if(Kuu.determinant()<0){
+      for(int i=0;i<grid.size();i++)
+          Kuu(i,i) = Kuu(i,i)+ 0.01;
+    }
+
     //MatrixXd Kuu_inv = Kuu.inverse() ;
     //cout << " Kuu " << Kuu.rows() << " "<< Kuu.cols()<<endl;
 
     LLT<MatrixXd> lltOfA(Kuu); // compute the Cholesky decomposition of A
-    MatrixXd L = lltOfA.matrixL();
-    MatrixXd L_inv = L.inverse();
+    MatrixXd Lm = lltOfA.matrixL();
+    MatrixXd L_inv = Lm.inverse();
     MatrixXd Kuu_inv = L_inv.transpose()*L_inv;
 
+    Mat = Mat - eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
     MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
-    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
 
+    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Lambda_inv = Lambda.inverse();
 
     MatrixXd Aut=L_inv* Ktu.transpose(); //Kuu.llt().matrixL().solve(Ktu.transpose()); //.transpose().solve(Ktu.transpose());

@@ -179,7 +179,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 		// Adaptive MH for beta
 		if(dataset.nFixedEffects()>0 || dataset.nFixedEffects_mix()>0){
-			//pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
+			pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
 		}
 
 		if(options.responseExtraVar()){

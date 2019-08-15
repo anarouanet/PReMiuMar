@@ -9,10 +9,12 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
   varSelectType=NULL
   includeResponse=NULL
   nFixedEffects=NULL
+  nFixedEffects_clust=NULL
   reportBurnIn=NULL
   nBurn=NULL
   nFilter=NULL
   nSweeps=NULL
+  nRandomEffects=NULL
   nClusters=NULL
   clustering=NULL
   nCategoriesY=NULL
@@ -96,8 +98,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
 
   if(includeResponse){
     # Construct the theta file name
-    thetaFileName <- file.path(directoryPath,paste(fileStem,'_theta.txt',sep=''))
-    thetaFile<-file(thetaFileName,open="r")
+    if(!is.element(yModel, c("Longitudinal","LME" ))){
+      thetaFileName <- file.path(directoryPath,paste(fileStem,'_theta.txt',sep=''))
+      thetaFile<-file(thetaFileName,open="r")
+    }
     if (yModel=="Survival"&&!weibullFixedShape){
       nuFileName <- file.path(directoryPath,paste(fileStem,'_nu.txt',sep=''))
       nuFile<-file(nuFileName,open="r")
@@ -113,11 +117,23 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       MVNmuFile<-file(MVNmuFileName,open="r")
       MVNSigmaFileName <- file.path(directoryPath,paste(fileStem,'_MVNSigma.txt',sep=''))
       MVNSigmaFile<-file(MVNSigmaFileName,open="r")
+    }else if(yModel=="LME"){
+      covREFileName <- file.path(directoryPath,paste(fileStem,'_cov_RandomEffects_LME.txt',sep=''))
+      covREFile<-file(covREFileName,open="r")
+      SigmaLMEFileName <- file.path(directoryPath,paste(fileStem,'_epsilonLME.txt',sep=''))
+      SigmaLMEFile<-file(SigmaLMEFileName,open="r")
+      RE_LMEFileName <- file.path(directoryPath,paste(fileStem,'_RandomEffectsLME.txt',sep=''))
+      RE_LMEFile<-file(RE_LMEFileName,open="r")
     }
     if(nFixedEffects>0){
       # Construct the fixed effect coefficient file name
       betaFileName <-file.path(directoryPath,paste(fileStem,'_beta.txt',sep=''))
       betaFile<-file(betaFileName,open="r")
+    }
+    if(nFixedEffects_clust>0){
+      # Construct the fixed effect coefficient file name
+      betamixFileName <-file.path(directoryPath,paste(fileStem,'_beta_cluster-specific.txt',sep=''))
+      betamixFile<-file(betamixFileName,open="r")
     }
     if (yModel=="Survival"&&weibullFixedShape){
       nuFileName<-file.path(directoryPath,paste(fileStem,'_nu.txt',sep=''))
@@ -148,14 +164,26 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       LArray<-array(0,dim=c(nSamples,nClusters,3))
       if(sampleGPmean)
         GPmeanArray<-array(0,dim=c(nSamples,nClusters,nTimes_unique))
-      riskArray<-array(0,dim=c(nSamples,nClusters,3))
+      riskArray<-array(0,dim=c(nSamples,nClusters))
     } else if(yModel=="MVN"){
       MVNmuArray<-array(0,dim=c(nSamples,nClusters,nOutcomes))
       MVNSigmaArray<-array(0,dim=c(nSamples,nClusters,nOutcomes*(nOutcomes+1)/2))
       riskArray<-array(0,dim=c(nSamples,nClusters,nOutcomes))
+    } else if(yModel=="LME"){
+      nTimes=dim(longMat)[1]
+      covREArray<-array(0,dim=c(nSamples,nClusters,nRandomEffects*(nRandomEffects+1)/2))
+      SigmaLMEArray<-array(0,dim=c(nSamples))
+      RE_LMEArray<-array(0,dim=c(nSamples,nTimes,nRandomEffects))
+
+      LME_timepoints <- seq(min(longMat$time),max(longMat$time),length.out=40)
+      LMEArray <- array(0,dim=c(nSamples,nClusters,length(LME_timepoints)))
+      riskArray<-array(0,dim=c(nSamples,nClusters))
     }
     if(nFixedEffects>0){
       betaArray<-array(0,dim=c(nSamples,nFixedEffects,nCategoriesY))
+    }
+    if(nFixedEffects_clust>0){
+      betamixArray<-array(0,dim=c(nSamples,nClusters, nFixedEffects_clust*nCategoriesY))
     }
   }else{
     riskArray<-NULL
@@ -231,8 +259,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
         currTheta<-matrix(currThetaVector,ncol=(nCategoriesY-1),byrow=T)
         currTheta<-cbind(rep(0,dim(currTheta)[1]),currTheta)
       } else {
-        currThetaVector<-scan(thetaFile,what=double(),skip=skipVal,n=currMaxNClusters*nCategoriesY,quiet=T)
-        currTheta<-matrix(currThetaVector,ncol=nCategoriesY,byrow=T)
+        if(!is.element(yModel, c("Longitudinal","LME" ))){
+          currThetaVector<-scan(thetaFile,what=double(),skip=skipVal,n=currMaxNClusters*nCategoriesY,quiet=T)
+          currTheta<-matrix(currThetaVector,ncol=nCategoriesY,byrow=T)
+        }
         if (yModel=="Survival"&&!weibullFixedShape){
           currNuVector<-scan(nuFile,what=double(),skip=skipVal,n=currMaxNClusters,quiet=T)
           currNu<-c(currNuVector)
@@ -243,12 +273,19 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
             GPmeanVector<-scan(GPmeanFile,what=double(),skip=skipVal,n=nTimes_unique*currMaxNClusters,quiet=T)
             currGPmean<-matrix(GPmeanVector,nrow=currMaxNClusters,ncol=nTimes_unique,byrow=T)
           }
-
         } else if (yModel=="MVN"){
           currMVNmuVector<-scan(MVNmuFile,what=double(),skip=skipVal,n=nOutcomes*currMaxNClusters,quiet=T)
           currMVNmu<-matrix(currMVNmuVector,nrow=currMaxNClusters,ncol=nOutcomes,byrow=T)
           currMVNSigmaVector<-scan(MVNSigmaFile,what=double(),skip=skipVal,n=(nOutcomes+1)*nOutcomes/2*currMaxNClusters,quiet=T)
           currMVNSigma<-matrix(currMVNSigmaVector,nrow=currMaxNClusters,ncol=(nOutcomes+1)*nOutcomes/2,byrow=T)
+
+        } else if (yModel=="LME"){
+          currcovREVector<-scan(covREFile,what=double(),skip=skipVal,n=(nRandomEffects+1)*nRandomEffects/2*currMaxNClusters,quiet=T)
+          currcovRE<-matrix(currcovREVector,nrow=currMaxNClusters,ncol=(nRandomEffects+1)*nRandomEffects/2,byrow=T)
+          currSigmaLME<-scan(SigmaLMEFile,what=double(),skip=skipVal,n=1,quiet=T)
+          #currSigmaLME<-matrix(currSigmaLMEVector,nrow=currMaxNClusters,ncol=1,byrow=T)
+          currRE_LMEVector<-scan(RE_LMEFile,what=double(),skip=skipVal,n=nSubjects*nRandomEffects,quiet=T)
+          currRE_LME<-matrix(currRE_LMEVector,nrow=nTimes,ncol=nRandomEffects,byrow=T)
         }
       }
       if(nFixedEffects>0){
@@ -262,10 +299,16 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
         }
         betaArray[sweep-firstLine+1,,]<-currBeta
       }
+
+      if(nFixedEffects_clust>0){
+        currBetamixVector<-scan(betamixFile,what=double(),skip=skipVal,n=nFixedEffects_clust*nCategoriesY*currMaxNClusters,quiet=T)
+        currBetamix<-matrix(currBetamixVector,nrow=currMaxNClusters,ncol=nFixedEffects_clust*nCategoriesY,byrow=T)
+      }
+
       # Calculate the average risk (over subjects) for each cluster
 
       for(c in 1:nClusters){
-        if(yModel!="Longitudinal"){
+        if(!is.element(yModel,c("Longitudinal","LME"))){
           currLambdaVector<-currTheta[currZ[optAlloc[[c]]],]
           currLambda<-matrix(currLambdaVector,ncol=nCategoriesY)
         }
@@ -313,10 +356,26 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           currRisk<-matrix(yMat[optAlloc[[c]],],nrow=length(optAlloc[[c]]))
           if(!all(!is.na(MVNmuArray[sweep-firstLine+1,c,])))
             browser()
+        }else if(yModel=="LME"){
+          covREArray[sweep-firstLine+1,c,]<-apply(matrix(currcovRE[currZ[optAlloc[[c]]],],ncol=(nRandomEffects+1)*nRandomEffects/2),2,mean)
+          if(c==1){
+            SigmaLMEArray[sweep-firstLine+1]<-currSigmaLME
+            RE_LMEArray[sweep-firstLine+1,,]<-currRE_LME
+          }
+browser()
+          ind_time <- which()
+          LMEArray[sweep-firstLine+1,c,] <- apply(matrix(currBetamix[currZ[optAlloc[[c]]],],ncol=nFixedEffects_clust),2,mean)
+          currBetamix
+
+          IDs <- unique(longMat$ID)
+          currIDs <- IDs[optAlloc[[c]]]
+          currRisk<-matrix(longMat$outcome[longMat$ID%in%currIDs] + longMean)
         }
-        if(yModel!="Longitudinal"){
-          riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)
+        if(!is.element(yModel,c("Longitudinal","LME"))){
           thetaArray[sweep-firstLine+1,c,]<-apply(as.matrix(currTheta[currZ[optAlloc[[c]]],],ncol=nCategoriesY),2,mean)
+          riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)
+        }else{
+          riskArray[sweep-firstLine+1,c]<-mean(currRisk)
         }
         if(yModel=="Survival"&&!weibullFixedShape){
           nuArray[sweep-firstLine+1,c]<-mean(currNuVector)
@@ -476,7 +535,9 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
         empiricals[c]<-mean(yMat[optAlloc[[c]],1]/yMat[optAlloc[[c]],2])
         #}else if(yModel=='Categorical'){
         # no empiricals for categorical outcome
-      }else if(yModel=="Longitudinal"||yModel=="MVN"){##//RJ same as empirical
+      }else if(yModel=="Longitudinal"||yModel=="LME"){##//RJ same as empirical
+        empiricals[c] <- mean(riskArray[,c])
+      }else if(yModel=="MVN"){
         empiricals[c] <- mean(riskArray[,c,1])
       }
     }
@@ -519,7 +580,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
 
 
   if(includeResponse){
-    close(thetaFile)
+    if(!is.element(yModel, c("Longitudinal","LME" )))
+      close(thetaFile)
     if(nFixedEffects>0){
       close(betaFile)
     }
@@ -540,6 +602,15 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       close(MVNmuFile)
       out$MVNSigmaArray<-MVNSigmaArray
       close(MVNSigmaFile)
+    }
+    if (yModel=="LME") {
+      out$covREArray<-covREArray
+      close(covREFile)
+      out$SigmaLMEArray<-SigmaLMEArray
+      close(SigmaLMEFile)
+      out$RE_LMEArray<-RE_LMEArray
+      close(RE_LMEFile)
+      out$LMEArray <-LMEArray
     }
   }
 

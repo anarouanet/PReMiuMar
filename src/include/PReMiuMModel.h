@@ -2865,9 +2865,8 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
   vector<double> timesk;
   VectorXd yk;
   VectorXd meanVec;
-  MatrixXd Sigma;
   MatrixXd precMat;
-  double logDetPrecMat =0.0;
+  double logDetMat =0.0;
   int sizek = 0;
   double dmvnorm = 0.0;
   int counter = 0;
@@ -2877,6 +2876,7 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       sizek = sizek + tStop[i] - tStart[i] + 1;
     }
   }
+
   timesk.resize(sizek);
   yk.resize(sizek);
   meanVec.resize(sizek);
@@ -2898,37 +2898,13 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
       counter = counter + tStop[i] - tStart[i] + 1;
     }
   }
-  Sigma.setZero(sizek,sizek);
+
+  precMat.setZero(sizek,sizek);
 
   if(sizek > 0){
-
     int dimBlock = dataset.equalTimes();
-    if(dimBlock<0){//RJ!!
-      //   int dimSigma= Sigma.rows();
-      //   int nBlocks = dimSigma/dimBlock;
-      //   MatrixXd C;
-      //   C = Sigma.block(0,0,dimBlock,dimBlock);
-      //   double noise = exp(params.L(c,2));
-      //   double invNoise = 1.0/noise;
-      //   for(unsigned int i=0; i<dimBlock; i++)
-      //     C(i,i) = C(i,i) - noise;
-      //   logDetPrecMat = log(Sigma.determinant());
-      //   precMat = nBlocks * C;
-      //   for(unsigned int i=0; i<dimBlock; i++)
-      //     precMat(i,i) = precMat(i,i) + noise;
-      //   precMat = - invNoise * C * precMat.inverse();
-      //   VectorXd sumY;
-      //   sumY.resize(dimBlock);
-      //   double sumY2;
-      //   for(unsigned int i=0; i<dimBlock; i++){
-      //     sumY(i) = 0;
-      //     for(unsigned int j=0; j<nBlocks; j++){
-      //       sumY(i) = sumY(i) + yk(dimBlock*j + i);
-      //       sumY2 = sumY2 + yk(dimBlock*j + i)*yk(dimBlock*j + i);
-      //     }
-      //   }
-      //   dmvnorm = -0.5*sumY.transpose()*precMat*sumY -0.5*sumY2*invNoise - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
-    }else{
+    if(dimBlock<0){
+      }else{
 
       // sort yk and times with corresponding ordering in idx
       std::vector<int> idx(timesk.size());
@@ -2944,25 +2920,8 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
         yk_sorted(j)=yk(idx[j]);
       yk=yk_sorted;
 
-      GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),kernelType,1); // Sigma ordered;
-      logDetPrecMat=Get_Sigma_inv_GP_cov(Sigma,params.L(c),timesk,dataset.equalTimes(),dataset.times_unique(),kernelType);
-
-      precMat = Sigma.inverse();
-      //det_M0[c] = Get_Sigma_inv_GP_cov(Sigma_inv_c_ord[c],currentParams.L(c),timesk,dataset.equalTimes(),grid,kernelType);
-
-      LLT<MatrixXd> lltOfA(Sigma); // compute the Cholesky decomposition of A
-      MatrixXd L = lltOfA.matrixL();
-      //logDetPrecMat=  2*log(L.determinant());
-
-      // if(isinf(logDetPrecMat)){
-      //   MatrixXd Sigma2 = Sigma+0.0001*MatrixXd::Identity(Sigma.rows(), Sigma.rows());
-      //   //precMat = Sigma2.inverse();
-      //   LLT<MatrixXd> lltOfA(Sigma2 ); // compute the Cholesky decomposition of A
-      //   MatrixXd L2 = lltOfA.matrixL();
-      //   logDetPrecMat=  2*log(L2.determinant());
-      // }
-      //logDetPrecMat = -log(precMat.determinant());//log(Sigma.determinant());
-      dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
+      logDetMat=Get_Sigma_inv_GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),dataset.times_unique(),kernelType);
+      dmvnorm = -0.5*yk.transpose()*precMat*yk - 0.5*sizek*log(2.0*pi<double>()) - 0.5*logDetMat;
     }
   }
   return dmvnorm;
@@ -3085,9 +3044,9 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
         }else{
           LLT<MatrixXd> lltOfA(precMat); // compute the Cholesky decomposition of A
           MatrixXd L = lltOfA.matrixL();
-          logDetPrecMat=  2*log(L.determinant());
-          //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+          logDetPrecMat=  2*L.diagonal().array().log().sum();
           precMat = L.inverse().transpose()*L.inverse();
+
         }
 
         // sort yk with corresponding ordering
@@ -3181,8 +3140,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           GP_cov(precMat,params.L(c),timesk,dataset.equalTimes(),kernelType,1);
           LLT<MatrixXd> lltOfA(precMat); // compute the Cholesky decomposition of A
           MatrixXd L = lltOfA.matrixL();
-          logDetPrecMat=  2*log(L.determinant());
-          //fout << "det L_inv 2 "<< det << " mat "<<log(Mat.determinant()) <<endl;
+          logDetPrecMat=  2*L.diagonal().array().log().sum();
           precMat = L.inverse().transpose()*L.inverse();
         }
       }
@@ -3563,8 +3521,7 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
       for(unsigned int c=0;c<maxNClusters;c++){
         logLikelihood+=logPYiGivenZiWi(params,dataset,nFixedEffects,c,nSubjects);
       }
-    }
-    else if(outcomeType.compare("LME")==0){
+    }    else if(outcomeType.compare("LME")==0){
       logPYiGivenZiWi = &logPYiGivenZiWiLongitudinal_parametric;
     }
     //RJ logLikelihood is a sum only if Yi are conditionally independent
@@ -4270,17 +4227,10 @@ double logPdfPostMultivariateNormal(const pReMiuMParams& params, const pReMiuMDa
   GP_cov(priorCor_star, params.L(c), times_unique,  1, kernelType,0);
   postV = priorCor_star - priorCor.transpose() * invC.inverse() * priorCor;
 
-  //Eigen decomposition of postV
-  EigenSolver<MatrixXd> es(postV, true);
-  MatrixXd eigenval = MatrixXd::Identity(nTimes_unique, nTimes_unique);
-
-  for(int i = 0; i < nTimes_unique; ++i){
-    eigenval(i,i) = pow(es.eigenvalues()(i).real(), 0.5);
-    if(es.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
-      //fout << c <<" c prior complex eigenvalue" <<es.eigenvalues()(i).imag()<< endl;
-      // fout << c <<" c prior complex eigenvector" <<es.eigenvectors()(i).imag()<< endl;
-    }
-  }
+  LLT<MatrixXd> lltOfA(postV); // compute the Cholesky decomposition of A
+  MatrixXd L = lltOfA.matrixL();
+  double logDetV=  2*L.diagonal().array().log().sum();
+  MatrixXd postV_inv= L.inverse().transpose()*L.inverse();
 
   double dmvnorm = 0;
   VectorXd GPmean(nTimes_unique);
@@ -4288,7 +4238,7 @@ double logPdfPostMultivariateNormal(const pReMiuMParams& params, const pReMiuMDa
     GPmean(i)=params.meanGP(c)[i];
 
   VectorXd diff = GPmean - postM;
-  dmvnorm = -0.5*diff.transpose()*postV.inverse()*diff - 0.5*nTimes_unique*log(2.0*pi<double>()) - 0.5*log(postV.determinant());
+  dmvnorm = -0.5*diff.transpose()*postV_inv*diff - 0.5*nTimes_unique*log(2.0*pi<double>()) - 0.5*logDetV;
 
   return dmvnorm;
 }
@@ -4568,9 +4518,18 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
     MatrixXd invC(sizek, sizek);
 
     GP_cov_star(priorCor,params.L(c),timesk,times_unique, kernelType);
-    GP_cov(invC, params.L(c), timesk, dataset.equalTimes(), kernelType,1);
-
+     cout << " ---- " <<endl<< " check sans le GP_cov" << log(invC.determinant())<<endl;
     double logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
+    cout << " check sans le GP_cov logDetPrecMat"<<logDetPrecMat<< " " << log(invC.determinant())<<endl;
+
+    invC.setZero(sizek, sizek);
+    logDetPrecMat=0;
+    GP_cov(invC, params.L(c), timesk, dataset.equalTimes(), kernelType,1);
+    cout << " check sans le GP_cov 2" << log(invC.determinant())<<endl;
+     logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
+    cout << " check sans le GP_cov logDetPrecMat 2"<<logDetPrecMat<< " " << log(invC.determinant())<<endl
+         <<" ---- " <<endl;
+
 
     if(std::isnan(logDetPrecMat) || isinf(logDetPrecMat)){
       for (unsigned int j=0;j<GPmean.size();j++)
@@ -4773,17 +4732,10 @@ double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& da
   GP_cov(priorCor_star, params.L(c), times_unique,  1, kernelType,0);
   postV = priorCor_star - priorCor.transpose() * invC.inverse() * priorCor;
 
-  //Eigen decomposition of postV
-  EigenSolver<MatrixXd> es(postV, true);
-  MatrixXd eigenval = MatrixXd::Identity(nTimes_unique, nTimes_unique);
-
-  for(int i = 0; i < nTimes_unique; ++i){
-    eigenval(i,i) = pow(es.eigenvalues()(i).real(), 0.5);
-    if(es.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
-      //fout << c <<" c prior complex eigenvalue" <<es.eigenvalues()(i).imag()<< endl;
-      // fout << c <<" c prior complex eigenvector" <<es.eigenvectors()(i).imag()<< endl;
-    }
-  }
+  LLT<MatrixXd> lltOfA(postV); // compute the Cholesky decomposition of A
+  MatrixXd L = lltOfA.matrixL();
+  double logDetV=  2*L.diagonal().array().log().sum();
+  MatrixXd postV_inv =L.inverse().transpose()*L.inverse();
 
   double dmvnorm = 0;
   VectorXd GPmean(nTimes_unique);
@@ -4791,7 +4743,7 @@ double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& da
     GPmean(i)=params.meanGP(c)[i];
 
   VectorXd diff = GPmean - postM;
-  dmvnorm = -0.5*diff.transpose()*postV.inverse()*diff - 0.5*nTimes_unique*log(2.0*pi<double>()) - 0.5*log(postV.determinant());
+  dmvnorm = -0.5*diff.transpose()*postV_inv*diff - 0.5*nTimes_unique*log(2.0*pi<double>()) - 0.5*logDetV;
 
   return dmvnorm;
 }

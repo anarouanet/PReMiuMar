@@ -3575,7 +3575,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       }
 
     }else{
-      currentCondLogPost = logCondPostL(currentParams,model,c,1);
+        currentCondLogPost = logCondPostL(currentParams,model,c,1);
 
       for (unsigned int l=0;l<nL;l++){
         nTry++;
@@ -3588,6 +3588,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         double propCondLogPost = logCondPostL(currentParams,model,c,1);
         double logAcceptRatio = propCondLogPost - currentCondLogPost;
         double uii= unifRand(rndGenerator);
+
         if(uii<exp(logAcceptRatio)){
           nAccept++;
           propParams.LAddAccept(l);
@@ -4151,11 +4152,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
           grid_size = model.dataset().nTimes_unique();
           grid=dataset.times_unique();
 
-          fout <<" Ana "<< Ana<< " grid_size "<< grid_size<< endl<< " grid "<<endl;
-          for(unsigned int h=0;h<grid_size;h++)
-            fout <<grid[h]<< " ";
-          fout << endl;
-
           // double min_grid=*std::min_element(std::begin(times), std::end(times));
           // double pas_grid=(*std::max_element(std::begin(times), std::end(times) )-*std::min_element(std::begin(times), std::end(times)))/(grid_size-1);
           //
@@ -4164,7 +4160,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
           // }
         }
 
-#pragma omp parallel for
+        #pragma omp parallel for
         for(unsigned int c=0;c<maxNClusters;c++){
 
           double temp;

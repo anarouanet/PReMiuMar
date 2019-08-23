@@ -39,6 +39,9 @@
 #include <Eigen/Dense>
 #include<boost/math/special_functions/gamma.hpp>
 #include<string>
+#include <algorithm>
+#include <iterator>
+
 
 using std::ifstream;
 using std::cout;
@@ -310,17 +313,24 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
 
     for(int i=0;i<nTimes;i++){
       a=eL0+eL1*(times[i]-eL3)*(times[i]-eL3);
-      Mat(i,j)=a*a+eL2;
+      Mat(i,i)=a*a+eL2;
     }
   }
 
-  if(*std::max_element(std::begin(grid), std::end(grid))==0 || grid.size()==nTimes){
+  int trick=0;
+  if(*std::max_element(std::begin(grid), std::end(grid))==0 || grid.size() >= nTimes || nTimes < 100){
     LLT<MatrixXd> lltOfA(Mat); // compute the Cholesky decomposition of A
     MatrixXd L = lltOfA.matrixL();
     det=  2*L.diagonal().array().log().sum();
     Mat = L.inverse().transpose()*L.inverse();
-
+    if(isnan(det))
+      trick=1;
   }else{
+    trick=1;
+  }
+
+
+  if(trick==1 && nTimes >= grid.size()){
 
     MatrixXd Ktu;
     MatrixXd Kuu;
@@ -358,7 +368,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
       }else{
         for(int i=0;i<grid.size();i++){
           a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
-          Kuu(i,i)=a*a +0.0001;//+ eL2;
+          Kuu(i,i)=a*a ;//+ eL2;
         }
       }
     }
@@ -373,22 +383,43 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     MatrixXd L_inv = Lm.inverse();
     MatrixXd Kuu_inv = L_inv.transpose()*L_inv;
 
-    Mat = Mat - eL2*MatrixXd::Identity(nTimes,nTimes);
+    //Mat = Mat - eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
     MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
-    Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
+    //Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
     MatrixXd Lambda_inv = Lambda.inverse();
 
     double logdet_lambda=0;
-    for(int i=0;i<nTimes;i++)
-      logdet_lambda += log(Lambda(i,i));
+
+    LLT<MatrixXd> lltOfAL(Lambda); // compute the Cholesky decomposition of A
+    MatrixXd L_Lambda = lltOfAL.matrixL();
+    logdet_lambda=  2*L_Lambda.diagonal().array().log().sum();
+
+    if(isnan(logdet_lambda)){
+      logdet_lambda=0;
+      PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(Lambda);
+      auto& LU = lu.matrixLU();
+      double c = lu.permutationP().determinant(); // -1 or 1
+      for (unsigned i = 0; i < LU.rows(); ++i) {
+        const auto& lii = LU(i,i);
+        if (lii < double(0)) c *= -1;
+        logdet_lambda += log(abs(lii));
+      }
+      logdet_lambda += log(c);
+
+      if(isnan(logdet_lambda)){
+        cout <<  " logdet_lambda=nan, diag Lambda "<< LU.diagonal()<<endl;
+      }
+    }
+    //for(int i=0;i<nTimes;i++)
+    //  logdet_lambda += log(Lambda(i,i));
 
     MatrixXd Aut=L_inv* Ktu.transpose();
     MatrixXd T=(MatrixXd::Identity(grid.size(), grid.size())+
       Aut*Lambda_inv*Aut.transpose());
 
     //MatrixXd Mat2=Mat;
-    Mat  =Lambda_inv-Lambda_inv*Aut.transpose()*T.inverse()*Aut*Lambda_inv;
+    Mat = Lambda_inv-Lambda_inv*Aut.transpose()*T.inverse()*Aut*Lambda_inv;
     MatrixXd Prod1(grid.size(), grid.size());
 
     Prod1=MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda_inv*Aut.transpose();
@@ -397,11 +428,217 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     MatrixXd P = lltOfA2.matrixL();
     double logDetP=  2*P.diagonal().array().log().sum();
 
+    if(isnan(logDetP)){
+      logDetP=0;
+      PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(Prod1);
+      auto& LU = lu.matrixLU();
+      double c = lu.permutationP().determinant(); // -1 or 1
+      for (unsigned i = 0; i < LU.rows(); ++i) {
+        const auto& lii = LU(i,i);
+        if (lii < double(0)) c *= -1;
+        logDetP += log(abs(lii));
+      }
+      logDetP += log(c);
+
+      if(isnan(logDetP)){
+        cout << " Prod1.det "<< Prod1.determinant() << " Mat.det "<< Mat.determinant() << " c "<<c<<" logDetP=nan, diag Lambda "<< LU.diagonal().transpose()<<endl<<endl;
+      }
+    }
+
     det=logDetP+logdet_lambda;
 
     if(std::isnan(det) || isinf(det)){
       fout << "det Get_Sigma_inv_GP_cov "<< det << " logdet_lambda "<<logdet_lambda<<
-        " + logDetP:  "<< logDetP<<endl;
+        " + logDetP:  "<< logDetP<<" grid.size() "<< grid.size()
+                       << " eL0 " << eL0<< " eL1 " << eL1<<  " eL2 " << eL2<<endl <<
+        " logdet Lambda "<< log(Lambda.determinant()) <<
+            " Prod1.logdet "<< log(Prod1.determinant()) <<endl;
+
+      det=0;
+      // Add an offset on time vector as equal times can lead to instability
+
+      //std::vector<int>::iterator it;
+      //it=std::unique_copy (times.begin(), it, times.begin(), myfunction);
+//
+//       std::vector<double> times_unique = times;
+//       auto last = std::unique(times_unique.begin(), times_unique.end());
+//       times_unique.erase(last, times_unique.end());
+//
+//       cout << " ~~~~~~~~~~~~" <<endl<< "det Get_Sigma_inv_GP_cov "<< det << " logdet_lambda "<<logdet_lambda<<
+//         " + logDetP:  "<< logDetP<<" grid.size() "<< grid.size()
+//                        << " eL0 " << eL0<< " eL1 " << eL1<<  " eL2 " << eL2<<endl <<
+//         " logdet Lambda "<< log(Lambda.determinant()) <<
+//             " Prod1.logdet "<< log(Prod1.determinant()) <<endl;
+//
+//       if(times_unique.size() != times.size()){
+//
+//         std::vector<double> times_offset = times;
+//
+//         int j=0;
+//         for(i=0;i<times_unique.size();i++){
+//           int offset=0;
+//             while(times[j]==times_unique[i]){
+//               times_offset[j] += 0.001*offset;
+//               j++;
+//               offset++;
+//             }
+//         }
+//
+//         if(kernel.compare("SQexponential")==0){
+//           Mat.setZero(nTimes,nTimes);
+//
+//           for(i=1;i<nTimes;i++){
+//             for(j=0;j<i;j++){
+//               a=-(times_offset[i]-times_offset[j])*(times_offset[i]-times_offset[j])/eL1;
+//               Mat(i,j)=eL0*std::exp(a);
+//             }
+//           }
+//           Mat = Mat + Mat.transpose();
+//           for(int i=0;i<nTimes;i++)
+//             Mat(i,i) = Mat(i,i) + eL0 + eL2;
+//
+//         }else{
+//
+//           for(i=1;i<nTimes;i++){
+//             for(j=0;j<i;j++){
+//               a=eL0+eL1*(times_offset[i]-eL3)*(times_offset[j]-eL3);
+//               Mat(i,j)=a*a;
+//             }
+//           }
+//           Mat = Mat + Mat.transpose();
+//
+//           for(int i=0;i<nTimes;i++){
+//             a=eL0+eL1*(times_offset[i]-eL3)*(times_offset[i]-eL3);
+//             Mat(i,i)=a*a+eL2;
+//           }
+//         }
+//
+//         cout << " 2 - logdet mat " << Mat.determinant()<< " nTimes "<< nTimes<<" time "<< times_offset[2]<<endl  <<endl ;
+//
+//
+//         MatrixXd Ktu;
+//         MatrixXd Kuu;
+//         Ktu.setZero(nTimes,grid.size());
+//         Kuu.setZero(grid.size(),grid.size());
+//
+//         for(i=0;i<nTimes;i++){
+//           for(j=0;j<grid.size();j++){
+//             if(kernel.compare("SQexponential")==0){
+//               a=-(times_offset[i]-grid[j])*(times_offset[i]-grid[j])/eL1;
+//               Ktu(i,j)=eL0*std::exp(a);
+//             }else{
+//               a=eL0+eL1*(times_offset[i]-eL3)*(grid[j]-eL3);
+//               Ktu(i,j)=a*a;
+//             }
+//           }
+//         }
+//
+//         for(i=1;i<grid.size();i++){
+//           for(j=0;j<i;j++){
+//             if(kernel.compare("SQexponential")==0){
+//               a=-(grid[i]-grid[j])*(grid[i]-grid[j])/eL1;
+//               Kuu(i,j)=eL0*std::exp(a);
+//             }else{
+//               a=eL0+eL1*(grid[i]-eL3)*(grid[j]-eL3);
+//               Kuu(i,j)=a*a;
+//             }
+//           }
+//         }
+//         Kuu = Kuu + Kuu.transpose();
+//
+//         for(int i=0;i<grid.size();i++){
+//           if(kernel.compare("SQexponential")==0){
+//             Kuu(i,i) = Kuu(i,i) + eL0;//+0.00;
+//           }else{
+//             for(int i=0;i<grid.size();i++){
+//               a=eL0+eL1*(grid[i]-eL3)*(grid[i]-eL3);
+//               Kuu(i,i)=a*a +0.0001;//+ eL2;
+//             }
+//           }
+//         }
+//
+//         if(Kuu.determinant()<0){
+//           for(int i=0;i<grid.size();i++)
+//             Kuu(i,i) = Kuu(i,i)+ 0.01;
+//         }
+//
+//         LLT<MatrixXd> lltOfA(Kuu); // compute the Cholesky decomposition of A
+//         MatrixXd Lm = lltOfA.matrixL();
+//         MatrixXd L_inv = Lm.inverse();
+//         MatrixXd Kuu_inv = L_inv.transpose()*L_inv;
+//
+//         //Mat = Mat - eL2*MatrixXd::Identity(nTimes,nTimes);
+//         MatrixXd Qtt=Ktu*Kuu_inv*Ktu.transpose();
+//         //Mat = Mat - eL2*MatrixXd::Identity(nTimes,nTimes);
+//         MatrixXd Lambda=(Mat.diagonal()-Qtt.diagonal()).asDiagonal();
+//         //Lambda = Lambda + eL2*MatrixXd::Identity(nTimes,nTimes);
+//         MatrixXd Lambda_inv = Lambda.inverse();
+//
+//         double logdet_lambda=0;
+//
+//         LLT<MatrixXd> lltOfAL(Lambda); // compute the Cholesky decomposition of A
+//         MatrixXd L_Lambda = lltOfAL.matrixL();
+//         logdet_lambda=  2*L_Lambda.diagonal().array().log().sum();
+//
+//
+//         //for(int i=0;i<nTimes;i++)
+//         //  logdet_lambda += log(Lambda(i,i));
+//
+//         double ld = 0;
+//         PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(Lambda);
+//         auto& LU = lu.matrixLU();
+//         double c = lu.permutationP().determinant(); // -1 or 1
+//         for (unsigned i = 0; i < LU.rows(); ++i) {
+//           const auto& lii = LU(i,i);
+//           if (lii < double(0)) c *= -1;
+//           ld += log(abs(lii));
+//         }
+//         ld += log(c);
+//
+//
+//
+//         MatrixXd Aut=L_inv* Ktu.transpose();
+//         MatrixXd T=(MatrixXd::Identity(grid.size(), grid.size())+
+//           Aut*Lambda_inv*Aut.transpose());
+//
+//         //MatrixXd Mat2=Mat;
+//         Mat = Lambda_inv-Lambda_inv*Aut.transpose()*T.inverse()*Aut*Lambda_inv;
+//         MatrixXd Prod1(grid.size(), grid.size());
+//
+//         Prod1=MatrixXd::Identity(grid.size(), grid.size())+Aut*Lambda_inv*Aut.transpose();
+//
+//         LLT<MatrixXd> lltOfA2(Prod1); // compute the Cholesky decomposition of A
+//         MatrixXd P = lltOfA2.matrixL();
+//         double logDetP=  2*P.diagonal().array().log().sum();
+//
+//
+//         double ld2 = 0;
+//         PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu2(Prod1);
+//         auto& LU2 = lu2.matrixLU();
+//         double c2 = lu2.permutationP().determinant(); // -1 or 1
+//         for (unsigned i = 0; i < LU2.rows(); ++i) {
+//           const auto& lii2 = LU2(i,i);
+//           if (lii2 < double(0)) c2 *= -1;
+//           ld2 += log(abs(lii2));
+//         }
+//         ld2 += log(c2);
+//
+//
+//         det=logDetP+logdet_lambda;
+//
+//
+//         cout <<"bis Get_Sigma_inv_GP_cov "<< det << " logdet_lambda "<<logdet_lambda<<
+//           " + logDetP:  "<< logDetP<<" grid.size() "<< grid.size()
+//                          << " eL0 " << eL0<< " eL1 " << eL1<<  " eL2 " << eL2<<endl <<
+//           " logdet Lambda "<< log(Lambda.determinant()) <<
+//             " ld "<< ld <<
+//               " Prod1.logdet "<< log(Prod1.determinant()) <<
+//                 " ld2 "<< ld2 <<endl <<" ~~~~~~~~~~"<<endl<<endl;
+//
+        }
+
+
+
       // <<
       //     " Lambda diag "<<endl<<Lambda.diagonal().transpose()<<endl<<
       //       " Qtt diag "<<endl<<Qtt.diagonal().transpose()<<endl<<
@@ -428,7 +665,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
     //
     //       fout <<" precMat "<< det<<endl<< Mat << endl << " Ktu "<< endl<<Ktu  << endl<<" Kuu "<< endl<<Kuu  << endl << " Kut "<<endl<< Ktu.transpose() <<endl << " Ktu*Kuu-1 "<<endl<<Ktu* Kuu.inverse() << " Kuu*Kuu-1 "<<endl<<Kuu* Kuu.inverse() <<endl<<endl;
     //     }
-  }
+
   return det;
 }
 
@@ -595,6 +832,8 @@ void GP_cov_star(MatrixXd& Mat,std::vector<double> L,std::vector<double> times,s
     }
   }
 }
-
+bool myfunction (int i, int j) {
+  return (i==j);
+}
 
 #endif /*MATHFUNCTIONS_H_*/

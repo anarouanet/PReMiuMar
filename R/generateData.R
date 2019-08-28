@@ -598,7 +598,62 @@ clusSummaryLongitudinalDiscrete<-function(ng=2){##//RJ summary generation functi
                                                     c(0.5,0.1,0.4),
                                                     c(0.5,0.3,0.2)))
       ))
-  }else if(ng==1){
+  }else if(ng==5){
+    liste <- list(
+      'outcomeType'='Longitudinal',
+      'covariateType'='Discrete',
+      'kernelType'="SQexponential",
+      'nCovariates'=5,
+      'timeGaps'=F,
+      'randomTimes'=F,
+      'timepoints'=c(0,2,4,6,8,10,12),
+      'nCategories'=c(3,3,3,3,3),
+      'nFixedEffects'=0,
+      'fixedEffectsCoeffs'=c(),
+      'sigmaSqY'=1,
+      'missingDataProb'=0,
+      'nClusters'=5,
+      'clusterSizes'=c(10,30,50, 70 ,40),##//RJ
+      'includeCAR'=FALSE,
+      'TauCAR'=100,
+      'clusterData'=list(list('theta'=list('mu'=c(9,8.5,8,6,5,4,3),
+                                           'L'=c(0.5,0.1,-0.7)),
+                              'covariateProbs'=list(c(0.8,0.1,0.1),
+                                                    c(0.8,0.1,0.1),
+                                                    c(0.8,0.1,0.1),
+                                                    c(0.8,0.1,0.1),
+                                                    c(0.8,0.1,0.1))),
+                         list('theta'=list('mu'=c(9,7,6,4,2,1,0),
+                                           'L'=c(0.6,0.2,-0.3)),
+                              'covariateProbs'=list(c(0.1,0.8,0.1),
+                                                    c(0.1,0.8,0.1),
+                                                    c(0.1,0.8,0.1),
+                                                    c(0.1,0.8,0.1),
+                                                    c(0.1,0.1,0.8))),
+                         list('theta'=list('mu'=c(7,5,8,9,10,11,9),
+                                           'L'=c(0.1,0.3,-0.7)),
+                              'covariateProbs'=list(c(0.4,0.5,0.1),
+                                                    c(0.5,0.4,0.1),
+                                                    c(0.1,0.4,0.5),
+                                                    c(0.5,0.1,0.4),
+                                                    c(0.5,0.3,0.2))),
+
+                         list('theta'=list('mu'=c(8,5,8,9,10,11,9),
+                                           'L'=c(0.3,0.4,-0.5)),
+                              'covariateProbs'=list(c(0.2,0.7,0.1),
+                                                    c(0.7,0.2,0.1),
+                                                    c(0.3,0.6,0.1),
+                                                    c(0.2,0.1,0.7),
+                                                    c(0.6,0.3,0.1))),
+                         list('theta'=list('mu'=c(7,7.5,6,5,5,3,2),
+                                           'L'=c(0.1,0.5,-0.7)),
+                              'covariateProbs'=list(c(0.6,0.3,0.1),
+                                                    c(0.2,0.1,0.7),
+                                                    c(0.3,0.6,0.1),
+                                                    c(0.7,0.2,0.1),
+                                                    c(0.2,0.7,0.1)))
+      ))
+    }else if(ng==1){
 
     liste <- list(
       'outcomeType'='Longitudinal',

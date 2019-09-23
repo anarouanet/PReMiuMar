@@ -338,7 +338,11 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
                                             "fillColor"=rep(riskColor[c],nPoints)))
           }
         } else if (yModel=="Longitudinal"||yModel=="MVN"){##//RJ same as empirical
-          plotRisk<-mean(risk[,c,1])
+          if(yModel=="MVN"){
+            plotRisk<-mean(risk[,c,1])
+          }else{
+            plotRisk<-mean(risk[,c])
+          }
           nPoints<-length(plotRisk)
           riskDF<-rbind(riskDF,data.frame("risk"=plotRisk,"cluster"=rep(c,nPoints),
                                           "meanRisk"=rep(riskMean,nPoints),
@@ -822,7 +826,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       times_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
       yData_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) yData[tMat[x,1]:tMat[x,2]]))
 
-      if(!sampleGPmean){#sampleGPmean
+      if(sampleGPmean){#sampleGPmean
         tTimes <- unique(times)[order(unique(times))]
 
         mu <- GPmeanMeans[c,]
@@ -858,6 +862,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       #       }
       #       lines(params$mu+longMean~tTimes,lwd=3,col=c)
       # c=c+1
+
     }
 
     rownames(GPDF)<-seq(1,nrow(GPDF),1)

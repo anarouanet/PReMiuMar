@@ -209,13 +209,13 @@ void Permut_cov(MatrixXd& Mat,  const int start_permut, const int length_permut)
 void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int length_permut, const std::vector<int> & idx){
   int i,j,ii,jj,ai,aj;
   int nTimes = Mat_sorted.rows();
+
   MatrixXd Mat_permut;
   Mat_permut.setZero(nTimes,nTimes);
   std::vector<double> idx_i;
-
   ai=0;
   for(i=0;i<nTimes;i++){
-    if(idx[i+idx_i.size()] >= start_permut && idx[i+idx_i.size()] < (start_permut+ length_permut+1))
+    if(idx[i+idx_i.size()] >= start_permut && idx[i+idx_i.size()] < (start_permut+ length_permut))
       idx_i.push_back(i+idx_i.size());
     if(i< (nTimes-length_permut)){
       ii=i+idx_i.size();
@@ -227,7 +227,7 @@ void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int 
     aj=0;
     std::vector<double> idx_j;
     for(j=0;j<nTimes;j++){
-      if(idx[j+idx_j.size()] >= start_permut && idx[j+idx_j.size()] < (start_permut+ length_permut+1))
+      if(idx[j+idx_j.size()] >= start_permut && idx[j+idx_j.size()] < (start_permut+ length_permut))
         idx_j.push_back(j+idx_j.size());
       if(j< (nTimes-length_permut)){
         jj=j+idx_j.size();
@@ -239,6 +239,7 @@ void Permut_cov_sorted(MatrixXd& Mat_sorted,  const int start_permut, const int 
     }
   }
   Mat_sorted=Mat_permut;
+  //cout << endl<<endl;
 }
 
 void Permut_cov_sorted(MatrixXd& Mat,   const std::vector<int> & idx){
@@ -454,7 +455,7 @@ double Get_Sigma_inv_GP_cov(MatrixXd& Mat, std::vector<double> L, std::vector<do
         " logdet Lambda "<< log(Lambda.determinant()) <<
             " Prod1.logdet "<< log(Prod1.determinant()) <<endl;
 
-      det=0;
+      det=-(std::numeric_limits<double>::max());
       // Add an offset on time vector as equal times can lead to instability
 
       //std::vector<int>::iterator it;
@@ -728,14 +729,35 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
     //Permut back
     Permut_cov_sorted(Mat, idx);
 
+    if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
+      logdetA=0;
+      PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(A);
+      auto& LU = lu.matrixLU();
+      double c = lu.permutationP().determinant(); // -1 or 1
+      for (unsigned i = 0; i < LU.rows(); ++i) {
+        const auto& lii = LU(i,i);
+        if (lii < double(0)) c *= -1;
+        logdetA += log(abs(lii));
+      }
+      logdetA += log(c);
+      log_DetPrecMat=log_det_M0+logdetA;
+
+      if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
+        fout << "in inverse_Woodbury: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<<endl;
+        log_DetPrecMat=-(std::numeric_limits<double>::max());
+      }
+    }
+
   }else{ // remove one subject i>nTimes
     cout << " problem inverse_Woodbury !!!!!" <<endl;
   }
+
   return(log_DetPrecMat);
 }
 
 double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& Mat, MatrixXd& M0_inv){
   // Function to remove one subject
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   double log_DetPrecMat=0.0;
   MatrixXd kno;
@@ -805,7 +827,30 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
     B.setZero(nTimes,i-nTimes);
     B=Mat*kno.transpose();
     A=Knew-kno*B;
-    log_DetPrecMat= log_det_M0- log(A.determinant());
+
+    LLT<MatrixXd> lltOfA(A); // compute the Cholesky decomposition of A
+    MatrixXd La = lltOfA.matrixL();
+    double logdetA=  2*La.diagonal().array().log().sum();
+    log_DetPrecMat=log_det_M0-logdetA;
+
+    if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
+      logdetA=0;
+      PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(A);
+      auto& LU = lu.matrixLU();
+      double c = lu.permutationP().determinant(); // -1 or 1
+      for (unsigned i = 0; i < LU.rows(); ++i) {
+        const auto& lii = LU(i,i);
+        if (lii < double(0)) c *= -1;
+        logdetA += log(abs(lii));
+      }
+      logdetA += log(c);
+      log_DetPrecMat=log_det_M0+logdetA;
+
+      if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
+        fout << "in inverse_Woodbury: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<<endl;
+        log_DetPrecMat=-(std::numeric_limits<double>::max());
+      }
+    }
   }
   return(log_DetPrecMat);
 }

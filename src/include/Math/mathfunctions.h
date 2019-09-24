@@ -716,6 +716,11 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
     B=M0_inv*kno.transpose();
     A=Knew-kno*B;
 
+    if(A.determinant()<=0){
+      for(int i=0;i<A.cols();i++)
+        A(i,i) = A(i,i)+ 0.01;
+    }
+
     LLT<MatrixXd> lltOfA(A); // compute the Cholesky decomposition of A
     MatrixXd La = lltOfA.matrixL();
     double logdetA=  2*La.diagonal().array().log().sum();
@@ -743,7 +748,7 @@ double Inverse_woodbury(const MatrixXd& M0_inv, const double& log_det_M0, Matrix
       log_DetPrecMat=log_det_M0+logdetA;
 
       if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
-        fout << "in inverse_Woodbury: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<<endl;
+        //fout << "in inverse_Woodbury to add: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<<  " log(detA)"<< log(A.determinant())<<" ";
         log_DetPrecMat=-(std::numeric_limits<double>::max());
       }
     }
@@ -828,12 +833,17 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
     B=Mat*kno.transpose();
     A=Knew-kno*B;
 
+    if(A.determinant()<=0){
+      for(int i=0;i<A.cols();i++)
+        A(i,i) = A(i,i)+ 0.01;
+    }
+
     LLT<MatrixXd> lltOfA(A); // compute the Cholesky decomposition of A
     MatrixXd La = lltOfA.matrixL();
     double logdetA=  2*La.diagonal().array().log().sum();
     log_DetPrecMat=log_det_M0-logdetA;
 
-    if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
+    if(std::isnan(logdetA) || isinf(logdetA)){
       logdetA=0;
       PartialPivLU<Matrix<double,Dynamic,Dynamic>> lu(A);
       auto& LU = lu.matrixLU();
@@ -847,7 +857,7 @@ double Inverse_woodbury(const MatrixXd& M0, const double& log_det_M0, MatrixXd& 
       log_DetPrecMat=log_det_M0+logdetA;
 
       if(std::isnan(log_DetPrecMat) || isinf(log_DetPrecMat)){
-        fout << "in inverse_Woodbury: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<<endl;
+        //fout << "in inverse_Woodbury to remove: log_DetPrecMat="<<log_DetPrecMat << " = log_det_M0 "<< log_det_M0 <<" +logdetA "<< logdetA<< " log(detA)"<< log(A.determinant()) <<" ";
         log_DetPrecMat=-(std::numeric_limits<double>::max());
       }
     }

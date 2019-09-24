@@ -403,7 +403,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
 
     ##//AR correspondance times to sample GPmean
     if(!is.null(time_grid)){
-      time_grid=all_times
+      all_times=time_grid
       ngrid=length(time_grid)
     }else{
       if(ngrid==0){

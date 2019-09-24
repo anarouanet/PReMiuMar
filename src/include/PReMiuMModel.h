@@ -2925,6 +2925,16 @@ double logPYiGivenZiWiLongitudinal(const pReMiuMParams& params, const pReMiuMDat
     }
   }
   return dmvnorm;
+
+  if(std::isnan(dmvnorm) || isinf(dmvnorm)){
+    std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
+
+    fout << " dmvnorm  "<< dmvnorm<< " logDetMat "<<logDetMat << endl<<
+      " zi "<<  params.z(ii) << " c "<< c <<endl<<
+        " prod "<< yk.transpose()*precMat*yk <<
+          " sizek "<<sizek<<endl;
+    dmvnorm=-(std::numeric_limits<double>::max());
+  }
 }
 
 //AR Compute logPYiGivenZiWiLongitudinal from covariance matrix and det
@@ -2932,6 +2942,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
                                        const unsigned int& nFixedEffects, const unsigned int& c, unsigned int size_k,
                                        const  unsigned int& ii// subject to remove
 ){
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
   unsigned int nSubjects=dataset.nSubjects();
@@ -3009,7 +3020,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
 
       if(params.z(ii) != c ){ // Add one subject
 
-        std::vector<double> times_check=timesk;
+        std::vector<double> times_check=timesk; // ordered with indiv to add at the end
         stable_sort(times_check.begin(), times_check.begin()+counter);
 
         for(unsigned int j=0;j<tStop[ii]-tStart[ii]+1;j++){
@@ -3028,7 +3039,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
         precMat.setZero(sizek,sizek);
         GP_cov(precMat,params.L(c),times_check,dataset.equalTimes(),kernelType,1);
 
-        if(Sigma_inv_ord.rows()>0 && sizek> nTimes_unique){
+        if(Sigma_inv_ord.rows()>0 && sizek>100){//sizek>nTimes_unique
 
           std::vector<int> idx_back(sizek);
           int x=0;
@@ -3037,6 +3048,9 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
                       [&](int i1,int i2) { return (times_check[i1] < times_check[i2]); });
 
           logDetPrecMat=Inverse_woodbury(Sigma_inv_ord,logDetSigma, precMat, idx_back);
+          if(std::isnan(logDetPrecMat) || isinf(logDetPrecMat) || logDetPrecMat== -(std::numeric_limits<double>::max())){
+            //fout << "indiv: "<< ii << " z(i) "<<params.z(ii)<< " c "<< c<<endl;
+          }
           //fout << "Inverse_woodbury add "<<logDetSigma << endl;
           // Sigma2 and Sigma_inv_ord2 including measurement errors
           // ordered, with subject to remove at the end
@@ -3062,12 +3076,13 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
         for(unsigned int j=0;j<sizek;j++)
           yk_sorted(j)=yk(idx[j]);
         yk=yk_sorted;
+
       }else{ // Remove one subject
         precMat.setZero(sizek,sizek);
 
-        if(Sigma_inv_ord.rows()>0 && sizek>nTimes_unique){
+        if(Sigma_inv_ord.rows()>0 && sizek>100){ //sizek>nTimes_unique
 
-          vector<double> timesk2;
+          vector<double> timesk2; //timesk (t_i1, ///, t_in) + indiv to remove at the end
           timesk2.resize(Sigma_inv_ord.rows()); // sizek+tStop[i]-tStart[i]+1 + indiv in end
           for(unsigned int j=0;j<timesk.size();j++)
             timesk2[j]= timesk[j];
@@ -3077,7 +3092,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
             timesk2[counter+j] = times[tStart[ii]-1+j];
           }
 
-          vector<double> timesk3;
+          vector<double> timesk3; //times_init (timkes+indiv) ordered
           timesk3.resize(sizek + tStop[ii]-tStart[ii]+1); // sizek+tStop[i]-tStart[i]+1 + indiv in middle
           counter=0;
           for(unsigned int i=0;i<nSubjects;i++){
@@ -3089,19 +3104,18 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
             }
           }
 
+          vector<double> times_init= timesk3;
 
           // sort times with corresponding ordering
-          std::vector<int> idx(timesk3.size());
+          std::vector<int> idx(timesk3.size()); //times_init[idx[j]] = timesk3
           int x=0;
           iota(idx.begin(), idx.end(), x++);
           stable_sort(idx.begin(), idx.end(), // sort indexes based on comparing values in times
                       [&](int i1,int i2) { return (timesk3[i1] < timesk3[i2]); });
           stable_sort(timesk3.begin(), timesk3.end());
 
-
-
-          std::vector<double> times_permut(timesk3.size());
-          std::vector<double> idx_i;
+          std::vector<double> times_permut(timesk3.size()); //timesk ordered with indiv to remove at the end
+          std::vector<double> idx_i; //indexes of timepoints of subject i in timesk3
           int ai=0;
           int iii;
           for(int i=0;i<timesk3.size();i++){
@@ -3117,12 +3131,15 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           }
 
           MatrixXd Sigma_inv_ord2=Sigma_inv_ord;
-          Permut_cov_sorted(Sigma_inv_ord2, ind_permut, tStop[ii]-tStart[ii]+1, idx);
-          MatrixXd Sigma2;
-          Sigma2.setZero(Sigma_inv_ord.rows(),Sigma_inv_ord.rows());
-          GP_cov(Sigma2,params.L(c),times_permut,dataset.equalTimes(),kernelType,1);
-          logDetPrecMat=Inverse_woodbury(Sigma2,logDetSigma, precMat, Sigma_inv_ord2);
-          // Sigma2 and Sigma_inv_ord2 including measurement errors
+          Permut_cov_sorted(Sigma_inv_ord2, ind_permut, tStop[ii]-tStart[ii]+1, idx); // timesk3=times_init[idx]
+          MatrixXd Sigma_ord2;
+          Sigma_ord2.setZero(Sigma_inv_ord.rows(),Sigma_inv_ord.rows());
+          GP_cov(Sigma_ord2,params.L(c),times_permut,dataset.equalTimes(),kernelType,1);
+          logDetPrecMat=Inverse_woodbury(Sigma_ord2,logDetSigma, precMat, Sigma_inv_ord2);
+          if(std::isnan(logDetPrecMat) || isinf(logDetPrecMat) || logDetPrecMat== -(std::numeric_limits<double>::max())){
+            //fout << "indiv: "<< ii << " z(i) "<<params.z(ii)<< " c "<< c<<endl;
+          }
+          // Sigma_ord2 and Sigma_inv_ord2 including measurement errors
           // ordered, with subject to remove at the end
 
           std::vector<int> idx2(timesk.size());
@@ -3151,13 +3168,14 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
     dmvnorm=0;
   }
 
-  if(isinf(dmvnorm)){
+  if(std::isnan(dmvnorm) || isinf(dmvnorm)){
     std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
     fout << " dmvnorm  "<< dmvnorm<< " logdetprecMat "<<logDetPrecMat << endl<<
       " zi "<<  params.z(ii) << " c "<< c <<endl<<
         " prod "<< yk.transpose()*precMat*yk <<
           " sizek "<<sizek<<endl;
+    dmvnorm=-(std::numeric_limits<double>::max());
   }
 
   return dmvnorm;

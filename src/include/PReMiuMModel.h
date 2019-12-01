@@ -959,12 +959,11 @@ public:
 
     if (outcomeType.compare("LME")==0) {
       _RandomEffects.setZero(nSubjects,nRandomEffects);
-      _covRE.resize(maxNClusters);
+      _covRE.setZero(nRandomEffects,nRandomEffects);
       _workLogDetTauLME.resize(maxNClusters);
       _workSqrtTauLME.resize(maxNClusters);
 
       for(unsigned int c=0;c<maxNClusters;c++){
-        _covRE[c].setZero(nRandomEffects,nRandomEffects);
         _workSqrtTauLME[c].setZero(nRandomEffects,nRandomEffects);
       }
     }
@@ -1134,12 +1133,9 @@ public:
         _pdf_meanGP.resize(nClus);
       }
       if (outcomeType.compare("LME")==0){
-        cout << " resize covRE"<<endl;
         _workLogDetTauLME.resize(nClus);
         _workSqrtTauLME.resize(nClus);
-        _covRE.resize(nClus);
         for (unsigned int c=0;c<nClus;c++){
-           _covRE[c].resize(nRandomEffects,nRandomEffects);
            _workSqrtTauLME[c].resize(nRandomEffects,nRandomEffects);
         }
       }
@@ -1629,23 +1625,19 @@ public:
     return _MVNSigma[c](j1,j2);
   }
 
-  vector<MatrixXd> covRE() const{
+  MatrixXd covRE() const{
     return _covRE;
   }
 
-  MatrixXd covRE(const unsigned int& c) const{
-    return _covRE[c];
+  double covRE(const unsigned int& i, const unsigned int& j) const{
+    return _covRE(i,j);
   }
 
-  double covRE(const unsigned int& c, const unsigned int& i, const unsigned int& j) const{
-    return _covRE[c](i,j);
-  }
-
-  void covRE(const unsigned int& c, const MatrixXd cov) {
-    _covRE[c]=cov;
+  void covRE(const MatrixXd cov) {
+    _covRE=cov;
     LLT<MatrixXd> llt;
-    _workLogDetTauLME[c]=-log(cov.determinant());
-    _workSqrtTauLME[c]=(llt.compute(cov.inverse())).matrixU();
+   // _workLogDetTauLME[c]=-log(cov.determinant());
+   // _workSqrtTauLME[c]=(llt.compute(cov.inverse())).matrixU();
   }
 
 
@@ -2498,9 +2490,9 @@ public:
     }
 
     if(outcomeType.compare("LME")==0){
-      MatrixXd CovRETmp = _covRE[c1];
-      _covRE[c1]=_covRE[c2];
-      _covRE[c2]=CovRETmp;
+      //MatrixXd CovRETmp = _covRE[c1];
+      //_covRE[c1]=_covRE[c2];
+      //_covRE[c2]=CovRETmp;
 
       MatrixXd sqrtTauTmp = _workSqrtTauLME[c1];
       _workSqrtTauLME[c1]=_workSqrtTauLME[c2];
@@ -2644,7 +2636,7 @@ private:
   vector<MatrixXd> _MVNSigma;
 
   MatrixXd _RandomEffects;
-  vector<MatrixXd> _covRE;
+  MatrixXd _covRE;
 
   /// \brief A vector of Eigen dynamic vectors containing covariate precision
   /// matrices for the case of Normal covariates
@@ -2952,7 +2944,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
   vector<double> timesk ;
-  int nTimes_unique = dataset.nTimes_unique();
+  //int nTimes_unique = dataset.nTimes_unique();
 
   VectorXd yk;
   //VectorXd meanVec;
@@ -3060,7 +3052,6 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           MatrixXd L = lltOfA.matrixL();
           logDetPrecMat=  2*L.diagonal().array().log().sum();
           precMat = L.inverse().transpose()*L.inverse();
-
         }
 
         // sort yk with corresponding ordering
@@ -3267,7 +3258,6 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
   vector<double> times = dataset.times();
   vector<int> tStart = dataset.tStart();
   vector<int> tStop = dataset.tStop();
-
   //AR for meanGP
   VectorXd yi;
   MatrixXd Vi_inv;
@@ -3282,25 +3272,38 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
 
       for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
         yi(j) = y[tStart[i]-1+j];
-
         //ADD TIMES yi(j)-= times[tStart[i]-1+j];;
 
         for(unsigned int b=0;b<nFixedEffects;b++){
-          yi(j)-=params.beta(b,0)*dataset.W(i,b);
+          yi(j)-=params.beta(b,0)*dataset.W_LME(tStart[i]-1+j,b);
         }
         for(unsigned int b=0;b<nFixedEffects_mix;b++){
-          yi(j)-=params.beta_mix(c,b)*dataset.W_mix(i,b);
+          yi(j)-=params.beta_mix(c,b)*dataset.W_LME_mix(tStart[i]-1+j,b);
         }
       }
 
       //Random effects of subject i
-      MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
+      bool cond_RE=true;
+      if(!cond_RE){
+        MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
 
-      yi -= block*params.RandomEffects(i);
+        MatrixXd Vi=block*params.covRE()*block.transpose()+MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
 
-      MatrixXd Vinv=MatrixXd::Identity(ni, ni) * exp(-params.SigmaE());
-      dmvnorm +=  -0.5*yi.transpose()*Vinv*yi - 0.5*ni*log(2.0*pi<double>())
-        - 0.5*ni*params.SigmaE();
+        LLT<MatrixXd> lltOfA(Vi);
+        MatrixXd L = lltOfA.matrixL();
+        double logDetPrecMat=  2*L.diagonal().array().log().sum();
+        MatrixXd precMat = L.inverse().transpose()*L.inverse();
+
+        dmvnorm =  -0.5*yi.transpose()*precMat*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*logDetPrecMat ;
+        // yi -= block*params.RandomEffects(i);
+
+      }else{
+        MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
+        yi -= block*params.RandomEffects(i);
+        MatrixXd Vi=MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
+
+        dmvnorm = -0.5*yi.transpose()*Vi.inverse()*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*ni*params.SigmaE();
+      }
 
       // If random effects integrated out:
       // MatrixXd V = block *params.covRE(c)* block.transpose() + MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
@@ -3445,7 +3448,6 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
   double logLikelihood=0.0;
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
   std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
-
 
   // Add in contribution from X
   for(unsigned int i=0;i<nSubjects;i++){
@@ -3681,6 +3683,7 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
                                        hyperParams.sigmaBeta(),hyperParams.dofBeta());
       }
     }
+
     for(unsigned int j=0;j<nFixedEffects_mix;j++){
       for(unsigned int c=0;c<maxNClusters;c++){
         for (unsigned int k=0;k<nCategoriesY;k++){
@@ -3759,32 +3762,30 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
     }
 
      if(outcomeType.compare("LME")==0){
-       std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
        unsigned int nRandomEffects=dataset.nRandomEffects();
-
        for(unsigned int c=0;c<maxNClusters;c++){
     //     //logPrior+=logPdfMultivarNormal(nOutcomes,params.MVNmu(c),hyperParams.MVNmu0(),hyperParams.MVNkappa0()*params.MVNTau(c),nOutcomes*hyperParams.MVNkappa0()+params.workLogDetMVNTau(c));
-          logPrior+= logPdfInverseWishart(nRandomEffects, params.covRE(c), -params.workLogDetTauLME(c), hyperParams.SigmaLME_R0(),
+          logPrior+= logPdfInverseWishart(nRandomEffects, params.covRE(), -params.workLogDetTauLME(c), hyperParams.SigmaLME_R0(),
                                  -hyperParams.workLogDetTauLME_R0(),(double)hyperParams.SigmaLME_kappa0());
-
         // double logPdfInverseWishart(const unsigned int& dimA, const MatrixXd& A, const double& logDetA, const MatrixXd& covR,
         // const double& logDetR, const double& kappa){
         // MatrixXd work = covR*A.inverse();
         // return 0.5*(kappa*logDetR-(kappa+(double)dimA+1)*logDetA-work.trace())
         //   - (0.5*kappa*(double)dimA*log(2.0)+logMultivarGammaFn(kappa/2.0,dimA));
-         MatrixXd Tau = params.covRE(c).inverse();
+         MatrixXd Tau = params.covRE().inverse();
         //logPrior+=logPdfWishart(dataset.nRandomEffects(), Tau, params.workLogDetMVNTau(c)
-        logPrior += logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
-                                              hyperParams.sigmaSigmaE());
        }
+       logPrior += logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
+                                hyperParams.sigmaSigmaE());
+
       for(unsigned int i=0;i<nSubjects;i++){
         unsigned int zi = params.z(i);
         VectorXd RE=params.RandomEffects(i);
         VectorXd mu;
         mu.setZero(nRandomEffects);
         logPrior +=  logPdfMultivarNormal(RE.size(),RE,mu,params.workSqrtTauLME(zi),params.workLogDetTauLME(zi));
+      }
     }
-     }
 
     // Prior for TauCAR and UCAR
     if (includeCAR){
@@ -3997,7 +3998,7 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
     }
   }
   //RJ logLikelihood is a sum only if Yi are conditionally independent
-  if(outcomeType.compare("Longitudinal")!=0){
+  if(outcomeType.compare("Longitudinal")!=0 && outcomeType.compare("LME")!=0){
     for(unsigned int i=0;i<nSubjects;i++){
       int zi = params.z(i);
       out+=logPYiGivenZiWi(params,dataset,nFixedEffects,zi,i);
@@ -4009,11 +4010,13 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   // http://www.mathworks.com/help/toolbox/stats/brn2ivz-145.html
   // as per Molitor et al. 2008 (from Gelman et al. 2008)
   // This is different from Papathomas who uses a normal
-  for(unsigned int c=0;c<maxNClusters;c++){
-    for (unsigned int k=0;k<nCategoriesY;k++){
-      double temppp = logPdfLocationScaleT(params.theta(c,k),hyperParams.muTheta(),
-                                           hyperParams.sigmaTheta(),hyperParams.dofTheta());
-      out+=temppp;
+  if(outcomeType.compare("Longitudinal")!=0 && outcomeType.compare("LME")!=0){
+    for(unsigned int c=0;c<maxNClusters;c++){
+      for (unsigned int k=0;k<nCategoriesY;k++){
+        double temppp = logPdfLocationScaleT(params.theta(c,k),hyperParams.muTheta(),
+                                             hyperParams.sigmaTheta(),hyperParams.dofTheta());
+        out+=temppp;
+      }
     }
   }
   // Prior for beta
@@ -4023,8 +4026,11 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   // have 0 mean and standard dev of 0.5
   for(unsigned int j=0;j<nFixedEffects;j++){
     for (unsigned int k=0;k<nCategoriesY;k++){
-      out+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
-                                hyperParams.sigmaBeta(),hyperParams.dofBeta());
+      //out+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
+      //                          hyperParams.sigmaBeta(),hyperParams.dofBeta());
+      out+= logPdfNormal(params.beta(j,k), hyperParams.muBeta(),
+                         hyperParams.sigmaBeta());
+
     }
   }
 
@@ -4032,8 +4038,10 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   for(unsigned int j=0;j<nFixedEffects_mix;j++){
     for(unsigned int c=0;c<maxNClusters;c++){
       for (unsigned int k=0;k<nCategoriesY;k++){
-        out+=logPdfLocationScaleT(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
-                                  hyperParams.sigmaBeta(),hyperParams.dofBeta());
+        //out+=logPdfLocationScaleT(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
+        //                          hyperParams.sigmaBeta(),hyperParams.dofBeta());
+        out+= logPdfNormal(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
+                           hyperParams.sigmaBeta());
       }
     }
   }

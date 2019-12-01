@@ -523,8 +523,6 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 	// This is the main function that runs the sampler
 
-	//std::fstream fout("sampler.txt", std::ios::in | std::ios::out | std::ios::app);
-
 
 	// Define a uniform random number generator
 	randomUniform unifRand(0,1);

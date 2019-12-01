@@ -74,7 +74,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	beginTime = time(NULL);
 	/* -----------Process the command line ---------*/
 	pReMiuMOptions options = processCommandLine(inputStr);
-
 	/* ---------- Set up the sampler object--------*/
 	// Initialise the sampler object
 	mcmcSampler<pReMiuMParams,pReMiuMOptions,
@@ -82,11 +81,9 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 	// Set the options
 	pReMiuMSampler.options(options);
-
 	// Set the model
 	pReMiuMSampler.model(&importPReMiuMData,&initialisePReMiuM,
 							&pReMiuMLogPost,true);
-
 	// Set the missing data function
 	pReMiuMSampler.updateMissingDataFn(&updateMissingPReMiuMData);
 
@@ -94,7 +91,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	pReMiuMSampler.userOutputFn(&writePReMiuMOutput);
 
 	// Seed the random number generator
-
 	pReMiuMSampler.seedGenerator(options.seed());
 	//pReMiuMSampler.seedGeneratorMult(options.seedsMult());
 
@@ -179,7 +175,11 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
 		// Adaptive MH for beta
 		if(dataset.nFixedEffects()>0 || dataset.nFixedEffects_mix()>0){
-			pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
+		  if(options.outcomeType().compare("LME")!=0){
+		    pReMiuMSampler.addProposal("metropolisHastingsForBeta",1.0,1,1,&metropolisHastingsForBeta);
+		  }else{
+		    pReMiuMSampler.addProposal("GibbsForBeta",1.0,1,1,&GibbsForBeta);
+		  }
 		}
 
 		if(options.responseExtraVar()){
@@ -309,7 +309,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 			pReMiuMSampler.addProposal("gibbsForMVNMuInActive",1.0,1,1,&gibbsForMVNMuInActive);
 			pReMiuMSampler.addProposal("gibbsForMVNTauInActive",1.0,1,1,&gibbsForMVNTauInActive);
 		}else if(options.outcomeType().compare("LME")==0){
-		  pReMiuMSampler.addProposal("gibbsForSigmaLMEInActive",1.0,1,1,&gibbsForSigmaLMEInActive);
+		  //pReMiuMSampler.addProposal("gibbsForSigmaLMEInActive",1.0,1,1,&gibbsForSigmaLMEInActive);
 		}
 	}
 
@@ -355,6 +355,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 	unsigned int maxNClusters = pReMiuMSampler.chain().currentState().parameters().maxNClusters();
 	/* ---------- Run the sampler --------- */
 	// Note: in this function the output gets written
+
 	pReMiuMSampler.run();
 
 

@@ -655,6 +655,36 @@ class pReMiuMData{
 		  return _W_RE.block(i, j, n, m);
 		}
 
+
+		/// \brief Return the fixed effects matrix for LME
+		const MatrixXd& W_LME() const{
+		  return _W_LME;
+		}
+
+		/// \brief Return the fixed effects matrix for LME
+		MatrixXd& W_LME(){
+		  return _W_LME;
+		}
+
+		/// \brief Return the jth covariate for subject i for LME
+		double W_LME(const unsigned int& i,const unsigned int& j) const{
+		  return _W_LME(i,j);
+		}
+
+		const MatrixXd& W_LME_mix() const{
+		  return _W_LME_mix;
+		}
+
+		/// \brief Return the fixed effects matrix for LME
+		MatrixXd& W_LME_mix(){
+		  return _W_LME_mix;
+		}
+
+		/// \brief Return the jth covariate for subject i for LME
+		double W_LME_mix(const unsigned int& i,const unsigned int& j) const{
+		  return _W_LME_mix(i,j);
+		}
+
 		/// \brief Return the fixed effects matrix
 
 
@@ -854,6 +884,8 @@ class pReMiuMData{
 		vector<vector<double> > _W;
 		vector<vector<double> > _W_mix;
 		MatrixXd _W_RE;
+		MatrixXd _W_LME;
+		MatrixXd _W_LME_mix;
 
 		/// \brief A vector of fixed effects names
 		vector<string> _fixedEffectNames;

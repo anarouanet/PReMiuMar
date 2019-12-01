@@ -349,6 +349,8 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 	vector<vector<double> >& W=dataset.W();
 	vector<vector<double> >& W_mix=dataset.W_mix();
 	MatrixXd& W_RE=dataset.W_RE();
+	MatrixXd& W_LME=dataset.W_LME();
+	MatrixXd& W_LME_mix=dataset.W_LME_mix();
 	vector<string>& confNames=dataset.fixedEffectNames();
 	vector<string>& confNames_mix=dataset.fixedEffectNames_mix();
 
@@ -475,6 +477,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 	nContinuousCovariatesNotMissing.resize(nSubjects+nPredictSubjects);
 	vector<double> meanX(nCovariates,0);
 	vector<unsigned int> nXNotMissing(nCovariates,0);
+
 	for(unsigned int i=0;i<nSubjects;i++){
 		if(outcomeType.compare("Normal")==0||outcomeType.compare("Survival")==0||outcomeType.compare("MVN")==0){
 			for(unsigned int j=0; j<nOutcomes; j++){//RJ read in MVN data
@@ -532,6 +535,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 
 		W[i].resize(nFixedEffects);
 		W_mix[i].resize(nFixedEffects_mix);
+
 		for(unsigned int j=0;j<nFixedEffects;j++){
 			inputFile >> W[i][j];
 		}
@@ -557,7 +561,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 		for(unsigned int i=0; i<nSubjects; i++){
 			inputFile >> tStart[i];
 			inputFile >> tStop[i];
-		}
+    }
 
 		for(unsigned int i=0; i<nTimes; i++){
 			inputFile >> times[i];
@@ -572,6 +576,19 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 		}
 
 		if(outcomeType.compare("LME")==0){
+		  W_LME.setZero(nTimes,nFixedEffects);
+		  for(unsigned int i=0;i<nTimes;i++){
+		    for(unsigned int k=0;k<nFixedEffects;k++){
+		      inputFile >> W_LME(i,k);
+		    }
+		  }
+
+		  W_LME_mix.setZero(nTimes,nFixedEffects_mix);
+		  for(unsigned int i=0;i<nTimes;i++){
+		    for(unsigned int k=0;k<nFixedEffects_mix;k++){
+		      inputFile >> W_LME_mix(i,k);
+		    }
+		  }
 
 	    W_RE.setZero(nTimes,nRandomEffects);
 		  for(unsigned int i=0;i<nTimes;i++){
@@ -1787,10 +1804,12 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 		}
 
 		if(outcomeType.compare("LME")==0){ //AR
+		  MatrixXd Tau = wishartRand(rndGenerator,hyperParams.workTauLME_R0(),hyperParams.SigmaLME_kappa0());
+		  params.covRE(Tau.inverse());
+		  LLT<MatrixXd> llt;
 		  for(unsigned int c=0;c<maxNClusters;c++){
-		    MatrixXd Tau = wishartRand(rndGenerator,hyperParams.workTauLME_R0(),hyperParams.SigmaLME_kappa0());
-		    params.covRE(c,Tau.inverse());
 		    params.workLogDetTauLME(c,log(Tau.determinant()));
+		    params.workSqrtTauLME(c,(llt.compute(Tau)).matrixU());
 		  }
 		  // Initialise random effects
   		  for(unsigned int i=0;i<nSubjects;i++){
@@ -1798,7 +1817,7 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
   		    VectorXd mu(nRandomEffects);
   		    VectorXd meanRE(nRandomEffects);
   		    meanRE.setZero();
-  		    MatrixXd covRE=params.covRE(zi);
+  		    MatrixXd covRE=params.covRE();
   		    mu = multivarNormalRand(rndGenerator,meanRE,covRE);
   	      params.RandomEffects(i,mu);
   		  }
@@ -1861,17 +1880,33 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 				double eps = normalRand(rndGenerator);
 				int zi = params.z(i);
 				double meanVal = params.theta(zi,0);
+
 				if(outcomeType.compare("Categorical")==0){
 					for(unsigned int j=0;j<nFixedEffects;j++){
 						meanVal+=params.beta(j,dataset.discreteY(i))*dataset.W(i,j);
 					}
-				} else {
-					for(unsigned int j=0;j<nFixedEffects;j++){
-						meanVal+=params.beta(j,0)*dataset.W(i,j);
-					}
-					for(unsigned int j=0;j<nFixedEffects_mix;j++){
-					  meanVal+=params.beta_mix(zi,j*1)*dataset.W_mix(i,j);
-					}
+				} else if(outcomeType.compare("LME")==0){
+				  for(unsigned int j=0;j<nFixedEffects;j++){
+				    meanVal+=params.beta(j,0)*dataset.W_LME(i,j);
+				  }
+				  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+				    meanVal+=params.beta_mix(zi,j*1)*dataset.W_LME_mix(i,j);
+				  }
+				}else{
+				  for(unsigned int j=0;j<nFixedEffects;j++){
+				    if(outcomeType.compare("LME")!=0){
+				      meanVal+=params.beta(j,0)*dataset.W(i,j);
+				    }else{
+				      meanVal+=params.beta(j,0)*dataset.W_LME(i,j);
+				    }
+				  }
+				  for(unsigned int j=0;j<nFixedEffects_mix;j++){
+				    if(outcomeType.compare("LME")!=0){
+				      meanVal+=params.beta_mix(zi,j*1)*dataset.W_mix(i,j);
+				    }else{
+				      meanVal+=params.beta_mix(zi,j*1)*dataset.W_LME_mix(i,j);
+				    }
+				  }
 				}
 				if(outcomeType.compare("Poisson")==0){
 					meanVal+=dataset.logOffset(i);
@@ -2443,20 +2478,20 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			  }
 			  if(outcomeType.compare("LME")==0){
 			    unsigned int nRandomEffects = sampler.model().dataset().nRandomEffects();
-			    for(unsigned int c=0;c< maxNClusters;c++){
+			    //for(unsigned int c=0;c< maxNClusters;c++){
 			      for(unsigned int l=0;l<nRandomEffects;l++){
   			      for(unsigned int l2=0;l2<=l;l2++){
-  			        *(outFiles[CovRELMEInd]) << ""<< params.covRE(c,l,l2);
-  			        if(c<maxNClusters-1 || l2<(nRandomEffects-1)){
+  			        *(outFiles[CovRELMEInd]) << ""<< params.covRE(l,l2);
+  			        if( l2<(nRandomEffects-1)){
   			          *(outFiles[CovRELMEInd]) << " ";
   			        }else{
   			          *(outFiles[CovRELMEInd]) << endl;
   			        }
   			      }
 			      }
-			    }
+			    //}
 
-			    *(outFiles[EpsilonLMEInd]) << " "<< params.SigmaE(); //params.sigmakInd(c);
+			    *(outFiles[EpsilonLMEInd]) << params.SigmaE() << endl; //params.sigmakInd(c);
 
 			    for(unsigned int i=0;i<nSubjects;i++){
 			      *(outFiles[RandomEffectsLMEInd]) << " "<< params.RandomEffects(i).transpose(); //params.sigmakInd(c);
@@ -2589,10 +2624,18 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 						int zi = params.z(i);
 						double meanVal = meanVec[i]+params.theta(zi,0);
 						for(unsigned int j=0;j<nFixedEffects;j++){
-							meanVal+=params.beta(j,0)*dataset.W(i,j);
+						  if(outcomeType.compare("LME")!=0){
+						    meanVal+=params.beta(j,0)*dataset.W(i,j);
+						  }else{
+						    meanVal+=params.beta(j,0)*dataset.W_LME(i,j);
+						  }
 						}
 						for(unsigned int j=0;j<nFixedEffects_mix;j++){
-						  meanVal+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+						  if(outcomeType.compare("LME")!=0){
+						    meanVal+=params.beta_mix(zi,j)*dataset.W_mix(i,j);
+						  }else{
+						    meanVal+=params.beta_mix(zi,j)*dataset.W_LME_mix(i,j);
+						  }
 						}
 						double eps=params.lambda(i)-meanVal;
 						*(outFiles[epsilonInd]) << eps;

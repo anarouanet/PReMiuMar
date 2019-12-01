@@ -1576,7 +1576,7 @@ void gibbsForForSigmaLMEActive(mcmcChain<pReMiuMParams>& chain,
   nAccept++;
 
   // In the following it is useful to have the rows of X as
-  // Eigen dynamic vectors
+  // Get individual random effects
   vector<VectorXd> bi(nSubjects);
   for(unsigned int i=0;i<nSubjects;i++){
     bi[i].setZero(nRandomEffects);
@@ -1585,26 +1585,25 @@ void gibbsForForSigmaLMEActive(mcmcChain<pReMiuMParams>& chain,
     }
   }
 
-  vector<MatrixXd> Rc(maxZ+1);
-  for(unsigned int c=0;c<=maxZ;c++){
-    Rc[c].setZero(nRandomEffects,nRandomEffects);
-  }
-
+  MatrixXd R;
+  R.setZero(nRandomEffects,nRandomEffects);
   for(unsigned int i=0;i<nSubjects;i++){
-    unsigned int zi = currentParams.z(i);
-    Rc[zi]=Rc[zi]+bi[i]*(bi[i].transpose());
+    R=R+bi[i]*(bi[i].transpose());
   }
 
-  for(unsigned int c=0;c<=maxZ;c++){
-    Rc[c]=(hyperParams.workTauLME_R0().inverse()+Rc[c]).inverse();
-    MatrixXd Tau = wishartRand(rndGenerator,Rc[c],currentParams.workNXInCluster(c)+hyperParams.SigmaLME_kappa0());
-    currentParams.covRE(c,Tau.inverse());
-    //currentParams.workLogDetTauLME(c, log(Tau.determinant()));
-  }
+  // Generate variance covariance matrix
+    R=(hyperParams.workTauLME_R0().inverse()+R).inverse();
+    MatrixXd Tau = wishartRand(rndGenerator,R,nSubjects+hyperParams.SigmaLME_kappa0());
+    currentParams.covRE(Tau.inverse());
+    for(unsigned int c=0;c<=maxZ;c++){
+      currentParams.workLogDetTauLME(c, log(Tau.determinant()));
+      LLT<MatrixXd> llt;
+      currentParams.workSqrtTauLME(c,(llt.compute(Tau)).matrixU());
+    }
 
   // Update Random effects
   // Mean B*Z^T V^{-1}(Yi-Xi beta)
-  // Variance (B^{-1} + Z^T sigma^{-2} In Z)^{-1}
+  // Variance B - B*Zi^T*Vi^{-1}* (Zi*B^T)
 
   for(unsigned int i=0;i<nSubjects;i++){
     VectorXd yi;
@@ -1616,33 +1615,31 @@ void gibbsForForSigmaLMEActive(mcmcChain<pReMiuMParams>& chain,
 
     for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
       yi(j) = y[tStart[i]-1+j];
-
       for(unsigned int b=0;b<nFixedEffects;b++){
-        yi(j)-=currentParams.beta(b,0)*dataset.W(i,b);
+        yi(j)-=currentParams.beta(b,0)*dataset.W_LME(i,b);
       }
       for(unsigned int b=0;b<nFixedEffects_mix;b++){
-        yi(j)-=currentParams.beta_mix(zi,b)*dataset.W_mix(i,b);
+        yi(j)-=currentParams.beta_mix(zi,b)*dataset.W_LME_mix(i,b);
       }
     }
 
     MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, nRandomEffects);
     MatrixXd sigmae=MatrixXd::Identity(ni, ni) * exp(currentParams.SigmaE());
 
-    MatrixXd V = block *currentParams.covRE(zi)* block.transpose() + sigmae;
+    MatrixXd V = block *currentParams.covRE()* block.transpose() + sigmae;
     LLT<MatrixXd> lltOfA(V); // compute the Cholesky decomposition of A
     MatrixXd L = lltOfA.matrixL();
     //double logDetPrecMat=  2*log(L.determinant());
     MatrixXd Vi_inv = L.inverse().transpose()*L.inverse();
+    VectorXd mu = currentParams.covRE()*block.transpose()*Vi_inv*yi;
 
-    VectorXd mu = currentParams.covRE(zi)*block.transpose()*Vi_inv*yi;
-    MatrixXd cov = currentParams.covRE(zi).inverse() + block.transpose()*sigmae.inverse()*block;
-    cov = cov.inverse();
+    //B - B*Zi^T*Vi^{-1}* (Zi*B^T)
 
+    MatrixXd cov = currentParams.covRE() - currentParams.covRE()*block.transpose()*Vi_inv*block*currentParams.covRE().transpose();
     ui = multivarNormalRand(rndGenerator,mu,cov);
     currentParams.RandomEffects(i,ui);
   }
 }
-
 
 void gibbsForMVNTauActive(mcmcChain<pReMiuMParams>& chain,
                           unsigned int& nTry,unsigned int& nAccept,
@@ -2651,16 +2648,16 @@ void gibbsForSigmaLMEInActive(mcmcChain<pReMiuMParams>& chain,
   pReMiuMParams& currentParams = currentState.parameters();
   pReMiuMHyperParams hyperParams = currentParams.hyperParams();
   // Find the number of clusters
-  unsigned int maxZ = currentParams.workMaxZi();
-  unsigned int maxNClusters = currentParams.maxNClusters();
+  //unsigned int maxZ = currentParams.workMaxZi();
+  //unsigned int maxNClusters = currentParams.maxNClusters();
   nTry++;
   nAccept++;
 
-  for(unsigned int c=maxZ+1;c<maxNClusters;c++){
+  //for(unsigned int c=maxZ+1;c<maxNClusters;c++){
     MatrixXd Sigma = invWishartRand(rndGenerator,hyperParams.SigmaLME_R0(),hyperParams.SigmaLME_kappa0());
-    currentParams.covRE(c,Sigma);
+    currentParams.covRE(Sigma);
     //currentParams.workLogDetTauLME(c, -log(Sigma.determinant()));
-  }
+  //}
 }
 
 // Gibbs update for update of gamma (only used in the binary variable selection case)
@@ -2775,6 +2772,7 @@ void gibbsForBetaInActive(mcmcChain<pReMiuMParams>& chain,
                                           pReMiuMData>& model,
                                           pReMiuMPropParams& propParams,
                                           baseGeneratorType& rndGenerator){
+  randomUniform unifRand(0,1);
 
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
@@ -2790,6 +2788,7 @@ void gibbsForBetaInActive(mcmcChain<pReMiuMParams>& chain,
 
   nTry++;
   nAccept++;
+  std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   double location = hyperParams.muBeta();
   double scale = hyperParams.sigmaBeta();
@@ -2799,7 +2798,12 @@ void gibbsForBetaInActive(mcmcChain<pReMiuMParams>& chain,
     for (unsigned int k=0;k<nCategoriesY;k++){
       for(unsigned int c=maxZ+1;c<maxNClusters;c++){
         double beta=location+scale*studentsTRand(rndGenerator);
+        beta=-2.0+4.0*unifRand(rndGenerator);
         currentParams.beta_mix(c,j+k*nFixedEffects_mix,beta);
+        fout << c<<" betamix "<< beta<<endl;
+        //currentParams.beta_mix(c,j+k*nFixedEffects_mix,0);
+//        params.beta(j,k,-2.0+4.0*unifRand(rndGenerator));
+
       }
     }
   }
@@ -2910,6 +2914,120 @@ void gibbsForNuInActive(mcmcChain<pReMiuMParams>& chain,
 /*********** BLOCK 4 p(Theta^N|.) **********************************/
 // N=Non-cluster, and Theta contains: beta, rho, omega, lambda, tau_epsilon, uCAR and TauCAR
 
+
+void GibbsForBeta(mcmcChain<pReMiuMParams>& chain,
+                               unsigned int& nTry,unsigned int& nAccept,
+                               const mcmcModel<pReMiuMParams,
+                                               pReMiuMOptions,
+                                               pReMiuMData>& model,
+                                               pReMiuMPropParams& propParams,
+                                               baseGeneratorType& rndGenerator){
+
+
+  mcmcState<pReMiuMParams>& currentState = chain.currentState();
+  pReMiuMParams& currentParams = currentState.parameters();
+  const pReMiuMData& dataset=model.dataset();
+  const string outcomeType = dataset.outcomeType();
+
+  // Find the number of clusters
+  unsigned int nFixedEffects = dataset.nFixedEffects();
+  unsigned int nFixedEffects_mix = dataset.nFixedEffects_mix();
+  // Find the number of categories of Y
+  unsigned int nCategoriesY = currentParams.nCategoriesY();
+
+  // Define a normal random number generator
+  randomNormal normRand(0,1);
+  int k=1; // Works if only 1 category for Y
+
+  VectorXd mu_b(nFixedEffects);
+  MatrixXd V_b;
+  V_b.setZero(nFixedEffects,nFixedEffects);
+
+  MatrixXd S;
+  S.setZero(nFixedEffects,nFixedEffects);
+  VectorXd S2(nFixedEffects);
+
+  for(unsigned int i=0;i<nFixedEffects;i++){
+    mu_b(i)  = currentParams.hyperParams().muBeta();
+    V_b(i,i) = currentParams.hyperParams().sigmaBeta();
+    S2(i)    = 0;
+  }
+
+  unsigned int nSubjects=dataset.nSubjects();
+  vector<double> y = dataset.continuousY();
+  const string kernelType = dataset.kernelType(); //AR
+  vector<double> times = dataset.times();
+  vector<int> tStart = dataset.tStart();
+  vector<int> tStop = dataset.tStop();
+
+  for(unsigned int i=0;i<nSubjects;i++){
+
+    int nmes = (tStop[i] - tStart[i] + 1);
+    VectorXd   Yi(nmes);
+    int zi   = currentParams.z(i);
+    MatrixXd   Xi(nmes, nFixedEffects);
+
+    for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+      Yi(j) = y[tStart[i]-1+j];
+
+      for(unsigned int b=0;b<nFixedEffects;b++){
+        Xi(j,b) = dataset.W_LME(tStart[i]-1+j,b);
+      }
+
+      for(unsigned int b=0;b<nFixedEffects_mix;b++){
+        Yi(j) -= currentParams.beta_mix(zi,b)*dataset.W_LME_mix(tStart[i]-1+j,b);
+      }
+
+      MatrixXd block=dataset.W_RE(tStart[i]-1, 0, tStop[i]-tStart[i]+1 , dataset.nRandomEffects());
+      Yi -= block*currentParams.RandomEffects(i);
+    }
+
+    MatrixXd Sigmae_inv = MatrixXd::Identity(nmes, nmes) * exp(-currentParams.SigmaE());
+    S += Xi.transpose()*Sigmae_inv*Xi;
+    S2 += Xi.transpose()*Sigmae_inv*Yi;
+  }
+
+  MatrixXd temp = V_b.inverse() + S;
+  LLT<MatrixXd> lltOfA(temp); // compute the Cholesky decomposition of A
+  MatrixXd L = lltOfA.matrixL();
+  MatrixXd V_b_post = L.inverse().transpose()*L.inverse();
+
+  VectorXd mu_b_post = V_b_post * (V_b.inverse()*mu_b + S2);
+
+  VectorXd betaProp=multivarNormalRand(rndGenerator, mu_b_post, V_b_post);
+  for(unsigned int b=0;b<nFixedEffects;b++)
+    currentParams.beta(b,k,betaProp(b));
+
+  std::fstream fout4("file_betamix.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout1("file_hyper_mu.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout2("file_hyper_sigma.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout3("file_beta.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout5("file_bi.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout6("file_Sigmae.txt", std::ios::in | std::ios::out | std::ios::app);
+
+  fout6 << currentParams.SigmaE()<<endl;
+  fout1 << mu_b_post<<endl;
+  fout2 <<V_b_post <<endl;
+
+  for(unsigned int i=0;i<nSubjects;i++){
+    fout5 << currentParams.RandomEffects(i)<<endl;
+
+    int zi= currentParams.z(i);
+    for(unsigned int b=0;b<nFixedEffects_mix;b++){
+      fout4 << currentParams.beta_mix(zi,b) << " ";
+    }
+    fout4<<endl;
+  }
+  fout4<<endl<<endl<<endl;
+
+  for(unsigned int j=0;j<2000;j++){
+    VectorXd betaProp=multivarNormalRand(rndGenerator, mu_b_post, V_b_post);
+    fout3 <<betaProp <<endl;
+  }
+
+}
+
+
 // Adaptive Metropolis-Hastings for beta - fixed effects
 void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
                                unsigned int& nTry,unsigned int& nAccept,
@@ -2939,91 +3057,124 @@ void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
   unsigned int betaUpdateFreq = propParams.betaUpdateFreq();
 
   double currentCondLogPost = logCondPostThetaBeta(currentParams,model);
-  for(unsigned int j=0;j<nFixedEffects;j++){
-    for (unsigned int k=0;k<nCategoriesY;k++){
-      nTry++;
-      propParams.betaAddTry(j);
-      double& stdDev = propParams.betaStdDev(j);
-      double betaOrig = currentParams.beta(j,k);
-      double betaProp = betaOrig+stdDev*normRand(rndGenerator);
-      currentParams.beta(j,k,betaProp);
-      double propCondLogPost = logCondPostThetaBeta(currentParams,model);
-      double logAcceptRatio = propCondLogPost - currentCondLogPost;
-      if(unifRand(rndGenerator)<exp(logAcceptRatio)){
-        nAccept++;
-        propParams.betaAddAccept(j);
-        currentCondLogPost = propCondLogPost;
-        // Update the std dev of the proposal
-        if(propParams.nTryBeta(j)%betaUpdateFreq==0){
-          stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
-            pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
-          propParams.betaAnyUpdates(true);
-          if(stdDev>propParams.betaStdDevUpper(j)||stdDev<propParams.betaStdDevLower(j)){
-            propParams.betaStdDevReset(j);
+
+  std::fstream fout1("file_hyper_beta.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout2("file_beta.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout3("file_betamix.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout4("file_Sigmae.txt", std::ios::in | std::ios::out | std::ios::app);
+  std::fstream fout5("file_bi.txt", std::ios::in | std::ios::out | std::ios::app);
+  fout1 << currentParams.hyperParams().muBeta()<< " "<<currentParams.hyperParams().sigmaBeta() <<endl;
+  fout4 << currentParams.SigmaE()<<endl;
+
+  for(unsigned int i=0;i<model.dataset().nSubjects();i++)
+    fout5<< currentParams.RandomEffects(i)<<endl;
+  fout5<<endl<<endl<<endl;
+
+
+    currentCondLogPost = logCondPostThetaBeta(currentParams,model);
+    for(unsigned int j=0;j<nFixedEffects;j++){
+
+      int jjj=0;
+      while(jjj<200){
+      for (unsigned int k=0;k<nCategoriesY;k++){
+        nTry++;
+        propParams.betaAddTry(j);
+        double& stdDev = propParams.betaStdDev(j);
+        double betaOrig = currentParams.beta(j,k);
+        double betaProp = betaOrig+stdDev*normRand(rndGenerator);
+        currentParams.beta(j,k,betaProp);
+        double propCondLogPost = logCondPostThetaBeta(currentParams,model);
+        double logAcceptRatio = propCondLogPost - currentCondLogPost;
+        if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+          fout2 <<betaProp<<endl;
+          nAccept++;
+          propParams.betaAddAccept(j);
+          currentCondLogPost = propCondLogPost;
+          // Update the std dev of the proposal
+          if(propParams.nTryBeta(j)%betaUpdateFreq==0){
+            stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
+              pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
+            propParams.betaAnyUpdates(true);
+            if(stdDev>propParams.betaStdDevUpper(j)||stdDev<propParams.betaStdDevLower(j)){
+              propParams.betaStdDevReset(j);
+            }
+            propParams.betaLocalReset(j);
           }
-          propParams.betaLocalReset(j);
-        }
-      }else{
-        currentParams.beta(j,k,betaOrig);
-        // Update the std dev of the proposal
-        if(propParams.nTryBeta(j)%betaUpdateFreq==0){
-          stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
-            pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
-          propParams.betaAnyUpdates(true);
-          if(stdDev<propParams.betaStdDevLower(j)||stdDev>propParams.betaStdDevUpper(j)){
-            propParams.betaStdDevReset(j);
+          jjj++;
+        }else{
+          currentParams.beta(j,k,betaOrig);
+          // Update the std dev of the proposal
+          if(propParams.nTryBeta(j)%betaUpdateFreq==0){
+            stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
+              pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
+            propParams.betaAnyUpdates(true);
+            if(stdDev<propParams.betaStdDevLower(j)||stdDev>propParams.betaStdDevUpper(j)){
+              propParams.betaStdDevReset(j);
+            }
+            propParams.betaLocalReset(j);
           }
-          propParams.betaLocalReset(j);
         }
       }
     }
   }
 
+fout2 <<endl<<endl<<endl<<endl<<endl;
   if(nFixedEffects_mix>0){
     unsigned int maxZ = currentParams.workMaxZi();
     double betamixTargetRate = propParams.betamixAcceptTarget();
     unsigned int betamixUpdateFreq = propParams.betamixUpdateFreq();
 
+
+    currentCondLogPost = logCondPostThetaBeta(currentParams,model);
     double currentCondLogPost = logCondPostThetaBeta(currentParams,model);
     for(unsigned int c=0;c<=maxZ;c++){
       for(unsigned int j=0;j<nFixedEffects_mix;j++){
-        for (unsigned int k=0;k<nCategoriesY;k++){
-          nTry++;
-          propParams.betamixAddTry(j);
-          double& stdDev = propParams.betamixStdDev(j);
-          double betaOrig = currentParams.beta_mix(c,j+k*nFixedEffects_mix);
-          double betaProp = betaOrig+stdDev*normRand(rndGenerator);
-          currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaProp);
-          double propCondLogPost = logCondPostThetaBeta(currentParams,model);
-          double logAcceptRatio = propCondLogPost - currentCondLogPost;
-          if(unifRand(rndGenerator)<exp(logAcceptRatio)){
-            nAccept++;
-            propParams.betamixAddAccept(j);
-            currentCondLogPost = propCondLogPost;
-            // Update the std dev of the proposal
-            if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
-              stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
-                pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
-              propParams.betamixAnyUpdates(true);
-              if(stdDev>propParams.betamixStdDevUpper(j)||stdDev<propParams.betamixStdDevLower(j)){
-                propParams.betamixStdDevReset(j);
+
+          int jjj=0;
+          while(jjj<200){
+          for (unsigned int k=0;k<nCategoriesY;k++){
+            nTry++;
+            propParams.betamixAddTry(j);
+            double& stdDev = propParams.betamixStdDev(j);
+            double betaOrig = currentParams.beta_mix(c,j+k*nFixedEffects_mix);
+            double betaProp = betaOrig+stdDev*normRand(rndGenerator);
+            currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaProp);
+            double propCondLogPost = logCondPostThetaBeta(currentParams,model);
+            double logAcceptRatio = propCondLogPost - currentCondLogPost;
+            double uii=unifRand(rndGenerator);
+            if(uii<exp(logAcceptRatio)){
+            fout3 <<betaProp<<endl;
+              nAccept++;
+              propParams.betamixAddAccept(j);
+              currentCondLogPost = propCondLogPost;
+              // Update the std dev of the proposal
+              if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
+                stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
+                  pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
+                propParams.betamixAnyUpdates(true);
+                if(stdDev>propParams.betamixStdDevUpper(j)||stdDev<propParams.betamixStdDevLower(j)){
+                  propParams.betamixStdDevReset(j);
+                }
+                propParams.betamixLocalReset(j);
               }
-              propParams.betamixLocalReset(j);
-            }
-          }else{
-            currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaOrig);
-            // Update the std dev of the proposal
-            if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
-              stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
-                pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
-              propParams.betamixAnyUpdates(true);
-              if(stdDev<propParams.betamixStdDevLower(j)||stdDev>propParams.betamixStdDevUpper(j)){
-                propParams.betamixStdDevReset(j);
+              jjj++;
+            }else{
+              currentParams.beta_mix(c,j+k*nFixedEffects_mix,betaOrig);
+              // Update the std dev of the proposal
+              if(propParams.nTryBetamix(j)%betaUpdateFreq==0){
+                stdDev += 10*(propParams.betamixLocalAcceptRate(j)-betamixTargetRate)/
+                  pow((double)(propParams.nTryBetamix(j)/betamixUpdateFreq)+2.0,0.75);
+                propParams.betamixAnyUpdates(true);
+                if(stdDev<propParams.betamixStdDevLower(j)||stdDev>propParams.betamixStdDevUpper(j)){
+                  propParams.betamixStdDevReset(j);
+                }
+                propParams.betamixLocalReset(j);
               }
-              propParams.betamixLocalReset(j);
             }
           }
         }
+          fout3 <<endl<<endl<<endl<<endl<<endl;
+
       }
     }
   }
@@ -3627,6 +3778,7 @@ void metropolisHastingsForSigmaEpsilonLME(mcmcChain<pReMiuMParams>& chain,
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
   const string outcomeType = model.dataset().outcomeType();
+  //std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Define a uniform random number generator
   randomUniform unifRand(0,1);
@@ -3671,9 +3823,6 @@ void metropolisHastingsForSigmaEpsilonLME(mcmcChain<pReMiuMParams>& chain,
     }
     propParams.SigmaELocalReset();
   }
-
-
-
 }
 
 // Gibbs update for the precision of spatial random term
@@ -4386,6 +4535,9 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
     }
 
     currentParams.z(i,zi,covariateType);
+    currentParams.z(i,0,covariateType);
+
+
     //AR Compute again sizek, yk and timeskfor z(i) and currentParams.z(i)
     if(outcomeType.compare("Longitudinal")==0 && zi!=origZi && !model.options().sampleGPmean() ){//AR change !model.options().sampleGPmean()
 
@@ -4453,6 +4605,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
       }
     }
   }
+
   currentParams.workNXInCluster(nMembers);
   currentParams.workMaxZi(maxZ);
 }

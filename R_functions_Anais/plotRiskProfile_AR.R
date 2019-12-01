@@ -1,5 +1,5 @@
 plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,whichClusters=NULL,whichCovariates=NULL,
-                             useProfileStar=F,riskLim=NULL,bycol=FALSE){
+                             useProfileStar=F,riskLim=NULL,bycol=FALSE, profile_X=NULL, timevar=NULL){
 
   riskProfClusObj=NULL
   clusObjRunInfoObj=NULL
@@ -42,6 +42,15 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
 
   #assign(names(clusObjRunInfoObj)[4],min(nSweeps1,clusObjRunInfoObj[[4]]))
+
+  if(!is.null(profile_X)){
+    if(length(which(!names(profile_X)%in%c(fixedEffectsNames,fixedEffectsNames_clust)))>0)
+      stop("Error: Names of profile_X do not correspond to fixedEffectsNames nor fixedEffectsNames_clust")
+  }
+
+  if(is.null(profile_X) & yModel == "LME"){
+    stop("Error: profile_X should be defined as a list of covariates values such list(cov=1)")
+  }
 
   if (nClusters==1) stop("Cannot produce plots because only one cluster has been found.")
 
@@ -236,6 +245,10 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       }else if (yModel=="LME"){
         covREArray<-array(covREArray[,meanSortIndex,],dim=dim(covREArray))
         RE_LMEArray<-array(RE_LMEArray[,meanSortIndex,],dim=dim(RE_LMEArray))
+        SigmaLMEArray<-array(RE_LMEArray[,meanSortIndex,],dim=dim(RE_LMEArray))
+      }
+      if(nFixedEffects_clust>0){
+        betamixArray<-array(betamixArray[,meanSortIndex,],dim=dim(betamixArray))
       }
     }
 
@@ -305,9 +318,16 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
                             "lowerMVNmu"=c(),"upperMVNmu"=c(),"fillColor"=c())
       }
       if (yModel=="LME"){
-        LMEmuMean
-        LMEmuLower
-        LMEmuUpper
+        # browser()
+        # LMeans <- matrix(0,ncol=3,nrow=dim(LArray)[2])
+        #
+        # covREArray<-array(0,dim=c(nSamples,nClusters,nRandomEffects*(nRandomEffects+1)/2))
+        # SigmaLMEArray<-array(0,dim=c(nSamples))
+        # RE_LMEArray<-array(0,dim=c(nSamples, nSubjects,nRandomEffects))
+        #
+        # LMEmuMean
+        # LMEmuLower
+        # LMEmuUpper
       }
 
     }else{
@@ -350,7 +370,11 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
                                           "upperRisk"=rep(riskUpper[c],nPoints),
                                           "fillColor"=rep(riskColor[c],nPoints)))
         } else {
-          plotRisk<-risk[,c,]
+          if(yModel=="LME"){
+            plotRisk<-risk[,c]
+          }else{
+            plotRisk<-risk[,c,]
+          }
           plotRisk<-plotRisk[plotRisk<plotMax]
           nPoints<-length(plotRisk)
           riskDF<-rbind(riskDF,data.frame("risk"=plotRisk,"cluster"=rep(c,nPoints),
@@ -455,7 +479,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
         #			# Margin order is (top,right,bottom,left)
         #			plotObj<-plotObj+theme(plot.margin=unit(c(0,0,0,0),'lines'))+theme(plot.margin=unit(c(0.5,0.15,0.5,0.15),'lines'))
         #			print(plotObj,vp=viewport(layout.pos.row=4:6,layout.pos.col=2))
-      } else if (yModel!='Longitudinal'||yModel=="MVN"){ ##//RJ
+      } else if (yModel=="MVN"){ ##//RJ yModel!='Longitudinal'||
         rownames(riskDF)<-seq(1,nrow(riskDF),by=1)
 
         # Create the risk plot
@@ -478,7 +502,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       }
     }
 
-    # Create a bar chart of cluster empiricals
+        # Create a bar chart of cluster empiricals
     if((!is.null(yModel))){
       if(yModel!="Categorical"){
         plotObj<-ggplot(empiricalDF)
@@ -800,11 +824,233 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
             theme(plot.margin=unit(c(0,0,0,0),'lines'))
           print(plotObj,vp=viewport(layout.pos.row=4:6,layout.pos.col=j+plotRiskFlag))
         }
-
       }
     }
     dev.off()
 
+    if(yModel=='LME'){
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-trajectories-data.png',sep="")
+      png(longFile,width=1200,height=800)
+      plotLayout<-grid.layout(ncol = 1, nrow = 1)
+      grid.newpage()
+      pushViewport(viewport(layout = plotLayout))
+
+      GPDF<-data.frame("time"=c(),"mu"=c(),"cluster"=c(),"sigma"=c(),"fillColor"=c())
+      times <- longMat$time
+      yData <- longMat$outcome
+      tTimes <- seq(min(times),max(times),length.out=41)
+      palette <- rainbow(max(whichClusters))
+      times_c <- list()
+      yData_c <- list()
+      mu <- rep(0,length(tTimes))
+
+      if(nFixedEffects>0){
+        if(nFixedEffects==1){
+          betamean <-  mean(betaArray[,1,])
+        }else{
+          betamean <-  as.vector(colMeans(betaArray))
+        }
+
+        if(all(timevar %in% fixedEffectsNames)){
+          ind_time <- which(fixedEffectsNames %in% c("intercept",timevar))
+          mat_times <- rep(1,length(tTimes))
+          for(jj in 1:length(timevar))
+            mat_times<- cbind(mat_times, sapply(tTimes, function(x) x^jj))
+          mu <- betamean[c(1,ind_time)] %*% mat_times
+        }
+
+        if(nFixedEffects==1){
+          mu <- mu + rep(mean(betaArray[,1,]) * profile_X[[1]],length(tTimes))
+        }else{
+          mu <- mu + rep(colMeans(betaArray) %*% profile_X,length(tTimes))
+        }
+      }
+
+      for(c in whichClusters){
+
+        betamix_mean <- colMeans(betamixArray[,c,])
+        jj=1
+
+        if(all(timevar %in% fixedEffectsNames_clust)){
+          ind_time <- which(fixedEffectsNames_clust %in% c("intercept",timevar))
+          mat_times <- rep(1,length(tTimes))
+          for(jjj in 1:length(timevar))
+            mat_times<- cbind(mat_times, sapply(tTimes, function(x) x^jjj))
+          mu <- mu + mat_times %*%betamix_mean[ind_time]
+          jj = jj + length(ind_time)
+        }
+
+        if(length(fixedEffectsNames_clust)>=jj){
+          for(other_spec_cov in jj:length(fixedEffectsNames_clust))
+            mu <- mu + rep(betamix_mean[other_spec_cov] * profile_X[[fixedEffectsNames_clust[jj]]],length(tTimes))
+        }
+
+        GPDF <- rbind(GPDF,data.frame("time"=tTimes,"mu"=mu,
+                                      "cluster"=rep(c,times=length(tTimes)),
+                                      "sigma"=mu,#1.645*sqrt(diag(params$GPSigma)),
+                                      "inf"=mu,#params$mu+longMean-1.645*sqrt(diag(params$GPSigma)),
+                                      "sup"=mu,#params$mu+longMean+1.645*sqrt(diag(params$GPSigma)),
+                                      "fillColor"=riskColor[c]))
+
+        #       dev.off()
+        #       par(mfrow=c(1,1))
+        #       c=1
+        #       i=min(which(clustering==c))
+        #       plot(yData[tMat[i,1]:tMat[i,2]]+longMean~times[tMat[i,1]:tMat[i,2]],type='l',ylim=c(min(yData)+longMean,max(yData)+longMean),xlim=c(min(times),max(times)))
+        #
+        #       for(i in 2:nSubjects){
+        #         if(clustering[i]==c)
+        #           lines(yData[tMat[i,1]:tMat[i,2]]+longMean~times[tMat[i,1]:tMat[i,2]])
+        #       }
+        #       lines(params$mu+longMean~tTimes,lwd=3,col=c)
+        # c=c+1
+
+      }
+
+      rownames(GPDF)<-seq(1,nrow(GPDF),1)
+      plotObj <- ggplot(GPDF)
+      for(i in 1:nSubjects){
+        df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean,cluster=rep(clustering[i],tMat[i,2]-tMat[i,1]+1)))
+        if(bycol){
+          #  if(clustering[i]==2)
+          plotObj <- plotObj + geom_line(data=df,aes(x,y,colour=as.factor(cluster)),alpha = 0.3)#colour='azure4')
+        }else{
+          plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+        }
+      }
+      plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+      plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+      plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+      plotObj <- plotObj + labs(color="Cluster")
+      plotObj <- plotObj + labs(y="Outcome\n")+theme(axis.title.y=element_text(size=30,angle=90))
+      plotObj <- plotObj + labs(x="\nTime")+theme(axis.title.x=element_text(size=30))
+      plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf,yData),max(GPDF$sup,yData)))
+      plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
+      plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
+                                 axis.line.y = element_line(colour="black",size=2))
+      plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=25))
+      plotObj <- plotObj + theme(plot.title=element_text(size=30))
+      #   plotObj <- plotObj + coord_cartesian(ylim = c(0,max(GPDF$mu+GPDF$sigma)))#min(GPDF$mu-GPDF$sigma),max(GPDF$mu+GPDF$sigma)))
+      #   plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+      print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      dev.off()
+
+      ##//RJ data plot
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-trajectories.png',sep="")
+      png(longFile,width=1200,height=800)
+      plotLayout<-grid.layout(ncol = 1, nrow = 1)
+      grid.newpage()
+      pushViewport(viewport(layout = plotLayout))
+      plotObj <- ggplot(GPDF)
+      plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+      #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+      #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+      plotObj <- plotObj + labs(color="Cluster")
+      plotObj <- plotObj + labs(y="Outcome")+theme(axis.title.y=element_text(size=40,angle=90))
+      plotObj <- plotObj + labs(x="Time")+theme(axis.title.x=element_text(size=40))
+      plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+      plotObj <- plotObj + theme(axis.text.x=element_text(size=30)) + theme(axis.text.y=element_text(size=30))
+      plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=2),
+                                 axis.line.y = element_line(colour="black",size=2))
+      plotObj <- plotObj + theme(legend.title=element_text(size=30)) + theme(legend.text=element_text(size=30))
+      plotObj <- plotObj + theme(plot.title=element_text(size=30))
+      #plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+      print(plotObj,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      dev.off()
+
+      ##//AR data plot
+      if(1>2){
+        library(cowplot)
+        library(premiumPlots)
+
+        longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
+        png(longFile,width=1200,height=800)
+        plotObj <- ggplot(GPDF) + theme_bw()
+        plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+        #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+        #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+        plotObj <- plotObj + labs(color="Cluster")
+        plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
+        plotObj <- plotObj + labs(x="Time") + theme(axis.title.x=element_text(size=30))
+        plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+        plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
+
+        plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
+                                   axis.line.y = element_line(colour="black",size=1))
+        #plotObj <- plotObj + theme(legend.title=element_text(size=10)) + theme(legend.text=element_text(size=20))
+        #plotObj <- plotObj + theme(plot.title=element_text(size=10))
+
+        p1<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
+          #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
+          facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
+        #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
+        p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1, useProfileStar=F)
+        p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
+        #p2 + theme(axis.text.x = element_blank())
+
+        plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
+        print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+
+        dev.off()
+
+        longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
+        pdf(longFile, width=12, height=10 )
+        p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
+        p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+        p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+        timescale<-function(x){x*5}
+        p1 + scale_x_continuous(labels=timescale)
+        print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+        dev.off()
+
+
+        longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
+        png(longFile,width=1200,height=800)
+
+
+        plotObj <- ggplot(GPDF)+theme_bw()
+        for(i in 1:nSubjects){
+          df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean,cluster=rep(clustering[i],tMat[i,2]-tMat[i,1]+1)))
+          if(bycol){
+            #  if(clustering[i]==2)
+            plotObj <- plotObj + geom_line(data=df,aes(x,y,colour=as.factor(cluster)),alpha = 0.3)#colour='azure4')
+          }else{
+            plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+          }
+        }
+        #plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+        #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+        #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+        plotObj <- plotObj + labs(color="Cluster")
+        plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
+        plotObj <- plotObj + labs(x="Time")+theme(axis.title.x=element_text(size=30))
+        plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf,yData),max(GPDF$sup,yData)))
+        plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
+        #plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
+        #axis.line.y = element_line(colour="black",size=1))
+        #plotObj <- plotObj + theme(legend.title=element_text(size=20)) #+ theme(legend.text=element_text(size=25))
+        #plotObj <- plotObj + theme(plot.title=element_text(size=20))
+
+        p1b<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
+          #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
+          facet_wrap(~cluster,ncol=1, strip.position="left")+
+          theme(legend.position = "none")
+        plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+        print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+
+        dev.off()
+
+        longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
+        pdf(longFile, width=12, height=10 )
+        p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+        p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+        timescale<-function(x){x*5}
+        p1b <- p1b + scale_x_continuous(labels=timescale)
+        plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+        print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+        dev.off()
+      }
+    }
 
   ##//RJ new plot for longitudinal data
   if(yModel=='Longitudinal'){
@@ -917,97 +1163,97 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     dev.off()
 
     ##//AR data plot
-    library(cowplot)
-    library(premiumPlots)
+    if(1>2){
+      library(cowplot)
+      library(premiumPlots)
 
-    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
-    png(longFile,width=1200,height=800)
-    plotObj <- ggplot(GPDF) + theme_bw()
-    plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
-    #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
-    #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
-    plotObj <- plotObj + labs(color="Cluster")
-    plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
-    plotObj <- plotObj + labs(x="Time") + theme(axis.title.x=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
-    plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
+      png(longFile,width=1200,height=800)
+      plotObj <- ggplot(GPDF) + theme_bw()
+      plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+      #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+      #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+      plotObj <- plotObj + labs(color="Cluster")
+      plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
+      plotObj <- plotObj + labs(x="Time") + theme(axis.title.x=element_text(size=30))
+      plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf),max(GPDF$sup)))
+      plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
 
-    plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
-                               axis.line.y = element_line(colour="black",size=1))
-    #plotObj <- plotObj + theme(legend.title=element_text(size=10)) + theme(legend.text=element_text(size=20))
-    #plotObj <- plotObj + theme(plot.title=element_text(size=10))
+      plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
+                                 axis.line.y = element_line(colour="black",size=1))
+      #plotObj <- plotObj + theme(legend.title=element_text(size=10)) + theme(legend.text=element_text(size=20))
+      #plotObj <- plotObj + theme(plot.title=element_text(size=10))
 
-    p1<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
-      #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
-      facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
+      p1<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
+        #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
+        facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
-    p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1)
-    p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
-    #p2 + theme(axis.text.x = element_blank())
+      p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1, useProfileStar=F)
+      p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
+      #p2 + theme(axis.text.x = element_blank())
 
-    plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
-    print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
+      print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 
-    dev.off()
+      dev.off()
 
-    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
-    pdf(longFile, width=12, height=10 )
-    p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
-    p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
-    p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
-    timescale<-function(x){x*5}
-    p1 + scale_x_continuous(labels=timescale)
-    print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
-    dev.off()
-
-
-    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
-    png(longFile,width=1200,height=800)
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
+      pdf(longFile, width=12, height=10 )
+      p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
+      p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+      p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+      timescale<-function(x){x*5}
+      p1 + scale_x_continuous(labels=timescale)
+      print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      dev.off()
 
 
-    plotObj <- ggplot(GPDF)+theme_bw()
-    for(i in 1:nSubjects){
-      df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean,cluster=rep(clustering[i],tMat[i,2]-tMat[i,1]+1)))
-      if(bycol){
-        #  if(clustering[i]==2)
-        plotObj <- plotObj + geom_line(data=df,aes(x,y,colour=as.factor(cluster)),alpha = 0.3)#colour='azure4')
-      }else{
-        plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
+      png(longFile,width=1200,height=800)
+
+
+      plotObj <- ggplot(GPDF)+theme_bw()
+      for(i in 1:nSubjects){
+        df <- (data.frame(x=times[tMat[i,1]:tMat[i,2]],y=yData[tMat[i,1]:tMat[i,2]]+longMean,cluster=rep(clustering[i],tMat[i,2]-tMat[i,1]+1)))
+        if(bycol){
+          #  if(clustering[i]==2)
+          plotObj <- plotObj + geom_line(data=df,aes(x,y,colour=as.factor(cluster)),alpha = 0.3)#colour='azure4')
+        }else{
+          plotObj <- plotObj + geom_line(data=df,aes(x,y),colour='azure4')
+        }
       }
+      #plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
+      #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
+      #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
+      plotObj <- plotObj + labs(color="Cluster")
+      plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
+      plotObj <- plotObj + labs(x="Time")+theme(axis.title.x=element_text(size=30))
+      plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf,yData),max(GPDF$sup,yData)))
+      plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
+      #plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
+      #axis.line.y = element_line(colour="black",size=1))
+      #plotObj <- plotObj + theme(legend.title=element_text(size=20)) #+ theme(legend.text=element_text(size=25))
+      #plotObj <- plotObj + theme(plot.title=element_text(size=20))
+
+      p1b<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
+        #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
+        facet_wrap(~cluster,ncol=1, strip.position="left")+
+        theme(legend.position = "none")
+      plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+      print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+
+      dev.off()
+
+      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
+      pdf(longFile, width=12, height=10 )
+      p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+      p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+      timescale<-function(x){x*5}
+      p1b <- p1b + scale_x_continuous(labels=timescale)
+      plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+      print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      dev.off()
     }
-    #plotObj <- plotObj + geom_line(aes(x=time,y=mu,group=cluster,colour=as.factor(cluster)),size=2)
-    #plotObj <- plotObj + geom_line(aes(x=time,y=sup,group=cluster,colour=as.factor(cluster)))
-    #plotObj <- plotObj + geom_line(aes(x=time,y=inf,group=cluster,colour=as.factor(cluster)))
-    plotObj <- plotObj + labs(color="Cluster")
-    plotObj <- plotObj + labs(y="Cluster-specific outcome")+theme(axis.title.y=element_text(size=30,angle=90))
-    plotObj <- plotObj + labs(x="Time")+theme(axis.title.x=element_text(size=30))
-    plotObj <- plotObj + coord_cartesian(ylim = c(min(GPDF$inf,yData),max(GPDF$sup,yData)))
-    plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(size=20, color = "black"))
-    #plotObj <- plotObj + theme(axis.line.x = element_line(colour="black",size=1),
-                               #axis.line.y = element_line(colour="black",size=1))
-    #plotObj <- plotObj + theme(legend.title=element_text(size=20)) #+ theme(legend.text=element_text(size=25))
-    #plotObj <- plotObj + theme(plot.title=element_text(size=20))
-
-    p1b<- plotObj + #geom_line(aes(x=time,y=mu,group=cluster),size=1) +
-      #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
-      facet_wrap(~cluster,ncol=1, strip.position="left")+
-      theme(legend.position = "none")
-    plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
-    print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
-
-    dev.off()
-
-    longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
-    pdf(longFile, width=12, height=10 )
-    p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
-    p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
-    timescale<-function(x){x*5}
-    p1b <- p1b + scale_x_continuous(labels=timescale)
-    plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
-    print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
-    dev.off()
-
-
 }
 
   if(yModel=='MVN'){

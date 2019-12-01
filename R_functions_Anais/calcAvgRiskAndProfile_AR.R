@@ -171,9 +171,10 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
       riskArray<-array(0,dim=c(nSamples,nClusters,nOutcomes))
     } else if(yModel=="LME"){
       nTimes=dim(longMat)[1]
+      longMat<-as.data.frame(longMat)
       covREArray<-array(0,dim=c(nSamples,nClusters,nRandomEffects*(nRandomEffects+1)/2))
       SigmaLMEArray<-array(0,dim=c(nSamples))
-      RE_LMEArray<-array(0,dim=c(nSamples,nTimes,nRandomEffects))
+      RE_LMEArray<-array(0,dim=c(nSamples, nSubjects,nRandomEffects))
 
       LME_timepoints <- seq(min(longMat$time),max(longMat$time),length.out=40)
       LMEArray <- array(0,dim=c(nSamples,nClusters,length(LME_timepoints)))
@@ -285,7 +286,7 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           currSigmaLME<-scan(SigmaLMEFile,what=double(),skip=skipVal,n=1,quiet=T)
           #currSigmaLME<-matrix(currSigmaLMEVector,nrow=currMaxNClusters,ncol=1,byrow=T)
           currRE_LMEVector<-scan(RE_LMEFile,what=double(),skip=skipVal,n=nSubjects*nRandomEffects,quiet=T)
-          currRE_LME<-matrix(currRE_LMEVector,nrow=nTimes,ncol=nRandomEffects,byrow=T)
+          currRE_LME<-matrix(currRE_LMEVector,ncol=nRandomEffects,byrow=T)
         }
       }
       if(nFixedEffects>0){
@@ -360,17 +361,18 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           covREArray[sweep-firstLine+1,c,]<-apply(matrix(currcovRE[currZ[optAlloc[[c]]],],ncol=(nRandomEffects+1)*nRandomEffects/2),2,mean)
           if(c==1){
             SigmaLMEArray[sweep-firstLine+1]<-currSigmaLME
-            RE_LMEArray[sweep-firstLine+1,,]<-currRE_LME
+            RE_LMEArray[sweep-firstLine+1,, ]<-currRE_LME
           }
-browser()
-          ind_time <- which()
-          LMEArray[sweep-firstLine+1,c,] <- apply(matrix(currBetamix[currZ[optAlloc[[c]]],],ncol=nFixedEffects_clust),2,mean)
-          currBetamix
-
+          #ind_time <- which()
+          #LMEArray[sweep-firstLine+1,c,] <- apply(matrix(currBetamix[currZ[optAlloc[[c]]],],ncol=nFixedEffects_clust),2,mean)
           IDs <- unique(longMat$ID)
           currIDs <- IDs[optAlloc[[c]]]
           currRisk<-matrix(longMat$outcome[longMat$ID%in%currIDs] + longMean)
         }
+
+        if(nFixedEffects_clust>0)
+          betamixArray[sweep-firstLine+1,c,] <- apply(matrix(currBetamix[currZ[optAlloc[[c]]],],ncol=nFixedEffects_clust),2,mean)
+
         if(!is.element(yModel,c("Longitudinal","LME"))){
           thetaArray[sweep-firstLine+1,c,]<-apply(as.matrix(currTheta[currZ[optAlloc[[c]]],],ncol=nCategoriesY),2,mean)
           riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)
@@ -582,9 +584,6 @@ browser()
   if(includeResponse){
     if(!is.element(yModel, c("Longitudinal","LME" )))
       close(thetaFile)
-    if(nFixedEffects>0){
-      close(betaFile)
-    }
     if (yModel=="Survival"&&!weibullFixedShape) {
       out$nuArray<-nuArray
       close(nuFile)
@@ -612,7 +611,14 @@ browser()
       close(RE_LMEFile)
       out$LMEArray <-LMEArray
     }
+    if(nFixedEffects>0){
+      out$betaArray <- betaArray
+      close(betaFile)
+    }
+    if(nFixedEffects_clust>0){
+      out$betamixArray <- betamixArray
+      close(betamixFile)
+    }
   }
-
   return(out)
 }

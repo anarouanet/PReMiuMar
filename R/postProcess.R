@@ -577,6 +577,13 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
     if (!is.null(hyper$kappa0)){
       write(paste("kappa0=",hyper$kappa0,sep=""),hyperFile,append=T)
     }
+
+    if (!is.null(hyper$SigmaLME_R0)){
+      write(paste("SigmaLME_R0=",paste(t(hyper$SigmaLME_R0),collapse=" ")," ",sep=""),hyperFile,append=T)
+    }
+    if (!is.null(hyper$SigmaLME_kappa0)){
+      write(paste("SigmaLME_kappa0=",hyper$SigmaLME_kappa0,sep=""),hyperFile,append=T)
+    }
     if (!is.null(hyper$nu0)){
       write(paste("nu0=",hyper$nu0,sep=""),hyperFile,append=T)
     }
@@ -612,11 +619,17 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
       write(paste("sigmaL_noise=",hyper$sigmaLNoise,sep=""),hyperFile,append=T)
     }
     # //AR
-    if (!is.null(hyper$muSigmaE)){
-      write(paste("muSigmaE=",hyper$muSigmaE,sep=""),hyperFile,append=T)
+    if (!is.null(hyper$eps_vu)){
+      write(paste("eps_vu=",hyper$eps_vu,sep=""),hyperFile,append=T)
     }
-    if (!is.null(hyper$sigmaSigmaE)){
-      write(paste("sigmaSigmaE=",hyper$sigmaSigmaE,sep=""),hyperFile,append=T)
+    if (!is.null(hyper$eps_sigma2_0)){
+      write(paste("eps_sigma2_0=",hyper$eps_sigma2_0,sep=""),hyperFile,append=T)
+    }
+    if (!is.null(hyper$eps_shape)){
+      write(paste("eps_shape=",hyper$eps_shape,sep=""),hyperFile,append=T)
+    }
+    if (!is.null(hyper$eps_rate)){
+      write(paste("eps_rate=",hyper$eps_rate,sep=""),hyperFile,append=T)
     }
     if (!is.null(hyper$aRatio)){
       write(paste("aRatio=",hyper$aRatio,sep=""),hyperFile,append=T)

@@ -58,6 +58,8 @@ typedef boost::random::normal_distribution<> randomNormal;
 typedef boost::random::gamma_distribution<> randomGamma;
 // Define the students t random number generator
 typedef boost::random::student_t_distribution<> randomStudentsT;
+// Define the chi square random number generator
+typedef boost::random::chi_squared_distribution<> randomChiSquare;
 
 // Univariate distributions
 

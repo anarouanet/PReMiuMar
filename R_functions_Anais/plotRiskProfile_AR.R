@@ -48,7 +48,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       stop("Error: Names of profile_X do not correspond to fixedEffectsNames nor fixedEffectsNames_clust")
   }
 
-  if(is.null(profile_X) & yModel == "LME"){
+  if(is.null(profile_X) && yModel == "LME" && length(which(!c(fixedEffectsNames,fixedEffectsNames_clust)%in%c("intercept",timevar)))>0){
     stop("Error: profile_X should be defined as a list of covariates values such list(cov=1)")
   }
 
@@ -867,10 +867,8 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       }
 
       for(c in whichClusters){
-
         betamix_mean <- colMeans(betamixArray[,c,])
         jj=1
-
         if(all(timevar %in% fixedEffectsNames_clust)){
           ind_time <- which(fixedEffectsNames_clust %in% c("intercept",timevar))
           mat_times <- rep(1,length(tTimes))

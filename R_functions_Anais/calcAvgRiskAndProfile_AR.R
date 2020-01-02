@@ -281,8 +281,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           currMVNSigma<-matrix(currMVNSigmaVector,nrow=currMaxNClusters,ncol=(nOutcomes+1)*nOutcomes/2,byrow=T)
 
         } else if (yModel=="LME"){
-          currcovREVector<-scan(covREFile,what=double(),skip=skipVal,n=(nRandomEffects+1)*nRandomEffects/2*currMaxNClusters,quiet=T)
-          currcovRE<-matrix(currcovREVector,nrow=currMaxNClusters,ncol=(nRandomEffects+1)*nRandomEffects/2,byrow=T)
+          currcovREVector<-scan(covREFile,what=double(),skip=skipVal,n=(nRandomEffects+1)*nRandomEffects/2,quiet=T)
+          currcovRE<-matrix(currcovREVector,nrow=1,ncol=(nRandomEffects+1)*nRandomEffects/2,byrow=T)
           currSigmaLME<-scan(SigmaLMEFile,what=double(),skip=skipVal,n=1,quiet=T)
           #currSigmaLME<-matrix(currSigmaLMEVector,nrow=currMaxNClusters,ncol=1,byrow=T)
           currRE_LMEVector<-scan(RE_LMEFile,what=double(),skip=skipVal,n=nSubjects*nRandomEffects,quiet=T)
@@ -358,7 +358,8 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
           if(!all(!is.na(MVNmuArray[sweep-firstLine+1,c,])))
             browser()
         }else if(yModel=="LME"){
-          covREArray[sweep-firstLine+1,c,]<-apply(matrix(currcovRE[currZ[optAlloc[[c]]],],ncol=(nRandomEffects+1)*nRandomEffects/2),2,mean)
+          #covREArray[sweep-firstLine+1,c,]<-apply(matrix(currcovRE[currZ[optAlloc[[c]]],],ncol=(nRandomEffects+1)*nRandomEffects/2),2,mean)
+          covREArray[sweep-firstLine+1,c,]<-currcovRE
           if(c==1){
             SigmaLMEArray[sweep-firstLine+1]<-currSigmaLME
             RE_LMEArray[sweep-firstLine+1,, ]<-currRE_LME
@@ -372,7 +373,6 @@ calcAvgRiskAndProfile_AR<-function(clusObj,includeFixedEffects=F,proportionalHaz
 
         if(nFixedEffects_clust>0)
           betamixArray[sweep-firstLine+1,c,] <- apply(matrix(currBetamix[currZ[optAlloc[[c]]],],ncol=nFixedEffects_clust),2,mean)
-
         if(!is.element(yModel,c("Longitudinal","LME"))){
           thetaArray[sweep-firstLine+1,c,]<-apply(as.matrix(currTheta[currZ[optAlloc[[c]]],],ncol=nCategoriesY),2,mean)
           riskArray[sweep-firstLine+1,c,]<-apply(currRisk,2,mean)

@@ -278,7 +278,7 @@ public:
       unsigned int nRandomEffects = dataset.nRandomEffects();
       // Now we compute the hyper parameters for Tau_c
       // First we compute the sample covariance
-      _SigmaLME_R0=0.01*MatrixXd::Identity(nRandomEffects,nRandomEffects);
+      _SigmaLME_R0=MatrixXd::Identity(nRandomEffects,nRandomEffects);
 
       _workTauLME_R0=_SigmaLME_R0.inverse();
       _workLogDetTauLME_R0= -log(_SigmaLME_R0.determinant());
@@ -310,8 +310,10 @@ public:
       _sigmaL[i] = 1.0;
     }
 
-    _sigmaSigmaE = 0.5;
-    _muSigmaE = -1.0;
+    _eps_sigma2_0 = 0.5;
+    _eps_vu = 1.0;
+    _eps_shape = 1.0;
+    _eps_rate = 1.0;
     _shapeTauEpsilon = 5.0;
     _rateTauEpsilon = 0.5;
 
@@ -533,18 +535,34 @@ public:
     _sigmaL[i] = sigma;
   }
 
-  double sigmaSigmaE() const{
-    return _sigmaSigmaE;
+  double eps_sigma2_0() const{
+    return _eps_sigma2_0;
   }
-  void sigmaSigmaE(const double& sigma){
-    _sigmaSigmaE = sigma;
+  void eps_sigma2_0(const double& sigma){
+    _eps_sigma2_0 = sigma;
   }
 
-  double muSigmaE() const{
-    return _muSigmaE;
+  double eps_vu() const{
+    return _eps_vu;
   }
-  void muSigmaE(const double& val){
-    _muSigmaE = val;
+  void eps_vu(const double& val){
+    _eps_vu = val;
+  }
+
+  double eps_shape() const{
+    return _eps_shape;
+  }
+
+  void eps_shape(const double& sigma){
+    _eps_shape = sigma;
+  }
+
+  double eps_rate() const{
+    return _eps_rate;
+  }
+
+  void eps_rate(const double& sigma){
+    _eps_rate = sigma;
   }
 
   double shapeTauEpsilon() const{
@@ -751,8 +769,8 @@ public:
   //   //RJ set _muL and _sigmaL
   //   _muL = hyperParams.muL();
   //   _sigmaL = hyperParams.sigmaL();
-  //   _muSigmaE = hyperParams.muSigmaE();
-  //   _sigmaSigmaE = hyperParams.sigmaSigmaE();
+  //   _eps_vu = hyperParams.eps_vu();
+  //   _eps_sigma2_0 = hyperParams.eps_sigma2_0();
   //   _shapeTauEpsilon = hyperParams.shapeTauEpsilon();
   //   _rateTauEpsilon = hyperParams.rateTauEpsilon();
   //   _aRho = hyperParams.aRho();
@@ -832,8 +850,10 @@ private:
   //RJ declare _muL and _sigmaL
   vector<double> _muL;
   vector<double> _sigmaL;
-  double _sigmaSigmaE;
-  double _muSigmaE;
+  double _eps_sigma2_0;
+  double _eps_vu;
+  double _eps_shape;
+  double _eps_rate;
 
   double _aRatio;
   double _bRatio;
@@ -2493,6 +2513,12 @@ public:
       //MatrixXd CovRETmp = _covRE[c1];
       //_covRE[c1]=_covRE[c2];
       //_covRE[c2]=CovRETmp;
+      double btemp=0;
+      for(unsigned int b=0;b<nFixedEffects_mix;b++){
+        btemp=_beta_mix[c1][b];
+        _beta_mix[c1][b]=_beta_mix[c2][b];
+        _beta_mix[c2][b]=btemp;
+      }
 
       MatrixXd sqrtTauTmp = _workSqrtTauLME[c1];
       _workSqrtTauLME[c1]=_workSqrtTauLME[c2];
@@ -2503,6 +2529,7 @@ public:
       _workLogDetTauLME[c1]=_workLogDetTauLME[c2];
       _workLogDetTauLME[c2]=logDetTauTmp;
     }
+
     if(outcomeType.compare("Longitudinal")==0){
       vector<double> LTmp = _L[c1];
       _L[c1]=_L[c2];
@@ -3278,7 +3305,7 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
           yi(j)-=params.beta(b,0)*dataset.W_LME(tStart[i]-1+j,b);
         }
         for(unsigned int b=0;b<nFixedEffects_mix;b++){
-          yi(j)-=params.beta_mix(c,b)*dataset.W_LME_mix(tStart[i]-1+j,b);
+          yi(j)-=params.beta_mix(b,0)*dataset.W_LME_mix(tStart[i]-1+j,b);
         }
       }
 
@@ -3287,7 +3314,7 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
       if(!cond_RE){
         MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
 
-        MatrixXd Vi=block*params.covRE()*block.transpose()+MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
+        MatrixXd Vi=block*params.covRE()*block.transpose()+MatrixXd::Identity(ni, ni) * params.SigmaE();
 
         LLT<MatrixXd> lltOfA(Vi);
         MatrixXd L = lltOfA.matrixL();
@@ -3300,9 +3327,9 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
       }else{
         MatrixXd block=dataset.W_RE(tStart[i]-1, 0, ni, dataset.nRandomEffects());
         yi -= block*params.RandomEffects(i);
-        MatrixXd Vi=MatrixXd::Identity(ni, ni) * exp(params.SigmaE());
+        MatrixXd Vi=MatrixXd::Identity(ni, ni) * params.SigmaE();
 
-        dmvnorm = -0.5*yi.transpose()*Vi.inverse()*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*ni*params.SigmaE();
+        dmvnorm = -0.5*yi.transpose()*Vi.inverse()*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*ni*log(params.SigmaE());
       }
 
       // If random effects integrated out:
@@ -3656,7 +3683,7 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
 
   if(includeResponse){
 
-    if(outcomeType.compare("Longitudinal")!=0){
+    if(outcomeType.compare("Longitudinal")!=0 && outcomeType.compare("LME")!=0){
       // Prior for theta
       // We use a location/scale t distribution
       // http://www.mathworks.com/help/toolbox/stats/brn2ivz-145.html
@@ -3679,16 +3706,26 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
     // have 0 mean and standard dev of 0.5
     for(unsigned int j=0;j<nFixedEffects;j++){
       for (unsigned int k=0;k<nCategoriesY;k++){
-        logPrior+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
+        if(outcomeType.compare("LME")!=0){
+          logPrior+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
                                        hyperParams.sigmaBeta(),hyperParams.dofBeta());
+        }else{
+          logPrior+=logPdfNormal(params.beta(j,k),hyperParams.muBeta(),
+                                 hyperParams.sigmaBeta());
+        }
       }
     }
 
     for(unsigned int j=0;j<nFixedEffects_mix;j++){
       for(unsigned int c=0;c<maxNClusters;c++){
         for (unsigned int k=0;k<nCategoriesY;k++){
-          logPrior+=logPdfLocationScaleT(params.beta_mix(c, j+k*nFixedEffects_mix),hyperParams.muBeta(),
+          if(outcomeType.compare("LME")!=0){
+            logPrior+=logPdfLocationScaleT(params.beta_mix(c, j+k*nFixedEffects_mix),hyperParams.muBeta(),
                                          hyperParams.sigmaBeta(),hyperParams.dofBeta());
+          }else{
+            logPrior+=logPdfNormal(params.beta_mix(c, j+k*nFixedEffects_mix),hyperParams.muBeta(),
+                                   hyperParams.sigmaBeta());
+          }
         }
       }
     }
@@ -3775,8 +3812,12 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
          MatrixXd Tau = params.covRE().inverse();
         //logPrior+=logPdfWishart(dataset.nRandomEffects(), Tau, params.workLogDetMVNTau(c)
        }
-       logPrior += logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
-                                hyperParams.sigmaSigmaE());
+       //logPrior += logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
+      //                         hyperParams.sigmaSigmaE());
+       //logPrior += logPdfScaleInvChiSquare(params.SigmaE(),hyperParams.eps_vu(),
+      //                          hyperParams.eps_sigma2_0());
+      logPrior += logPdfGamma(1/params.SigmaE(),hyperParams.eps_shape(),
+                                hyperParams.eps_rate()); //Gamma(shape,rate=1/scale)
 
       for(unsigned int i=0;i<nSubjects;i++){
         unsigned int zi = params.z(i);
@@ -4026,10 +4067,10 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   // have 0 mean and standard dev of 0.5
   for(unsigned int j=0;j<nFixedEffects;j++){
     for (unsigned int k=0;k<nCategoriesY;k++){
-      //out+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
-      //                          hyperParams.sigmaBeta(),hyperParams.dofBeta());
-      out+= logPdfNormal(params.beta(j,k), hyperParams.muBeta(),
-                         hyperParams.sigmaBeta());
+      out+=logPdfLocationScaleT(params.beta(j,k),hyperParams.muBeta(),
+                                hyperParams.sigmaBeta(),hyperParams.dofBeta());
+      //out+= logPdfNormal(params.beta(j,k), hyperParams.muBeta(),
+      //                   hyperParams.sigmaBeta());
 
     }
   }
@@ -4038,10 +4079,10 @@ double logCondPostThetaBeta(const pReMiuMParams& params,
   for(unsigned int j=0;j<nFixedEffects_mix;j++){
     for(unsigned int c=0;c<maxNClusters;c++){
       for (unsigned int k=0;k<nCategoriesY;k++){
-        //out+=logPdfLocationScaleT(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
-        //                          hyperParams.sigmaBeta(),hyperParams.dofBeta());
-        out+= logPdfNormal(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
-                           hyperParams.sigmaBeta());
+        out+=logPdfLocationScaleT(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
+                                  hyperParams.sigmaBeta(),hyperParams.dofBeta());
+        //out+= logPdfNormal(params.beta_mix(c,j+k*nFixedEffects_mix),hyperParams.muBeta(),
+        //                   hyperParams.sigmaBeta());
       }
     }
   }
@@ -4118,9 +4159,11 @@ double logCondPostLambdaiBinomial(const pReMiuMParams& params,
     double logPrior = 0.0;
     double out = 0;
 
-    logPrior+=logPdfNormal(params.SigmaE(),hyperParams.muSigmaE(),
-                           hyperParams.sigmaSigmaE());
+    //logPrior+=logPdfScaleInvChiSquare(params.SigmaE(),hyperParams.eps_vu(),
+    //                      hyperParams.eps_sigma2_0());
 
+    logPrior += logPdfGamma(1/params.SigmaE(),hyperParams.eps_shape(),
+                            hyperParams.eps_rate()); //Gamma(shape,rate=1/scale)
 
     // double sigma = 1.0/sqrt(params.tauEpsilon());
     // for(unsigned int i=0;i<nSubjects;i++){

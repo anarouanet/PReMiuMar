@@ -97,6 +97,10 @@ double logPdfNormal(const double& x, const double& mu, const double& sigma){
 	return -0.5*log(2*pi<double>())-log(sigma)-0.5*(x-mu)*(x-mu)/(sigma*sigma);
 }
 
+double logPdfScaleInvChiSquare(const double& x, const int& nu, const double& sigma2_0){
+  return nu/2*(log(sigma2_0) + log(nu) - log(2)) - lgamma((double)nu/2) - (nu*sigma2_0/(2*x)) - (1+nu/2)*log(x);
+}
+
 double logPdfPoisson(const unsigned int &x, const double& mu){
 	return (double)x*log(mu) -mu - lgamma((double)x+1);
 }

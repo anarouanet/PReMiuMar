@@ -936,16 +936,50 @@ void readHyperParamsFromFile(const string& filename,pReMiuMHyperParams& hyperPar
 		  string tmpStr = inString.substr(pos,inString.size()-pos);
 		  double bRatio = (double)atof(tmpStr.c_str());
 		  hyperParams.bRatio(bRatio);
-		}else if(inString.find("muSigmaE")==0){
+		}else if(inString.find("eps_vu")==0){
 		  size_t pos = inString.find("=")+1;
 		  string tmpStr = inString.substr(pos,inString.size()-pos);
-		  double muSigmaE = (double)atof(tmpStr.c_str());
-		  hyperParams.muSigmaE(muSigmaE);
-		}else if(inString.find("sigmaSigmaE")==0){
+		  double eps_vu = (double)atof(tmpStr.c_str());
+		  hyperParams.eps_vu(eps_vu);
+		}else if(inString.find("eps_sigma2_0")==0){
 		  size_t pos = inString.find("=")+1;
 		  string tmpStr = inString.substr(pos,inString.size()-pos);
-		  double sigmaSigmaE = (double)atof(tmpStr.c_str());
-		  hyperParams.sigmaSigmaE(sigmaSigmaE);
+		  double eps_sigma2_0 = (double)atof(tmpStr.c_str());
+		  hyperParams.eps_sigma2_0(eps_sigma2_0);
+		}else if(inString.find("eps_shape")==0){
+		    size_t pos = inString.find("=")+1;
+		    string tmpStr = inString.substr(pos,inString.size()-pos);
+		    double eps_shape = (double)atof(tmpStr.c_str());
+		    hyperParams.eps_shape(eps_shape);
+		  }else if(inString.find("eps_rate")==0){
+		    size_t pos = inString.find("=")+1;
+		    string tmpStr = inString.substr(pos,inString.size()-pos);
+		    double eps_rate = (double)atof(tmpStr.c_str());
+		    hyperParams.eps_rate(eps_rate);
+		}else if(inString.find("SigmaLME_R0")==0){
+		  size_t pos = inString.find("=")+1;
+		  string tmpStr = inString.substr(pos,inString.size()-pos);
+		  vector<double> SigmaVec;
+		  while(tmpStr.find(" ")!=string::npos){
+		    pos = tmpStr.find(" ");
+		    if(pos==(tmpStr.size()-1)){
+		      string elem = tmpStr.substr(0,pos);
+		      SigmaVec.push_back((double)atof(elem.c_str()));
+		      tmpStr = tmpStr.substr(pos+1,tmpStr.size());
+		      break;
+		    }
+		    string elem = tmpStr.substr(0,pos);
+		    SigmaVec.push_back((double)atof(elem.c_str()));
+		    tmpStr = tmpStr.substr(pos+1,tmpStr.size()-pos-1);
+		  }
+		  unsigned int dim = (unsigned int)sqrt((double)SigmaVec.size());
+		  MatrixXd SigmaLME_R0=MatrixXd::Zero(dim,dim);
+		  for(unsigned int j1=0;j1<dim;j1++){
+		    for(unsigned int j2=0;j2<dim;j2++){
+		      SigmaLME_R0(j1,j2)=SigmaVec[j1*dim+j2];
+		    }
+		  }
+		  hyperParams.SigmaLME_R0(SigmaLME_R0);
 		}else if(inString.find("MVNmu0")==0){
 			size_t pos = inString.find("=")+1;
 			string tmpStr = inString.substr(pos,inString.size()-pos);
@@ -1821,8 +1855,17 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
   		    mu = multivarNormalRand(rndGenerator,meanRE,covRE);
   	      params.RandomEffects(i,mu);
   		  }
-		  randomNormal normalRand(hyperParams.muSigmaE(), hyperParams.sigmaSigmaE());
-		  params.SigmaE(normalRand(rndGenerator));
+
+  		//randomChiSquare chisQRand(hyperParams.eps_vu());
+		  //double temp = chisQRand(rndGenerator);
+		  //double epsilon = hyperParams.eps_vu()*hyperParams.eps_sigma2_0()/temp;
+		  //params.SigmaE(epsilon);
+		  // Define a inverse gamma random number generator
+		  randomGamma gammaRand(hyperParams.eps_shape(),hyperParams.eps_rate()); //k, 1/theta
+
+		  double temp = gammaRand(rndGenerator);
+		  double epsilon = 1/temp;
+		  params.SigmaE(epsilon);
 		}
 
 		//RJ populate params.L
@@ -2386,8 +2429,8 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 						*(outFiles[betaInd]) << endl;
 					}
 				}
-				for(unsigned int j=0;j<nFixedEffects_mix;j++){
-				  for(unsigned int c=0;c<maxNClusters;c++){
+				for(unsigned int c=0;c<maxNClusters;c++){
+				  for(unsigned int j=0;j<nFixedEffects_mix;j++){
 				    for (unsigned int k=0;k<nCategoriesY;k++){
 				      *(outFiles[betamixInd]) << params.beta_mix(c, j+k*nFixedEffects_mix) <<" ";
 				    }
@@ -2503,7 +2546,6 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			    }
 			  }
 
-			  // Print beta
 			  for(unsigned int j=0;j<nFixedEffects;j++){
 			    *(outFiles[betaInd]) << params.beta(j,0);
 			    if(j<nFixedEffects-1){
@@ -2512,8 +2554,9 @@ void writePReMiuMOutput(mcmcSampler<pReMiuMParams,pReMiuMOptions,pReMiuMPropPara
 			      *(outFiles[betaInd]) << endl;
 			    }
 			  }
-			  for(unsigned int j=0;j<nFixedEffects_mix;j++){
-			    for(unsigned int c=0;c< maxNClusters;c++){
+
+			  for(unsigned int c=0;c< maxNClusters;c++){
+			    for(unsigned int j=0;j<nFixedEffects_mix;j++){
 			      *(outFiles[betamixInd]) << params.beta_mix(c,j); //j*1 (Ycategory)
 			      if(c<maxNClusters-1 || j<nFixedEffects_mix-1){
 			        *(outFiles[betamixInd]) << " ";
@@ -2903,8 +2946,16 @@ string storeLogFileData(const pReMiuMOptions& options,
 	}
 
 	if(options.outcomeType().compare("LME")==0){
-	  tmpStr << "muSigmaE: "<< hyperParams.muSigmaE() << endl;
-	  tmpStr << "sigmaSigmaE: "<< hyperParams.sigmaSigmaE() <<endl;
+	  tmpStr << " cov RE, Sigma R0: ";
+	  if(dataset.nRandomEffects()>1)
+	    tmpStr<<endl;
+	  tmpStr << hyperParams.SigmaLME_R0()<< " ";
+	  tmpStr << " cov RE, kappa0: "<< hyperParams.SigmaLME_kappa0()<< endl;
+
+	  //tmpStr << "eps_vu: "<< hyperParams.eps_vu() << endl;
+	  //tmpStr << "eps_sigma2_0: "<< hyperParams.eps_sigma2_0() <<endl;
+	  tmpStr << "eps_shape: "<< hyperParams.eps_shape() << endl;
+	  tmpStr << "eps_rate: "<< hyperParams.eps_rate() << endl;
 	}
 
 	if(options.responseExtraVar()){
@@ -2947,10 +2998,6 @@ string storeLogFileData(const pReMiuMOptions& options,
 		  tmpStr << "ratio a: " << hyperParams.aRatio()<< " ";
 		  tmpStr << "ratio b: "<< hyperParams.bRatio()<< endl;
 		}
-	}
-	if(dataset.outcomeType().compare("LME")==0){
-	  tmpStr << " Sigma R0: " << hyperParams.SigmaLME_R0()<< " ";
-	  tmpStr << " kappa0: "<< hyperParams.SigmaLME_kappa0()<< endl;
 	}
 	if(options.outcomeType().compare("MVN")==0 ){
 		tmpStr << "MVNmu0: " << endl;

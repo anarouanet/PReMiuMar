@@ -1899,7 +1899,6 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
                                     const mcmcModel<pReMiuMParams,pReMiuMOptions,pReMiuMData>& model,
                                     pReMiuMPropParams& propParams,
                                     baseGeneratorType& rndGenerator){
-  std::fstream foutL("Labels123.txt", std::ios::in | std::ios::out | std::ios::app);
 
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
@@ -1944,9 +1943,6 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
     *(currentParams.logPsi(c1)-currentParams.logPsi(c2));
 
   double uii=unifRand(rndGenerator);
-  foutL << " Move1 "<< c1 << " vs "<< c2 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl;
-  foutL<< currentParams.workNXInCluster(c1)<< " logpsi "<< currentParams.logPsi(c1)<< endl;
-  foutL<< currentParams.workNXInCluster(c2)<< " logpsi "<< currentParams.logPsi(c2)<< endl;
 
   if(uii<exp(logAcceptRatio)){
     //		nAccept++;
@@ -1963,7 +1959,6 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
     - (double)currentParams.workNXInCluster(c1+1)*log(1-currentParams.v(c1));
 
   uii=unifRand(rndGenerator);
-  foutL << " Move2 "<< c1 << " vs "<< c1+1 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl;
 
   if(uii<exp(logAcceptRatio)){
     nAccept++;
@@ -2015,7 +2010,6 @@ void metropolisHastingsForLabels123(mcmcChain<pReMiuMParams>& chain,
   logAcceptRatio+=(double)(currentParams.workNXInCluster(c1))*log(const2);
 
   uii=unifRand(rndGenerator);
-  foutL << " Move3 "<< c1 << " vs "<< c1+1 << ":"<<uii  << " vs "<< exp(logAcceptRatio)<<endl<<endl;
 
   if(uii<exp(logAcceptRatio)){
     //		nAccept++;
@@ -2618,7 +2612,6 @@ void gibbsForMVNMuInActive(mcmcChain<pReMiuMParams>& chain,
                            const mcmcModel<pReMiuMParams,pReMiuMOptions,pReMiuMData>& model,
                            pReMiuMPropParams& propParams,
                            baseGeneratorType& rndGenerator){
-  std::fstream fout("file_MVN.txt", std::ios::in | std::ios::out | std::ios::app);
 
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
   pReMiuMParams& currentParams = currentState.parameters();
@@ -2637,8 +2630,6 @@ void gibbsForMVNMuInActive(mcmcChain<pReMiuMParams>& chain,
     VectorXd mu(nOutcomes);
     mu = multivarNormalRand(rndGenerator,meanVec,covMat);
     currentParams.MVNmu(c,mu);
-    fout<< c << " noutc "<< nOutcomes << " meanVec "<<meanVec << " mu "<<mu<<endl;
-    fout << " covMat "<<covMat << " MVNsigma "<<currentParams.MVNSigma(c) <<endl;
   }
 }
 void gibbsForMVNTauInActive(mcmcChain<pReMiuMParams>& chain,

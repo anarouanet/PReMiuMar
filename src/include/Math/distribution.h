@@ -170,7 +170,7 @@ double logPdfNIW(const unsigned int& d, const MatrixXd& Lambda0, const double& l
 double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double> L, const vector<double>& times, const string& kernelType){
 
   VectorXd y(muGP.size());
-  std::fstream foutC("compare.txt", std::ios::in | std::ios::out | std::ios::app);
+  //std::fstream foutC("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 
   for(unsigned int i=0;i<muGP.size();i++)
     y(i)=muGP[i];
@@ -207,8 +207,8 @@ double logPdfMultivariateNormal(const vector<double>& muGP, const vector<double>
     //MatrixXd precMat2=PartialPivLU(precMat);
     //double bb2=y.transpose()*precMat2*y;
     //dmvnorm = -0.5*bb2 - 0.5*y.size()*log(2.0*pi<double>()) - 0.5*logDetPrecMat;
-    foutC << "bb "<< bb<<" dmvnorm "<<  dmvnorm<< " sizek " <<y.size()<<
-      " L "<< L[0] << " "<< L[1] << " "<< L[2] <<endl<< " y "<< y.transpose()<<endl<< " det "<< precMat.determinant() <<" vs "<< 2*log(Llt.determinant()) ;
+    //foutC << "bb "<< bb<<" dmvnorm "<<  dmvnorm<< " sizek " <<y.size()<<
+     // " L "<< L[0] << " "<< L[1] << " "<< L[2] <<endl<< " y "<< y.transpose()<<endl<< " det "<< precMat.determinant() <<" vs "<< 2*log(Llt.determinant()) ;
 
 //    double a=-(times[1]-times[0])*(times[1]-times[0])/(2*exp(L[1]));
 //    double b = exp(L[0])*exp(a);

@@ -3305,7 +3305,7 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
           yi(j)-=params.beta(b,0)*dataset.W_LME(tStart[i]-1+j,b);
         }
         for(unsigned int b=0;b<nFixedEffects_mix;b++){
-          yi(j)-=params.beta_mix(b,0)*dataset.W_LME_mix(tStart[i]-1+j,b);
+          yi(j)-=params.beta_mix(c,b)*dataset.W_LME_mix(tStart[i]-1+j,b);
         }
       }
 
@@ -3474,7 +3474,7 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
 
   double logLikelihood=0.0;
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
-  std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
+  //std::fstream foutL("compare.txt", std::ios::in | std::ios::out | std::ios::app);
 
   // Add in contribution from X
   for(unsigned int i=0;i<nSubjects;i++){
@@ -3598,9 +3598,9 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
   }
 
   if(isinf(logPrior)){
-    for(unsigned int c=0;c<maxNClusters;c++){
-      foutL <<c << " v " << params.v(c) << " pitmanyor " <<params.dPitmanYor() << " alpha "<< params.alpha()<<endl;
-    }
+    //for(unsigned int c=0;c<maxNClusters;c++){
+    //  foutL <<c << " v " << params.v(c) << " pitmanyor " <<params.dPitmanYor() << " alpha "<< params.alpha()<<endl;
+    //}
   }
   // Prior for alpha
   if(fixedAlpha<=-1){
@@ -3774,8 +3774,8 @@ vector<double> pReMiuMLogPost(const pReMiuMParams& params,
         if(model.options().sampleGPmean()){//AR
           double a =logPdfMultivariateNormal(params.meanGP(c),params.L(c), dataset.times_unique(), kernelType);
           logPrior+= a;
-          if(logPrior>pow(10,10))
-            foutL << c <<" logPrior7_f  "<< logPrior << " a "<< a <<endl;
+          //if(logPrior>pow(10,10))
+          //  foutL << c <<" logPrior7_f  "<< logPrior << " a "<< a <<endl;
 
           if(a>pow(10,10)){
             fout << c <<" writeoutput "<<endl;

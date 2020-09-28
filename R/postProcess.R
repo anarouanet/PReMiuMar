@@ -448,11 +448,10 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
     nPreds<-0
     fullPredictFile<-FALSE
   }
-  if(dim(dataMatrix)[2]==(nFixedEffects+nFixedEffects_mix+2)){
+
+  if(yModel!="LME"){ #dim(dataMatrix)[2]==(nFixedEffects+nFixedEffects_mix+2)
     write(t(dataMatrix), fileName,append=T,ncolumns=dim(dataMatrix)[2])
   }else{
-    if(yModel!="LME")
-      stop("error, yModel should be specified as LME")
     d2 <- as.data.frame(matrix(0,nrow=dim(dataMatrix)[1],ncol=nFixedEffects+nFixedEffects_mix+2+1))
     d2[,1:dim(dataMatrix)[2]]<-dataMatrix
     names(d2)[1:dim(dataMatrix)[2]]<-names(as.data.frame(dataMatrix))

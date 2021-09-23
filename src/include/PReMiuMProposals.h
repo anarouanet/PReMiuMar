@@ -2838,6 +2838,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
     }
   }
 
+
   for (unsigned int l=0;l<nL;l++){
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       if(!ratio_estim || l != 2){

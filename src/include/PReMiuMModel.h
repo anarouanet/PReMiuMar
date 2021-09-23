@@ -4587,17 +4587,17 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
     MatrixXd invC(sizek, sizek);
 
     GP_cov_star(priorCor,params.L(c),timesk,times_unique, kernelType);
-     cout << " ---- " <<endl<< " check sans le GP_cov" << log(invC.determinant())<<endl;
-    double logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
-    cout << " check sans le GP_cov logDetPrecMat"<<logDetPrecMat<< " " << log(invC.determinant())<<endl;
+    // cout << " ---- " <<endl<< " check sans le GP_cov: " << log(invC.determinant())<<endl;
+    //double logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
+    //cout << " check sans le GP_cov logDetPrecMat"<<logDetPrecMat<< " vs " << log(invC.determinant())<<endl;
 
     invC.setZero(sizek, sizek);
-    logDetPrecMat=0;
+    double logDetPrecMat=0;
     GP_cov(invC, params.L(c), timesk, dataset.equalTimes(), kernelType,1);
-    cout << " check sans le GP_cov 2" << log(invC.determinant())<<endl;
+    //cout << " check sans le GP_cov 2: " << log(invC.determinant())<<endl;
      logDetPrecMat= Get_Sigma_inv_GP_cov(invC,params.L(c),timesk,dataset.equalTimes(),times_unique,kernelType);
-    cout << " check sans le GP_cov logDetPrecMat 2"<<logDetPrecMat<< " " << log(invC.determinant())<<endl
-         <<" ---- " <<endl;
+    //cout << " check sans le GP_cov logDetPrecMat 2: "<<logDetPrecMat<< " vs " << log(invC.determinant())<<endl
+    //    <<" ---- " <<endl;
 
 
     if(std::isnan(logDetPrecMat) || isinf(logDetPrecMat)){

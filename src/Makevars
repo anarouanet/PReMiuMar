@@ -1,6 +1,5 @@
-
-PKG_CPPFLAGS=-I./include -std=c++11
-PKG_LIBS=-std=c++11 -lomp
+PKG_CPPFLAGS = -I./include -std=c++11
+PKG_LIBS = -std=c++11
 
 #PKG_CPPFLAGS=-I./include -pedantic -fsanitize=address -fno-omit-frame-pointer -Wall -std=c++11
 

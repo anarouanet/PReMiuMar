@@ -3319,9 +3319,9 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
         LLT<MatrixXd> lltOfA(Vi);
         MatrixXd L = lltOfA.matrixL();
         double logDetPrecMat=  2*L.diagonal().array().log().sum();
-        MatrixXd precMat = L.inverse().transpose()*L.inverse();
+        MatrixXd precMat = L.inverse().transpose()*L.inverse(); //Vi^-1
 
-        dmvnorm =  -0.5*yi.transpose()*precMat*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*logDetPrecMat ;
+        dmvnorm +=  -0.5*yi.transpose()*precMat*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*logDetPrecMat ;
         // yi -= block*params.RandomEffects(i);
 
       }else{
@@ -3329,7 +3329,7 @@ double logPYiGivenZiWiLongitudinal_parametric(const pReMiuMParams& params, const
         yi -= block*params.RandomEffects(i);
         MatrixXd Vi=MatrixXd::Identity(ni, ni) * params.SigmaE();
 
-        dmvnorm = -0.5*yi.transpose()*Vi.inverse()*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*ni*log(params.SigmaE());
+        dmvnorm += -0.5*yi.transpose()*Vi.inverse()*yi - 0.5*ni*log(2.0*pi<double>()) - 0.5*ni*log(params.SigmaE());
       }
 
       // If random effects integrated out:

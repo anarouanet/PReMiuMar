@@ -959,7 +959,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       if(double_plot){
         library(cowplot)
         library(premiumPlots)
-
         longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
         png(longFile,width=1200,height=800)
         plotObj <- ggplot(GPDF) + theme_bw()
@@ -1186,13 +1185,13 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
         #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
         facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
+      browser()
       p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
 
       table(clusObj$clusObjRunInfoObj$xMat$FKH1)
 
 
       p2bis <- plotProfilesByCluster(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
-      browser()
       p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
       #p2 + theme(axis.text.x = element_blank())
 

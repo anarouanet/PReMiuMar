@@ -669,7 +669,7 @@ clusSummaryLongitudinalDiscrete<-function(ng=2, N=200){##//RJ summary generation
         'sigmaSqY'=1,
         'missingDataProb'=0,
         'nClusters'=5,
-        'clusterSizes'=c(10,30,50, 70 ,40)/200*N,##//RJ
+        'clusterSizes'=c(20,30,50, 60 ,40)/200*N,##//RJ
         'includeCAR'=FALSE,
         'TauCAR'=100,
         'clusterData'=list(list('theta'=list('mu'=c(9,8.5,8,6,5,4,3),

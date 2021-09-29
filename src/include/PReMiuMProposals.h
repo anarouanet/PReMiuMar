@@ -2831,7 +2831,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
     nL=4;
   }
 
-  if(model.options().estim_ratio()){
+  if(model.options().estim_ratio() & 1<2){
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       double vVal = betaRand(rndGenerator,hyperParams.aRatio(),hyperParams.bRatio());
       currentParams.ratio(c, vVal);

@@ -2865,10 +2865,10 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
 
 //#pragma omp parallel for
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
-      int threadNum = omp_get_thread_num();
+      //int threadNum = omp_get_thread_num();
       VectorXd Fval(nTimes_unique);
-      Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
-
+      //Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
+      Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
       }
@@ -3581,143 +3581,200 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       nL-=1;
 
     if(model.options().sampleGPmean()){//AR model.options().sampleGPmean()
-      for (unsigned int l=0;l<nL;l++){ //AR change nL-1
-        if(!ratio_estim || l!= 2){
 
-          if(l==0 && ratio_estim )
-            currentParams.L(c,2,currentParams.L(c,l)+ log(currentParams.ratio(c)));
+      if(ratio_estim){
+        for (unsigned int l=0;l<nL;l++){
+          if(l==0)
+            currentParams.L(c,2,currentParams.L(c,0)+ log(currentParams.ratio(c)));
 
-          if(l == 2 && !ratio_estim){
-            currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k)
-          }else{ //l<2
+          if(l < 2 ){ //l<2
             currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
             //if(l==0 & ratio_estim != 0)
             //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
-          }
 
-          nTry++;
-          propParams.LAddTry(l);
-          double& stdDev = propParams.LStdDev(l);
-          double LOrig = currentParams.L(c,l);
-          double LProp = LOrig+stdDev*normRand(rndGenerator);
-          currentParams.L(c,l,LProp);
-          if(l==0 && ratio_estim)
-            currentParams.L(c,2,LProp+ log(currentParams.ratio(c)));
 
-          double propCondLogPost = 0;
-          double logAcceptRatio = 0;
+            nTry++;
+            propParams.LAddTry(l);
+            double& stdDev = propParams.LStdDev(l);
+            double LOrig = currentParams.L(c,l);
+            double LProp = LOrig+stdDev*normRand(rndGenerator);
+            currentParams.L(c,l,LProp);
+            if(l==0)
+              currentParams.L(c,2,LProp+ log(currentParams.ratio(c)));
 
-          if(l == 2 && !ratio_estim){
-            propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
-          }else{
+            double propCondLogPost = 0;
+            double logAcceptRatio = 0;
+
             propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
 
             // if(l==0 & ratio_estim != 0)
             //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
-          }
-          logAcceptRatio = propCondLogPost - currentCondLogPost;
 
-          double uni = unifRand(rndGenerator);
+            logAcceptRatio = propCondLogPost - currentCondLogPost;
 
-          if(uni<exp(logAcceptRatio)){
-            nAccept++;
-            propParams.LAddAccept(l);
-            currentCondLogPost = propCondLogPost;
-          }else{
-            currentParams.L(c,l,LOrig);
-            if(l==0 && ratio_estim)
-              currentParams.L(c,2,LOrig+ log(currentParams.ratio(c)));
-          }
+            double uni = unifRand(rndGenerator);
 
-          // Update the std dev of the proposal
-          if(propParams.nTryL(l)%LUpdateFreq==0){
-            //if(propParams.LLocalAcceptRate(l)>LTargetRate)
-            //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
-            //else
-            //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
-
-            stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
-              pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
-
-            propParams.LAnyUpdates(true);
-            if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
-              propParams.LStdDevReset(l);
+            if(uni<exp(logAcceptRatio)){
+              nAccept++;
+              propParams.LAddAccept(l);
+              currentCondLogPost = propCondLogPost;
+            }else{
+              currentParams.L(c,l,LOrig);
+              if(l==0)
+                currentParams.L(c,2,LOrig+ log(currentParams.ratio(c)));
             }
-            propParams.LLocalReset(l);
+
+            // Update the std dev of the proposal
+            if(propParams.nTryL(l)%LUpdateFreq==0){
+              //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+              //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+              //else
+              //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+              stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+                pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+              propParams.LAnyUpdates(true);
+              if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+                propParams.LStdDevReset(l);
+              }
+              propParams.LLocalReset(l);
+            }
+          }
+
+
+          if(l==2 & 1>2){ //estimation ratio with beta distribution
+            currentParams.L(c,2,currentParams.L(c,0)+ log(currentParams.ratio(c)));
+            currentCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_k,f_k,k) 0 to remove L prior
+
+            currentCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
+            //currentCondLogPost += logPdfBeta(currentParams.ratio(c),currentParams.hyperParams().aRatio(),currentParams.hyperParams().bRatio()); // p(ratio) prior
+
+            nTry++;
+            // propParams.LAddTry(l);
+            // double& stdDev = propParams.LStdDev(l);
+            // double LOrig = currentParams.L(c,l);
+            // double LProp = LOrig+stdDev*normRand(rndGenerator);
+
+            propParams.LAddTry(l);
+            //double& stdDev = propParams.LStdDev(l);
+            double stdDev=0.5;
+            double logitRatioOrig = log(currentParams.ratio(c)/(1-currentParams.ratio(c)));
+            double logitRatioProp = logitRatioOrig+stdDev*normRand(rndGenerator);
+            double RatioOrig = currentParams.ratio(c);
+            double RatioProp = exp(logitRatioProp)/(1+exp(logitRatioProp));
+
+            double LOrig = currentParams.L(c,2);
+            double LProp = currentParams.L(c,0)+log(RatioProp);
+
+            currentParams.ratio(c,RatioProp);
+            currentParams.L(c,2,LProp);
+
+            double propCondLogPost = 0;
+            double logAcceptRatio = 0;
+
+
+
+            propCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_2k,f_k,k)
+            propCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
+
+            logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+            double uni = unifRand(rndGenerator);
+            // std::cout << "c "<< c << " L0 " << exp(currentParams.L(c,0))<<"  ratioOrig "<<RatioOrig<< " ratioProp " <<RatioProp<<
+            //   "  logitRatioOrig "<<logitRatioOrig<< " logitRatioProp " <<logitRatioProp<<
+            //     " LOrig "<<exp(LOrig) << " LProp " << exp(LProp) <<
+            //     " currentCondLogPost "<< currentCondLogPost<< " propCondLogPost "<< propCondLogPost<< " uni "<< uni << " expratio "<< exp(logAcceptRatio) <<endl;
+
+            if(uni<exp(logAcceptRatio)){
+              nAccept++;
+              propParams.LAddAccept(l);
+              currentCondLogPost = propCondLogPost;
+            }else{
+              currentParams.L(c,l,LOrig);
+              currentParams.ratio(c,RatioOrig);
+            }
+
+            // Update the std dev of the proposal
+            if(propParams.nTryL(l)%LUpdateFreq==0){
+              //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+              //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+              //else
+              //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+              stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+                pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+              propParams.LAnyUpdates(true);
+              if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+                propParams.LStdDevReset(l);
+              }
+              propParams.LLocalReset(l);
+            }
           }
         }
 
+      }else{ //ratio_estim=FALSE and sampleGPmean
+        for (unsigned int l=0;l<nL;l++){ //AR change nL-1
 
-        if(ratio_estim && l==2){ //estimation ratio with beta distribution
-          currentParams.L(c,2,currentParams.L(c,0)+ log(currentParams.ratio(c)));
-          currentCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_k,f_k,k)
-
-          currentCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
-          //currentCondLogPost += logPdfBeta(currentParams.ratio(c),currentParams.hyperParams().aRatio(),currentParams.hyperParams().bRatio()); // p(ratio) prior
-
-          nTry++;
-          // propParams.LAddTry(l);
-          // double& stdDev = propParams.LStdDev(l);
-          // double LOrig = currentParams.L(c,l);
-          // double LProp = LOrig+stdDev*normRand(rndGenerator);
-
-          propParams.LAddTry(l);
-          //double& stdDev = propParams.LStdDev(l);
-          double stdDev=0.5;
-          double logitRatioOrig = log(currentParams.ratio(c)/(1-currentParams.ratio(c)));
-          double logitRatioProp = logitRatioOrig+stdDev*normRand(rndGenerator);
-          double RatioOrig = currentParams.ratio(c);
-          double RatioProp = exp(logitRatioProp)/(1+exp(logitRatioProp));
-
-          double LOrig = currentParams.L(c,2);
-          double LProp = currentParams.L(c,0)+log(RatioProp);
-
-          currentParams.ratio(c,RatioProp);
-          currentParams.L(c,2,LProp);
-
-          double propCondLogPost = 0;
-          double logAcceptRatio = 0;
-
-
-
-          propCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_2k,f_k,k)
-          propCondLogPost += currentParams.ratio(c)*(1-currentParams.ratio(c));
-
-          logAcceptRatio = propCondLogPost - currentCondLogPost;
-
-          double uni = unifRand(rndGenerator);
-          // std::cout << "c "<< c << " L0 " << exp(currentParams.L(c,0))<<"  ratioOrig "<<RatioOrig<< " ratioProp " <<RatioProp<<
-          //   "  logitRatioOrig "<<logitRatioOrig<< " logitRatioProp " <<logitRatioProp<<
-          //     " LOrig "<<exp(LOrig) << " LProp " << exp(LProp) <<
-          //     " currentCondLogPost "<< currentCondLogPost<< " propCondLogPost "<< propCondLogPost<< " uni "<< uni << " expratio "<< exp(logAcceptRatio) <<endl;
-
-          if(uni<exp(logAcceptRatio)){
-            nAccept++;
-            propParams.LAddAccept(l);
-            currentCondLogPost = propCondLogPost;
-          }else{
-            currentParams.L(c,l,LOrig);
-            currentParams.ratio(c,RatioOrig);
-          }
-
-          // Update the std dev of the proposal
-          if(propParams.nTryL(l)%LUpdateFreq==0){
-            //if(propParams.LLocalAcceptRate(l)>LTargetRate)
-            //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
-            //else
-            //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
-
-            stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
-              pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
-
-            propParams.LAnyUpdates(true);
-            if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
-              propParams.LStdDevReset(l);
+            if(l == 2){
+              currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k), 1 to add L prior
+            }else{ //l<2
+              currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
+              //if(l==0 & ratio_estim != 0)
+              //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
             }
-            propParams.LLocalReset(l);
-          }
+
+            nTry++;
+            propParams.LAddTry(l);
+            double& stdDev = propParams.LStdDev(l);
+            double LOrig = currentParams.L(c,l);
+            double LProp = LOrig+stdDev*normRand(rndGenerator);
+            currentParams.L(c,l,LProp);
+
+            double propCondLogPost = 0;
+            double logAcceptRatio = 0;
+
+            if(l == 2){
+              propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
+            }else{
+              propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
+
+              // if(l==0 & ratio_estim != 0)
+              //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
+            }
+            logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+            double uni = unifRand(rndGenerator);
+
+            if(uni<exp(logAcceptRatio)){
+              nAccept++;
+              propParams.LAddAccept(l);
+              currentCondLogPost = propCondLogPost;
+            }else{
+              currentParams.L(c,l,LOrig);
+            }
+
+            // Update the std dev of the proposal
+            if(propParams.nTryL(l)%LUpdateFreq==0){
+              //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+              //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+              //else
+              //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+              stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+                pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+              propParams.LAnyUpdates(true);
+              if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+                propParams.LStdDevReset(l);
+              }
+              propParams.LLocalReset(l);
+            }
         }
       }
+
+
 
       //AR sample meanGP
       //if(model.options().sampleGPmean()){ //AR change
@@ -3735,33 +3792,12 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       //  int threadNum = omp_get_thread_num();
 
 
-      VectorXd Fval(nTimes_unique);
+      VectorXd Fval = VectorXd::Zero(nTimes_unique);
       //Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
-      if(c<3)
-        cout << c <<" Fval init "<<Fval.transpose()<<endl;
       Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
-
-      if(c<3)
-        cout << c <<" Fval "<<Fval.transpose()<<endl;
 
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
-      }
-
-      if(c<3){
-        int i=0;
-        vector<int> tStart = model.dataset().tStart();
-        vector<int> tStop=model.dataset().tStop();
-        vector<double> times_corr = model.dataset().times_corr();
-        cout << " in MH-forL"<< " nTimes_unique "<<nTimes_unique<< " C "<<c<<endl;
-        for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
-          cout <<  currentParams.meanGP(c, times_corr[tStart[i]-1+j]) << " ";
-        }
-        cout <<endl << " times_corr ";
-        for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
-          cout <<  times_corr[tStart[i]-1+j] << " ";
-        }
-        cout << " end "<<endl;
       }
     }else{
         currentCondLogPost = logCondPostL(currentParams,model,c,1);
@@ -4156,8 +4192,6 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
   for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){
     rnd[i] = unifRand(rndGenerator);
-    if(i==0)
-      cout << " test seed rnd "<<rnd[i]<<endl;
     u[i] = currentParams.u(i);
   }
 
@@ -4439,11 +4473,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> grid;
   //double minui=*std::min_element(std::begin(u), std::end(u) );
 
-
-  double testseed = unifRand(rndGenerator);
-  cout << " testseed "<<testseed<<endl;
-
-  for(unsigned int i=0;i<1;i++){//nSubjects+nPredictSubjects;i++){
+  for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){
 
     vector<double> logPyXz(maxNClusters,0.0);
     // We calculate p(Z=c|y,X) \propto p(y,X,Z=c)
@@ -4502,7 +4532,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
 
             if(Ana>0){
-              //AR Compute number of subjects in cluster c to compute inverse Sigma_c
+              //AR Compute number of timepoints of subjects in cluster c to compute inverse Sigma_c
               sizek[c]=0;
 
               // set sizes based on cluster occupation
@@ -4548,26 +4578,10 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
               if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
 
-                if(c==0){
-                  double testseed2 = unifRand(rndGenerator);
-                  cout << " testseed2 "<<testseed2<<endl;
-                }
-
-                if(c<3){
-                  vector<int> tStart = dataset.tStart();
-                  vector<int> tStop=dataset.tStop();
-                  vector<double> times_corr = dataset.times_corr();
-                  for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
-                    cout <<  currentParams.meanGP(c, times_corr[tStart[i]-1+j]) << " ";
-                  }
-                  cout << endl;
-                }
-
                 double temp2 = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
                 logPyXz[c] += temp2;
                 //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
 
-                //AR to remove
                 sizek[c]=0;
 
                 // set sizes based on cluster occupation
@@ -4576,10 +4590,8 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                     sizek[c] +=  tStop[i2] - tStart[i2] + 1;
                   }
                 }
-                if(i==0 && c <3)
-                  cout << " test seed logPyXz[c] "<< logPyXz[c]<<" i "<<i<< " c " <<c <<endl;
 
-                if(std::isinf(-logPyXz[c]) & 1<2)
+                if(std::isinf(-logPyXz[c]))
                   cout <<" i "<<i<< " c " <<c << " u[i] "<<u[i]<< " testBound[c] "<<testBound[c]<<" sizek[c] "<<sizek[c]<<" logPyXz[c] "<<logPyXz[c]<<endl;
 
 

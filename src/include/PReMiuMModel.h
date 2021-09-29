@@ -4330,6 +4330,7 @@ double logCondPostL_covGP(const pReMiuMParams& params,
   const pReMiuMData& dataset = model.dataset();
   const pReMiuMHyperParams& hyperParams = params.hyperParams();
   double logPrior = 0.0;
+  bool ratio_estim = model.options().estim_ratio();
 
   unsigned int nL;
   if(dataset.kernelType().compare("SQexponential")==0){    //AR
@@ -4339,7 +4340,7 @@ double logCondPostL_covGP(const pReMiuMParams& params,
   }
 
   for(unsigned int l=0;l<nL;l++){
-    if(l != 2)
+    if(! ratio_estim || l != 2)
       logPrior+=logPdfNormal(params.L(c,l),hyperParams.muL(l),
                              hyperParams.sigmaL(l));
   }
@@ -4695,9 +4696,6 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
         }
       }
     }
-    if(c<3){
-      cout << c <<" GPmean sizek "<<GPmean.transpose()<<endl;
-    }
   }else{ // init == 1 || sizek==0
     MatrixXd priorCor(nTimes_unique, nTimes_unique);
     GP_cov(priorCor, params.L(c), times_unique, 1, kernelType,0);
@@ -4742,9 +4740,6 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       random_vector(i) = normRand(rndGenerator);
 
     GPmean =  GPSigma * random_vector;
-    if(c<3){
-      cout << c <<" GPmean init"<<GPmean.transpose()<<endl;
-    }
 
   }
   return(GPmean);

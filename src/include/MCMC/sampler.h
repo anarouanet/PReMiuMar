@@ -549,8 +549,8 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 				// Only try this proposal with probability as defined
 				if(unifRand(_rndGenerator)<it->proposalWeight()){
 					// Update the chain state
-					it->updateParameters(_chain,_model,_rndGenerator);
 					cout << "prop " << it->proposalName().c_str()<<endl;
+					it->updateParameters(_chain,_model,_rndGenerator);
 				}
 			}
 		}

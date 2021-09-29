@@ -2863,7 +2863,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
       rng.seed(seeder(rndGenerator));
 
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       int threadNum = omp_get_thread_num();
       VectorXd Fval(nTimes_unique);
@@ -3618,6 +3618,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           logAcceptRatio = propCondLogPost - currentCondLogPost;
 
           double uni = unifRand(rndGenerator);
+
           if(uni<exp(logAcceptRatio)){
             nAccept++;
             propParams.LAddAccept(l);
@@ -3736,11 +3737,32 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 
       VectorXd Fval(nTimes_unique);
       //Fval =  Sample_GPmean(currentParams, model.dataset(), c, rngArray[threadNum],0);
+      if(c<3)
+        cout << c <<" Fval init "<<Fval.transpose()<<endl;
       Fval =  Sample_GPmean(currentParams, model.dataset(), c, rndGenerator,0);
+
+      if(c<3)
+        cout << c <<" Fval "<<Fval.transpose()<<endl;
+
       for(unsigned int j=0;j<nTimes_unique;j++){
         currentParams.meanGP(c,j, Fval(j));
       }
 
+      if(c<3){
+        int i=0;
+        vector<int> tStart = model.dataset().tStart();
+        vector<int> tStop=model.dataset().tStop();
+        vector<double> times_corr = model.dataset().times_corr();
+        cout << " in MH-forL"<< " nTimes_unique "<<nTimes_unique<< " C "<<c<<endl;
+        for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+          cout <<  currentParams.meanGP(c, times_corr[tStart[i]-1+j]) << " ";
+        }
+        cout <<endl << " times_corr ";
+        for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+          cout <<  times_corr[tStart[i]-1+j] << " ";
+        }
+        cout << " end "<<endl;
+      }
     }else{
         currentCondLogPost = logCondPostL(currentParams,model,c,1);
 
@@ -4134,13 +4156,15 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
 
   for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){
     rnd[i] = unifRand(rndGenerator);
+    if(i==0)
+      cout << " test seed rnd "<<rnd[i]<<endl;
     u[i] = currentParams.u(i);
   }
 
   vector<double> testBound(maxNClusters,0.0);
   vector<double> clusterWeight(maxNClusters,0.0);
 
-#pragma omp parallel for
+//#pragma omp parallel for
   for(unsigned int c=0;c<maxNClusters;c++){
     if(samplerType.compare("SliceDependent")==0){
       testBound[c] = exp(currentParams.logPsi(c));
@@ -4160,7 +4184,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   logPXiGivenZi.resize(nSubjects+nPredictSubjects);
   if(covariateType.compare("Discrete")==0){
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for(unsigned int i=0;i<nSubjects;i++){
       logPXiGivenZi[i].resize(maxNClusters,0);
       for(unsigned int c=0;c<maxNClusters;c++){
@@ -4415,7 +4439,11 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> grid;
   //double minui=*std::min_element(std::begin(u), std::end(u) );
 
-  for(unsigned int i=0;i<nSubjects+nPredictSubjects;i++){//nSubjects+nPredictSubjects;i++){
+
+  double testseed = unifRand(rndGenerator);
+  cout << " testseed "<<testseed<<endl;
+
+  for(unsigned int i=0;i<1;i++){//nSubjects+nPredictSubjects;i++){
 
     vector<double> logPyXz(maxNClusters,0.0);
     // We calculate p(Z=c|y,X) \propto p(y,X,Z=c)
@@ -4458,14 +4486,14 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
           // }
         }
 
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(unsigned int c=0;c<maxNClusters;c++){
 
           double temp;
           vector<double> timesk;
 
           if( !model.options().sampleGPmean() && i==0 && outcomeType.compare("Longitudinal")==0 ){//for first person, calculate all marginals
-
+            // Computation of the initial cluster-specific likelihoods clusterMarginal[c]=p(Y|c=g)
             if(Ana!=1)
               clusterMarginal[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects);
 
@@ -4514,75 +4542,96 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
             }
           }//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-          //if(u[i]<testBound[c]){
+          if(u[i]<testBound[c]){
 
+            if(outcomeType.compare("Longitudinal")==0){
 
-          if(outcomeType.compare("Longitudinal")==0){//RJ marginal likelihood without i
+              if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
 
-            if(model.options().sampleGPmean()){//AR change model.options().sampleGPmean()
-              double temp2 = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
-              logPyXz[c] += temp2;
-              //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
-
-              //AR to remove
-              sizek[c]=0;
-
-              // set sizes based on cluster occupation
-              for(unsigned int i2=0;i2<nSubjects;i2++){
-                if(currentParams.z(i2) == c){
-                  sizek[c] = sizek[c] + tStop[i2] - tStart[i2] + 1;
+                if(c==0){
+                  double testseed2 = unifRand(rndGenerator);
+                  cout << " testseed2 "<<testseed2<<endl;
                 }
+
+                if(c<3){
+                  vector<int> tStart = dataset.tStart();
+                  vector<int> tStop=dataset.tStop();
+                  vector<double> times_corr = dataset.times_corr();
+                  for(unsigned int j=0;j<tStop[i]-tStart[i]+1;j++){
+                    cout <<  currentParams.meanGP(c, times_corr[tStart[i]-1+j]) << " ";
+                  }
+                  cout << endl;
+                }
+
+                double temp2 = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // only if u[i]<testBound[c]
+                logPyXz[c] += temp2;
+                //logPyXz[c] += logPdfMultivariateNormal(currentParams.meanGP(c),currentParams.L(c), dataset.times_unique(), kernelType);
+
+                //AR to remove
+                sizek[c]=0;
+
+                // set sizes based on cluster occupation
+                for(unsigned int i2=0;i2<nSubjects;i2++){
+                  if(currentParams.z(i2) == c){
+                    sizek[c] +=  tStop[i2] - tStart[i2] + 1;
+                  }
+                }
+                if(i==0 && c <3)
+                  cout << " test seed logPyXz[c] "<< logPyXz[c]<<" i "<<i<< " c " <<c <<endl;
+
+                if(std::isinf(-logPyXz[c]) & 1<2)
+                  cout <<" i "<<i<< " c " <<c << " u[i] "<<u[i]<< " testBound[c] "<<testBound[c]<<" sizek[c] "<<sizek[c]<<" logPyXz[c] "<<logPyXz[c]<<endl;
+
+
+              }else{//RJ marginal likelihood without i
+
+                if(origZi == c){
+                  //if point currently in cluster:
+                  //marginal(cluster with gene) = clusterMarginal[c]
+                  numerator[c] = clusterMarginal[c]; // likelihood with i
+
+                  //get marginal(cluster without gene)
+                  if(Ana!=1){
+                    denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // likelihood without i
+                    if(Ana==2)
+                      temp=denominator[c];
+                  }
+
+                  if(Ana>0){
+                    denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
+                  }
+
+                  if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
+                    fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
+                    fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
+                  }
+                }else{
+                  //take cluster marginal for denominator
+                  denominator[c] = clusterMarginal[c]; // likelihood without i
+
+                  if(Ana!=1){
+                    //move point for numerator
+                    currentParams.z(i,c,covariateType);//RJ marginal likelihood with i
+                    numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects); // likelihood with i
+                    currentParams.z(i,origZi,covariateType);//RJ set cluster to original
+                    if(Ana==2)
+                      temp=numerator[c];
+                  }
+
+                  if(Ana>0){
+                    numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
+                  }
+
+                  if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
+                    fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
+                    fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c_ord[c].rows()<< " sizek "<< sizek[c] << endl;
+                  }
+                }
+                logPyXz[c]+= numerator[c] - denominator[c];
               }
-
-
             }else{
-
-              if(origZi == c){
-                //if point currently in cluster:
-                //marginal(cluster with gene) = clusterMarginal[c]
-                numerator[c] = clusterMarginal[c]; // likelihood with i
-
-                //get marginal(cluster without gene)
-                if(Ana!=1){
-                  denominator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i); // likelihood without i
-                  if(Ana==2)
-                    temp=denominator[c];
-                }
-
-                if(Ana>0){
-                  denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
-                }
-
-                if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
-                  fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
-                  fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
-                }
-              }else{
-                //take cluster marginal for denominator
-                denominator[c] = clusterMarginal[c]; // likelihood without i
-
-                if(Ana!=1){
-                  //move point for numerator
-                  currentParams.z(i,c,covariateType);//RJ marginal likelihood with i
-                  numerator[c] = logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,nSubjects); // likelihood with i
-                  currentParams.z(i,origZi,covariateType);//RJ set cluster to original
-                  if(Ana==2)
-                    temp=numerator[c];
-                }
-
-                if(Ana>0){
-                  numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
-                }
-
-                if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
-                  fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
-                  fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c_ord[c].rows()<< " sizek "<< sizek[c] << endl;
-                }
-              }
-              logPyXz[c]+= numerator[c] - denominator[c];
+              logPyXz[c]+=logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
             }
-          }else{
-            logPyXz[c]+=logPYiGivenZiWi(currentParams,dataset,nFixedEffects,c,i);
           }
         }
       }

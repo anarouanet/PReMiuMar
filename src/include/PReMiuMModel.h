@@ -3241,8 +3241,16 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
       //double eL1 = exp(L[1])*2.0;
       //double eL2 = exp(L[2]);
 
-      dmvnorm +=  -0.5*yi.transpose()*Vi_inv*yi - 0.5*ni*log(2.0*pi<double>())
+      double out =  -0.5*yi.transpose()*Vi_inv*yi - 0.5*ni*log(2.0*pi<double>())
         - 0.5*ni*params.L(c,l);//*abs(params.L(c,l)); //log(exp(params.L(c,2)*ni)) ;
+
+      dmvnorm += out ;
+      if(dmvnorm==0 & ii <dataset.nSubjects()){
+        cout <<  " i "<< ii  << " c "<< c <<" dmvnorm "<<dmvnorm<< " ni "<< ni << " prod "<<yi.transpose()*Vi_inv*yi
+             << " L0 "<< params.L(c,0) << " L1 "<< params.L(c,1) << " L2 "<< params.L(c,2)
+             << " yi "<<yi<<endl;
+
+      }
     }
   }
   return dmvnorm;
@@ -4514,7 +4522,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
   unsigned int nTimes_unique=dataset.nTimes_unique();
   unsigned int nFixedEffects=dataset.nFixedEffects();
   unsigned int nFixedEffects_mix=dataset.nFixedEffects_mix();
-  VectorXd GPmean(nTimes_unique);
+  VectorXd GPmean = VectorXd::Zero(nTimes_unique);
 
   std::fstream fout("file_output.txt", std::ios::in | std::ios::out | std::ios::app);
 
@@ -4687,7 +4695,9 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
         }
       }
     }
-
+    if(c<3){
+      cout << c <<" GPmean sizek "<<GPmean.transpose()<<endl;
+    }
   }else{ // init == 1 || sizek==0
     MatrixXd priorCor(nTimes_unique, nTimes_unique);
     GP_cov(priorCor, params.L(c), times_unique, 1, kernelType,0);
@@ -4703,6 +4713,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       }
       if(es.eigenvalues()(i).imag() != 0 || es.eigenvectors()(i).imag()!=0 ){
         fout <<"eigenvalue"<<endl;
+        cout <<"eigenvalue"<<endl;
         //fout << c <<" c prior eigenvalue" <<es.eigenvalues()(i).imag()<< endl;
         //fout << c <<" c prior eigenvector" <<es.eigenvectors()(i).imag()<< endl;
       }
@@ -4731,6 +4742,10 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
       random_vector(i) = normRand(rndGenerator);
 
     GPmean =  GPSigma * random_vector;
+    if(c<3){
+      cout << c <<" GPmean init"<<GPmean.transpose()<<endl;
+    }
+
   }
   return(GPmean);
 }
@@ -4739,7 +4754,7 @@ VectorXd Sample_GPmean(pReMiuMParams& params, const pReMiuMData& dataset,
 
 //AR logPdfPostMultivariateNormal P(f_k|L_k, k, yk)
 double logPdfPostMultivariateNormal(pReMiuMParams& params, const pReMiuMData& dataset, const unsigned int c){
-  //const vector<double>& muGP, const vector<double>& L, const vector<double>& times, const string& kernelType){
+    //const vector<double>& muGP, const vector<double>& L, const vector<double>& times, const string& kernelType){
 
   vector<double> times_unique = dataset.times_unique();
   unsigned int nTimes_unique=dataset.nTimes_unique();

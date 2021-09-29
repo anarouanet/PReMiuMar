@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
+functions.txt
+R_functions_Anais/
+modif.txt

@@ -12,7 +12,8 @@ profRegr(covNames, fixedEffectsNames, outcome="outcome",
         run=TRUE, discreteCovs, continuousCovs, whichLabelSwitch="123",
         includeCAR=FALSE, neighboursFile="Neighbours.txt",
         weibullFixedShape=TRUE, useNormInvWishPrior=FALSE,
-        kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL, ngrid=0)
+        kernel="SQexponential", sampleGPmean= FALSE,  estim_ratio=F, time_grid=NULL,
+        ngrid=0)
 }
 \arguments{
 \item{covNames}{A vector of strings of the covariate names as by the column names in the data argument. The names of the covariates cannot include space characters.}

@@ -523,6 +523,8 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
       }
       count <- count + j
     }
+
+    times_corr = times_corr -1
     write(length(all_times),fileName,append=T,ncolumns=1)
 
     write(t(all_times),fileName,append=T,ncolumns=1)

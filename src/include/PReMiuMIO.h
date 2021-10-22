@@ -477,7 +477,6 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 	nContinuousCovariatesNotMissing.resize(nSubjects+nPredictSubjects);
 	vector<double> meanX(nCovariates,0);
 	vector<unsigned int> nXNotMissing(nCovariates,0);
-
 	for(unsigned int i=0;i<nSubjects;i++){
 		if(outcomeType.compare("Normal")==0||outcomeType.compare("Survival")==0||outcomeType.compare("MVN")==0){
 			for(unsigned int j=0; j<nOutcomes; j++){//RJ read in MVN data
@@ -494,6 +493,7 @@ void importPReMiuMData(const string& fitFilename,const string& predictFilename, 
 			continuousX[i].resize(nContinuousCovs);
 		}
 		missingX[i].resize(nCovariates);
+
 		for(unsigned int j=0;j<nCovariates;j++){
 			missingX[i][j]=true;
 			if(covariateType.compare("Discrete")==0){
@@ -1238,6 +1238,7 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 	if(hyperParamFileName.compare("")!=0){
 		readHyperParamsFromFile(hyperParamFileName,hyperParams);
 	}
+	cout << " inside initialisePReMiuM, maxNClusters: "<<endl;
 
 	// Allocate the right sizes for each of the parameter variables
 	// This also switches "on" all variable indicators (gamma)
@@ -1286,7 +1287,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 	}
 	params.alpha(alpha);
 
-
 	double dPitmanYor = options.dPitmanYor();
 	params.dPitmanYor(dPitmanYor);
 
@@ -1318,8 +1318,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 	}
 	params.workNXInCluster(nXInCluster);
 	params.workMaxZi(maxZ);
-
-
 	// Sample v (for logPsi)
 	// This is sampled from the posterior given the z vector above
 	// Prior comes from the conjugacy of the dirichlet and multinomial
@@ -1332,7 +1330,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 	}
 
 	double tmp=0.0;
-
 	for(unsigned int c=0;c<=maxZ;c++){
 		double vVal = betaRand(rndGenerator,1.0+params.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
 		params.v(c,vVal);
@@ -1425,6 +1422,7 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 		params.logPsi(logPsiNew);
 	}
 
+  cout << " after z "<<endl;
 	if(covariateType.compare("Discrete")==0){
 		// Sample logPhi
 		// Need to count the number of X[i][j]==p for each covariate and category of p
@@ -1832,9 +1830,15 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 			}
 			for(unsigned int c=0;c<maxNClusters;c++){
 				Rc[c]=(hyperParams.MVNR0().inverse()+Rc[c]).inverse();
-				MatrixXd Tau = wishartRand(rndGenerator,Rc[c],params.workNXInCluster(c)+hyperParams.MVNkappa0());
+				//MatrixXd Tau = wishartRand(rndGenerator,Rc[c],params.workNXInCluster(c)+hyperParams.MVNkappa0());
+				MatrixXd Tau ;
+				Tau = wishartRand(rndGenerator,Rc[c],params.workNXInCluster(c)+hyperParams.MVNnu0());
 				params.MVNTau(c,Tau);
+
+
 			}
+			cout << " initialize MVNTau maxNClusters "<<maxNClusters<<endl;
+
 		}
 
 		if(outcomeType.compare("LME")==0){ //AR

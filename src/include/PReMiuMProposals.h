@@ -1188,35 +1188,35 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
                      pReMiuMPropParams& propParams,
                      baseGeneratorType& rndGenerator){
 
-    mcmcState<pReMiuMParams>& currentState = chain.currentState();
-    pReMiuMParams& currentParams = currentState.parameters();
+  mcmcState<pReMiuMParams>& currentState = chain.currentState();
+  pReMiuMParams& currentParams = currentState.parameters();
 
-   nTry++;
-   nAccept++;
+  nTry++;
+  nAccept++;
 
-   // Find the active clusters
-   unsigned int maxZ = currentParams.workMaxZi();
+  // Find the active clusters
+  unsigned int maxZ = currentParams.workMaxZi();
 
-   // This is sampled from the posterior given the z vector above
-   // Prior comes from the conjugacy of the dirichlet and multinomial
-   vector<unsigned int> sumCPlus1ToMaxMembers(maxZ+1);
-   sumCPlus1ToMaxMembers[maxZ]=0;
-   for(int c=maxZ-1;c>=0;c--){
-     sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
-   }
+  // This is sampled from the posterior given the z vector above
+  // Prior comes from the conjugacy of the dirichlet and multinomial
+  vector<unsigned int> sumCPlus1ToMaxMembers(maxZ+1);
+  sumCPlus1ToMaxMembers[maxZ]=0;
+  for(int c=maxZ-1;c>=0;c--){
+    sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
+  }
 
-    double tmp=0.0;
-    double alpha = currentParams.alpha();
-    double dPitmanYor = currentParams.dPitmanYor();
+  double tmp=0.0;
+  double alpha = currentParams.alpha();
+  double dPitmanYor = currentParams.dPitmanYor();
 
-    for(unsigned int c=0;c<maxZ;c++){//
-      double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
-      currentParams.v(c,vVal);
-      // Set psi
-      currentParams.logPsi(c,tmp+log(vVal));
-      tmp += log(1-vVal);
+  for(unsigned int c=0;c<maxZ;c++){//
+    double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
+    currentParams.v(c,vVal);
+    // Set psi
+    currentParams.logPsi(c,tmp+log(vVal));
+    tmp += log(1-vVal);
 
-    }
+  }
 }
 
 // Moves for updating the Theta which are active i.e. Theta_c where c<=Z_max
@@ -2793,7 +2793,7 @@ void gibbsForBetaInActive(mcmcChain<pReMiuMParams>& chain,
         beta=-2.0+4.0*unifRand(rndGenerator);
         currentParams.beta_mix(c,j+k*nFixedEffects_mix,beta);
         //currentParams.beta_mix(c,j+k*nFixedEffects_mix,0);
-//        params.beta(j,k,-2.0+4.0*unifRand(rndGenerator));
+        //        params.beta(j,k,-2.0+4.0*unifRand(rndGenerator));
 
       }
     }
@@ -2862,7 +2862,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
       rng.seed(seeder(rndGenerator));
 
 
-//#pragma omp parallel for
+    //#pragma omp parallel for
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       //int threadNum = omp_get_thread_num();
       VectorXd Fval(nTimes_unique);
@@ -2908,12 +2908,12 @@ void gibbsForNuInActive(mcmcChain<pReMiuMParams>& chain,
 
 
 void GibbsForBeta(mcmcChain<pReMiuMParams>& chain,
-                               unsigned int& nTry,unsigned int& nAccept,
-                               const mcmcModel<pReMiuMParams,
-                                               pReMiuMOptions,
-                                               pReMiuMData>& model,
-                                               pReMiuMPropParams& propParams,
-                                               baseGeneratorType& rndGenerator){
+                  unsigned int& nTry,unsigned int& nAccept,
+                  const mcmcModel<pReMiuMParams,
+                                  pReMiuMOptions,
+                                  pReMiuMData>& model,
+                                  pReMiuMPropParams& propParams,
+                                  baseGeneratorType& rndGenerator){
 
 
   mcmcState<pReMiuMParams>& currentState = chain.currentState();
@@ -3058,9 +3058,9 @@ void GibbsForBeta(mcmcChain<pReMiuMParams>& chain,
 
     unsigned int maxNClusters=currentParams.maxNClusters();
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
-    VectorXd beta_mixProp=multivarNormalRand(rndGenerator, mu_b, V_b);
-    for(unsigned int b=0;b<nFixedEffects_mix;b++)
-      currentParams.beta_mix(c,b,beta_mixProp(b));
+      VectorXd beta_mixProp=multivarNormalRand(rndGenerator, mu_b, V_b);
+      for(unsigned int b=0;b<nFixedEffects_mix;b++)
+        currentParams.beta_mix(c,b,beta_mixProp(b));
     }
   }
 }
@@ -3096,46 +3096,46 @@ void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
 
   double currentCondLogPost = logCondPostThetaBeta(currentParams,model);
 
-    currentCondLogPost = logCondPostThetaBeta(currentParams,model);
-    for(unsigned int j=0;j<nFixedEffects;j++){
-      for (unsigned int k=0;k<nCategoriesY;k++){
-        nTry++;
-        propParams.betaAddTry(j);
-        double& stdDev = propParams.betaStdDev(j);
-        double betaOrig = currentParams.beta(j,k);
-        double betaProp = betaOrig+stdDev*normRand(rndGenerator);
-        currentParams.beta(j,k,betaProp);
-        double propCondLogPost = logCondPostThetaBeta(currentParams,model);
-        double logAcceptRatio = propCondLogPost - currentCondLogPost;
-        if(unifRand(rndGenerator)<exp(logAcceptRatio)){
-          nAccept++;
-          propParams.betaAddAccept(j);
-          currentCondLogPost = propCondLogPost;
-          // Update the std dev of the proposal
-          if(propParams.nTryBeta(j)%betaUpdateFreq==0){
-            stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
-              pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
-            propParams.betaAnyUpdates(true);
-            if(stdDev>propParams.betaStdDevUpper(j)||stdDev<propParams.betaStdDevLower(j)){
-              propParams.betaStdDevReset(j);
-            }
-            propParams.betaLocalReset(j);
+  currentCondLogPost = logCondPostThetaBeta(currentParams,model);
+  for(unsigned int j=0;j<nFixedEffects;j++){
+    for (unsigned int k=0;k<nCategoriesY;k++){
+      nTry++;
+      propParams.betaAddTry(j);
+      double& stdDev = propParams.betaStdDev(j);
+      double betaOrig = currentParams.beta(j,k);
+      double betaProp = betaOrig+stdDev*normRand(rndGenerator);
+      currentParams.beta(j,k,betaProp);
+      double propCondLogPost = logCondPostThetaBeta(currentParams,model);
+      double logAcceptRatio = propCondLogPost - currentCondLogPost;
+      if(unifRand(rndGenerator)<exp(logAcceptRatio)){
+        nAccept++;
+        propParams.betaAddAccept(j);
+        currentCondLogPost = propCondLogPost;
+        // Update the std dev of the proposal
+        if(propParams.nTryBeta(j)%betaUpdateFreq==0){
+          stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
+            pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
+          propParams.betaAnyUpdates(true);
+          if(stdDev>propParams.betaStdDevUpper(j)||stdDev<propParams.betaStdDevLower(j)){
+            propParams.betaStdDevReset(j);
           }
-        }else{
-          currentParams.beta(j,k,betaOrig);
-          // Update the std dev of the proposal
-          if(propParams.nTryBeta(j)%betaUpdateFreq==0){
-            stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
-              pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
-            propParams.betaAnyUpdates(true);
-            if(stdDev<propParams.betaStdDevLower(j)||stdDev>propParams.betaStdDevUpper(j)){
-              propParams.betaStdDevReset(j);
-            }
-            propParams.betaLocalReset(j);
+          propParams.betaLocalReset(j);
+        }
+      }else{
+        currentParams.beta(j,k,betaOrig);
+        // Update the std dev of the proposal
+        if(propParams.nTryBeta(j)%betaUpdateFreq==0){
+          stdDev += 10*(propParams.betaLocalAcceptRate(j)-betaTargetRate)/
+            pow((double)(propParams.nTryBeta(j)/betaUpdateFreq)+2.0,0.75);
+          propParams.betaAnyUpdates(true);
+          if(stdDev<propParams.betaStdDevLower(j)||stdDev>propParams.betaStdDevUpper(j)){
+            propParams.betaStdDevReset(j);
           }
+          propParams.betaLocalReset(j);
         }
       }
     }
+  }
 
   if(nFixedEffects_mix>0){
     unsigned int maxZ = currentParams.workMaxZi();
@@ -3148,8 +3148,8 @@ void metropolisHastingsForBeta(mcmcChain<pReMiuMParams>& chain,
     for(unsigned int c=0;c<=maxZ;c++){
       for(unsigned int j=0;j<nFixedEffects_mix;j++){
 
-          int jjj=0;
-          while(jjj<200){
+        int jjj=0;
+        while(jjj<200){
           for (unsigned int k=0;k<nCategoriesY;k++){
             nTry++;
             propParams.betamixAddTry(j);
@@ -3716,60 +3716,60 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
       }else{ //ratio_estim=FALSE and sampleGPmean
         for (unsigned int l=0;l<nL;l++){ //AR change nL-1
 
-            if(l == 2){
-              currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k), 1 to add L prior
-            }else{ //l<2
-              currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
-              //if(l==0 & ratio_estim != 0)
-              //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
+          if(l == 2){
+            currentCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_k)p(Y^k|L_k,f_k,k), 1 to add L prior
+          }else{ //l<2
+            currentCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_k)p(f_k|L_k,k)
+            //if(l==0 & ratio_estim != 0)
+            //currentCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_k)p(f_k|L_k,k) * p(Y_k|f_k, L_k,k)
+          }
+
+          nTry++;
+          propParams.LAddTry(l);
+          double& stdDev = propParams.LStdDev(l);
+          double LOrig = currentParams.L(c,l);
+          double LProp = LOrig+stdDev*normRand(rndGenerator);
+          currentParams.L(c,l,LProp);
+
+          double propCondLogPost = 0;
+          double logAcceptRatio = 0;
+
+          if(l == 2){
+            propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
+          }else{
+            propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
+
+            // if(l==0 & ratio_estim != 0)
+            //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
+          }
+          logAcceptRatio = propCondLogPost - currentCondLogPost;
+
+          double uni = unifRand(rndGenerator);
+
+          if(uni<exp(logAcceptRatio)){
+            nAccept++;
+            propParams.LAddAccept(l);
+            currentCondLogPost = propCondLogPost;
+          }else{
+            currentParams.L(c,l,LOrig);
+          }
+
+          // Update the std dev of the proposal
+          if(propParams.nTryL(l)%LUpdateFreq==0){
+            //if(propParams.LLocalAcceptRate(l)>LTargetRate)
+            //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
+            //else
+            //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
+
+            stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
+              pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
+
+            propParams.LAnyUpdates(true);
+            if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
+              propParams.LStdDevReset(l);
             }
-
-            nTry++;
-            propParams.LAddTry(l);
-            double& stdDev = propParams.LStdDev(l);
-            double LOrig = currentParams.L(c,l);
-            double LProp = LOrig+stdDev*normRand(rndGenerator);
-            currentParams.L(c,l,LProp);
-
-            double propCondLogPost = 0;
-            double logAcceptRatio = 0;
-
-            if(l == 2){
-              propCondLogPost = logCondPostL(currentParams,model,c,1); // p(L_2)p(Y^k|L_2k,f_k,k)
-            }else{
-              propCondLogPost = logCondPostL_covGP(currentParams,model,c); // p(L_013k)p(f_k|L_013k,k)
-
-              // if(l==0 & ratio_estim != 0)
-              //  propCondLogPost += logCondPostL(currentParams,model,c,0); // p(L_013k)p(f_k|L_013k,k)
-            }
-            logAcceptRatio = propCondLogPost - currentCondLogPost;
-
-            double uni = unifRand(rndGenerator);
-
-            if(uni<exp(logAcceptRatio)){
-              nAccept++;
-              propParams.LAddAccept(l);
-              currentCondLogPost = propCondLogPost;
-            }else{
-              currentParams.L(c,l,LOrig);
-            }
-
-            // Update the std dev of the proposal
-            if(propParams.nTryL(l)%LUpdateFreq==0){
-              //if(propParams.LLocalAcceptRate(l)>LTargetRate)
-              //	stdDev *= std::exp(1.0/(propParams.LLocalAcceptRate(l)*LUpdateFreq));
-              //else
-              //	stdDev /= std::exp(1.0/(LUpdateFreq-propParams.LLocalAcceptRate(l)*LUpdateFreq));
-
-              stdDev += 10*(propParams.LLocalAcceptRate(l)-LTargetRate)/
-                pow((double)(propParams.nTryL(l)/LUpdateFreq)+2.0,0.75);
-
-              propParams.LAnyUpdates(true);
-              if(stdDev>propParams.LStdDevUpper(l)||stdDev<propParams.LStdDevLower(l)){
-                propParams.LStdDevReset(l);
-              }
-              propParams.LLocalReset(l);
-            }
+            propParams.LLocalReset(l);
+          }
         }
       }
 
@@ -3799,7 +3799,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
         currentParams.meanGP(c,j, Fval(j));
       }
     }else{
-        currentCondLogPost = logCondPostL(currentParams,model,c,1);
+      currentCondLogPost = logCondPostL(currentParams,model,c,1);
 
       for (unsigned int l=0;l<nL;l++){
         nTry++;
@@ -3841,10 +3841,10 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
 }
 
 void gibbsForSigmaEpsilonLME_invchi2(mcmcChain<pReMiuMParams>& chain,
- unsigned int& nTry,unsigned int& nAccept,
- const mcmcModel<pReMiuMParams,pReMiuMOptions,pReMiuMData>& model,
- pReMiuMPropParams& propParams,
- baseGeneratorType& rndGenerator){
+                                     unsigned int& nTry,unsigned int& nAccept,
+                                     const mcmcModel<pReMiuMParams,pReMiuMOptions,pReMiuMData>& model,
+                                     pReMiuMPropParams& propParams,
+                                     baseGeneratorType& rndGenerator){
 
 
 
@@ -4197,7 +4197,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   vector<double> testBound(maxNClusters,0.0);
   vector<double> clusterWeight(maxNClusters,0.0);
 
-//#pragma omp parallel for
+  //#pragma omp parallel for
   for(unsigned int c=0;c<maxNClusters;c++){
     if(samplerType.compare("SliceDependent")==0){
       testBound[c] = exp(currentParams.logPsi(c));
@@ -4217,7 +4217,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
   logPXiGivenZi.resize(nSubjects+nPredictSubjects);
   if(covariateType.compare("Discrete")==0){
 
-//#pragma omp parallel for
+    //#pragma omp parallel for
     for(unsigned int i=0;i<nSubjects;i++){
       logPXiGivenZi[i].resize(maxNClusters,0);
       for(unsigned int c=0;c<maxNClusters;c++){

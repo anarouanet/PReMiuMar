@@ -1067,12 +1067,13 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     yData_c <- list()
 
     for(c in whichClusters){
-      times_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
+      times_c0 <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
+      times_c <- all_times[sapply(times_c0, function(x) which(abs(all_times-x)==min(abs(all_times-x))))]
       yData_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) yData[tMat[x,1]:tMat[x,2]]))
 
       if(sampleGPmean){#sampleGPmean
-        tTimes <- unique(times)[order(unique(times))]
-
+        tTimes0 <- unique(times)[order(unique(times))]
+        tTimes <- unique(all_times[sapply(tTimes0, function(x) which(abs(all_times-x)==min(abs(all_times-x))))])
         mu <- GPmeanMeans[c,]
         sigma <- exp(LMeans[c,3]/2)
         inf <- GPmeanMeans_inf[c,]
@@ -1107,7 +1108,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
       #       lines(params$mu+longMean~tTimes,lwd=3,col=c)
       # c=c+1
     }
-
     rownames(GPDF)<-seq(1,nrow(GPDF),1)
     plotObj <- ggplot(GPDF)
     for(i in 1:nSubjects){

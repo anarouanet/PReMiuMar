@@ -129,13 +129,25 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 							  const mcmcModel<modelParamType,optionType,dataType>& model,
 										baseGeneratorType& rndGenerator){
 
-			// Use the user function to propose some new parameters
-			(*_updateParameters)(chain,
-								_nTry,
-								_nAccept,
-								model,
-								*_proposalParameters,
-								rndGenerator);
+		  //Use the user function to propose some new parameters
+		   		    (*_updateParameters)(chain,
+		          _nTry,
+		          _nAccept,
+		          model,
+		          *_proposalParameters,
+		          rndGenerator);
+//		  if(j<1){
+// 		    (*_updateParameters2)(//chain,
+//        _nTry,
+//        _nAccept//,
+//        //model,
+//        //*_proposalParameters,
+//        //rndGenerator
+//        );
+
+
+// 		  }
+
 
 		}
 
@@ -178,6 +190,14 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 								const mcmcModel<modelParamType,optionType,dataType>&,
 								propParamType&,
 								baseGeneratorType&);
+
+// 		void (*_updateParameters2)(//mcmcChain<modelParamType>&,
+//         unsigned int &,
+//         unsigned int&//,
+//         //const mcmcModel<modelParamType,optionType,dataType>&,
+//         //propParamType&,
+//         //baseGeneratorType&
+//         );
 
 		/// \brief The propbability that the proposal is used given that it is attempted
 		double _proposalWeight;

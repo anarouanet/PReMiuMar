@@ -163,6 +163,7 @@ double logPdfNIW(const unsigned int& d, const MatrixXd& Lambda0, const double& l
 
 	double Z = 0.5*(double)nu0*(double)d*log(2.0) + logMultivarGammaFn((double)nu0/2.0,d) + (double)d/2.0*log(2.0*pi<double>()/kappa0) + (double)nu0/2.0*logDetInvLambda0;
 	double logPmuSigma = - (((double)nu0+(double)d)/2.0+1.0)*logDetSigma - 0.5*(Lambda0*invSigma).trace() - 0.5*kappa0*(mu-mu0).transpose()*invSigma*(mu-mu0) - Z;
+	//cout << " logPmuSigma "<< logPmuSigma << " logDetSigma "<<logDetSigma<< " trace "<<(Lambda0*invSigma).trace()<< " kappa "<<kappa0*(mu-mu0).transpose()*invSigma*(mu-mu0)<< " Z "<< Z <<endl;
 	return logPmuSigma;
 }
 

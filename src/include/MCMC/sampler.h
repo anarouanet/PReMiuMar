@@ -245,9 +245,14 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 		void initialiseChain(){
 
 			modelParamType tmpModelParams;
+		  cout << " maxNClusters init: "<< tmpModelParams.maxNClusters()<<endl;
+
 			_model.initialiseParams(_rndGenerator,tmpModelParams);
 			vector<double> logPostVec;
+			cout << " maxNClusters1 "<< tmpModelParams.maxNClusters()<<endl;
+
 			logPostVec = _model.logPosterior(tmpModelParams);
+
 			mcmcState<modelParamType> tmpState(tmpModelParams,logPostVec);
 			_chain.currentState(tmpState);
 			modelParamType params=_chain.currentState().parameters();
@@ -539,7 +544,6 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 		// _model.hasMissingData flag is true)
 
 		updateMissingData();
-
 		// At each sweep we loop over the proposals
 		typename vector<mcmcProposal<modelParamType,optionType,propParamType,dataType> >::iterator it;
 		for(it=_proposalVec.begin(); it<_proposalVec.end(); it++){
@@ -549,16 +553,16 @@ void mcmcSampler<modelParamType,optionType,propParamType,dataType>::run(){
 				// Only try this proposal with probability as defined
 				if(unifRand(_rndGenerator)<it->proposalWeight()){
 					// Update the chain state
-					//cout << "prop " << it->proposalName().c_str()<<endl;
+					cout << "prop " << it->proposalName().c_str()<<endl;
 					it->updateParameters(_chain,_model,_rndGenerator);
 				}
 			}
 		}
-		// At the end of the sweep make sure the log posterior is up to date.
-		_chain.currentState().logPosterior(_model.logPosterior(_chain.currentState().parameters()));
-
-		// Now write the output (this is controlled by the user defined function
-		writeOutput(sweep);
+		// // At the end of the sweep make sure the log posterior is up to date.
+		 _chain.currentState().logPosterior(_model.logPosterior(_chain.currentState().parameters()));
+		//
+		// // Now write the output (this is controlled by the user defined function
+		 writeOutput(sweep);
 	}
 	writeAcceptanceRates();
 

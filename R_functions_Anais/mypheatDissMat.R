@@ -1,6 +1,5 @@
 mypheatDissMat <- function (dissimObj, true_clusters=NULL, order=NULL, main = NULL, xlab = NULL, ylab = NULL)
 {
-
   nSbj <- dissimObj$disSimRunInfoObj$nSubjects
   col.labels <- c("0", "0.5", "1")
   colours <- colorRampPalette(c("white", "black"))(10)
@@ -8,17 +7,17 @@ mypheatDissMat <- function (dissimObj, true_clusters=NULL, order=NULL, main = NU
   SymMat <- 1 - dissMat
 
   if(!missing(true_clusters)){
-    rownames(SymMat) <- paste0("r", 1:200)
-    colnames(SymMat) <- paste0("c", 1:200)
+    rownames(SymMat) <- paste0("r", 1:nSbj)
+    colnames(SymMat) <- paste0("c", 1:nSbj)
     myannot <- data.frame("true_clusters"=true_clusters)
     #myannot <- as.data.frame(t(dissimObj$disSimRunInfoObj$xMat))
     myannot_row <- apply(t(myannot), 2, as.factor)
     myannot_row <- as.data.frame(myannot_row)
-    rownames(myannot_row) <- paste0("r", 1:200)
+    rownames(myannot_row) <- paste0("r", 1:nSbj)
 
     myannot_col <- apply(t(myannot), 2, as.factor)
     myannot_col <- as.data.frame(myannot_col)
-    rownames(myannot_col) <- paste0("c", 1:200)
+    rownames(myannot_col) <- paste0("c", 1:nSbj)
     colnames(myannot_row) <- "true_clusters"
     col_annot <- c("#6B0077",   "#7665A4",  "#8DA3CA",  "#B7D5E4",  "#F1F1F1")
     #col_annot <- c("#D3A362",   "#8BF0AD",  "#9AFFFF",  "#FFE0FF",  "#FFEEB3")

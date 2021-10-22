@@ -178,7 +178,6 @@ MatrixXd wishartRand(baseGeneratorType& rndGenerator,const MatrixXd& R,const int
 
 		A(i,i)=sqrt(gammaRand(rndGenerator));
 	}
-
 	// Compute DA
 	// Note DAA'D' = (DA)(DA)' ~ Wish(R,m)
 	MatrixXd DA = D*A;

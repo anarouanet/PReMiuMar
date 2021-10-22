@@ -948,7 +948,6 @@ public:
     // And will ensure that at this initial time sufficient
     // space is allocated to prevent future allocations
     unsigned int maxNClusters = 100;
-
     if(nClusInit>100){
       maxNClusters=nClusInit;
     }
@@ -1427,7 +1426,6 @@ public:
       double logPhiStar;
       logPhiStar = workLogPhiStar(c,j,Xij);
       _workLogPXiGivenZi[i]+=(logPhiStarNew[c][Xij]-logPhiStar);
-
     }
     for(unsigned int c=0;c<nClusters;c++){
       _workLogPhiStar[c][j]=logPhiStarNew[c];
@@ -1863,7 +1861,8 @@ public:
         for(unsigned int j=0;j<nCov;j++){
           unsigned int zi = z(i);
           int Xij=workDiscreteX(i,j);
-          double logPhiStar,logPhiStarNew;
+          double logPhiStar = 0;
+          double logPhiStarNew = 0;
           logPhiStar = workLogPhiStar(zi,j,Xij);
           logPhiStarNew = workLogPhiStar(c,j,Xij);
           _workLogPXiGivenZi[i]+=(logPhiStarNew-logPhiStar);

@@ -321,7 +321,6 @@ RcppExport SEXP profRegr(SEXP inputString) {
     pReMiuMSampler.addProposal("metropolisHastingsForRhoOmega",1.0,1,firstSweep,&metropolisHastingsForRhoOmega);
   }
 
-
   if(options.includeResponse()){
     if(options.outcomeType().compare("Normal")==0){
       // Gibbs for sigmaSqY for Normal response model
@@ -342,9 +341,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
   /* ---------- Write the log file ------------- */
   // The standard log file
   pReMiuMSampler.writeLogFile();
-
   /* ---------- Initialise the chain ---- */
-
   pReMiuMSampler.initialiseChain();
 
   pReMiuMHyperParams hyperParams = pReMiuMSampler.chain().currentState().parameters().hyperParams();
@@ -352,6 +349,7 @@ RcppExport SEXP profRegr(SEXP inputString) {
 
   // The following is only used if the sampler type is truncated
   unsigned int maxNClusters = pReMiuMSampler.chain().currentState().parameters().maxNClusters();
+
   /* ---------- Run the sampler --------- */
   // Note: in this function the output gets written
 

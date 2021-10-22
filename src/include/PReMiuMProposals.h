@@ -1188,36 +1188,35 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
                      pReMiuMPropParams& propParams,
                      baseGeneratorType& rndGenerator){
 
-  mcmcState<pReMiuMParams>& currentState = chain.currentState();
-  pReMiuMParams& currentParams = currentState.parameters();
+    mcmcState<pReMiuMParams>& currentState = chain.currentState();
+    pReMiuMParams& currentParams = currentState.parameters();
 
-  nTry++;
-  nAccept++;
+   nTry++;
+   nAccept++;
 
-  // Find the active clusters
-  unsigned int maxZ = currentParams.workMaxZi();
+   // Find the active clusters
+   unsigned int maxZ = currentParams.workMaxZi();
 
-  // This is sampled from the posterior given the z vector above
-  // Prior comes from the conjugacy of the dirichlet and multinomial
-  vector<unsigned int> sumCPlus1ToMaxMembers(maxZ+1);
+   // This is sampled from the posterior given the z vector above
+   // Prior comes from the conjugacy of the dirichlet and multinomial
+   vector<unsigned int> sumCPlus1ToMaxMembers(maxZ+1);
+   sumCPlus1ToMaxMembers[maxZ]=0;
+   for(int c=maxZ-1;c>=0;c--){
+     sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
+   }
 
-  sumCPlus1ToMaxMembers[maxZ]=0;
-  for(int c=maxZ-1;c>=0;c--){
-    sumCPlus1ToMaxMembers[c]=sumCPlus1ToMaxMembers[c+1]+currentParams.workNXInCluster(c+1);
-  }
+    double tmp=0.0;
+    double alpha = currentParams.alpha();
+    double dPitmanYor = currentParams.dPitmanYor();
 
+    for(unsigned int c=0;c<maxZ;c++){//
+      double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
+      currentParams.v(c,vVal);
+      // Set psi
+      currentParams.logPsi(c,tmp+log(vVal));
+      tmp += log(1-vVal);
 
-  double tmp=0.0;
-  double alpha = currentParams.alpha();
-  double dPitmanYor = currentParams.dPitmanYor();
-
-  for(unsigned int c=0;c<=maxZ;c++){
-    double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
-    currentParams.v(c,vVal);
-    // Set psi
-    currentParams.logPsi(c,tmp+log(vVal));
-    tmp += log(1-vVal);
-  }
+    }
 }
 
 // Moves for updating the Theta which are active i.e. Theta_c where c<=Z_max
@@ -2831,7 +2830,7 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
     nL=4;
   }
 
-  if(model.options().estim_ratio() & 1<2){
+  if(model.options().estim_ratio()){
     for(unsigned int c=maxZ+1;c<maxNClusters;c++){
       double vVal = betaRand(rndGenerator,hyperParams.aRatio(),hyperParams.bRatio());
       currentParams.ratio(c, vVal);

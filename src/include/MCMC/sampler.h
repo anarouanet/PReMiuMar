@@ -245,12 +245,8 @@ template<class modelParamType,class optionType,class propParamType,class dataTyp
 		void initialiseChain(){
 
 			modelParamType tmpModelParams;
-		  cout << " maxNClusters init: "<< tmpModelParams.maxNClusters()<<endl;
-
 			_model.initialiseParams(_rndGenerator,tmpModelParams);
 			vector<double> logPostVec;
-			cout << " maxNClusters1 "<< tmpModelParams.maxNClusters()<<endl;
-
 			logPostVec = _model.logPosterior(tmpModelParams);
 
 			mcmcState<modelParamType> tmpState(tmpModelParams,logPostVec);

@@ -1238,7 +1238,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 	if(hyperParamFileName.compare("")!=0){
 		readHyperParamsFromFile(hyperParamFileName,hyperParams);
 	}
-	cout << " inside initialisePReMiuM, maxNClusters: "<<endl;
 
 	// Allocate the right sizes for each of the parameter variables
 	// This also switches "on" all variable indicators (gamma)
@@ -1422,7 +1421,6 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 		params.logPsi(logPsiNew);
 	}
 
-  cout << " after z "<<endl;
 	if(covariateType.compare("Discrete")==0){
 		// Sample logPhi
 		// Need to count the number of X[i][j]==p for each covariate and category of p
@@ -1834,11 +1832,7 @@ void initialisePReMiuM(baseGeneratorType& rndGenerator,
 				MatrixXd Tau ;
 				Tau = wishartRand(rndGenerator,Rc[c],params.workNXInCluster(c)+hyperParams.MVNnu0());
 				params.MVNTau(c,Tau);
-
-
 			}
-			cout << " initialize MVNTau maxNClusters "<<maxNClusters<<endl;
-
 		}
 
 		if(outcomeType.compare("LME")==0){ //AR

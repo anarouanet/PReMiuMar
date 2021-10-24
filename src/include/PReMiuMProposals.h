@@ -1209,7 +1209,7 @@ void gibbsForVActive(mcmcChain<pReMiuMParams>& chain,
   double alpha = currentParams.alpha();
   double dPitmanYor = currentParams.dPitmanYor();
 
-  for(unsigned int c=0;c<maxZ;c++){//
+  for(unsigned int c=0;c<=maxZ;c++){//
     double vVal = betaRand(rndGenerator,1.0+currentParams.workNXInCluster(c)-dPitmanYor,alpha+sumCPlus1ToMaxMembers[c]+dPitmanYor*(c+1));
     currentParams.v(c,vVal);
     // Set psi
@@ -2421,7 +2421,7 @@ void gibbsForVInActive(mcmcChain<pReMiuMParams>& chain,
     unsigned int c=maxZ;
 
     while(continueLoop){
-      if(samplerType.compare("SliceDependent")==0&&cumPsi[c]>1-minUi){
+      if(samplerType.compare("SliceDependent")==0&&cumPsi[c]>(1-minUi)){
         // We can stop
         maxNClusters=c+1;
         continueLoop=false;
@@ -3540,7 +3540,7 @@ void gibbsForNu(mcmcChain<pReMiuMParams>& chain,
     double nu = ARSsampleNu(currentParams, model, 0,logNuPostSurvival,rndGenerator);
     currentParams.nu(0,nu);
   } else {
-    for (unsigned int c=0;c<maxZ;c++){
+    for (unsigned int c=0;c<=maxZ;c++){
       double nu = ARSsampleNu(currentParams, model, c,logNuPostSurvival,rndGenerator);
       currentParams.nu(c,nu);
     }

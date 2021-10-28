@@ -79,24 +79,24 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   }
 
   if(yModel == "LME" & missing(formula))
-    #stop("The argument formula must be specified in LME ymodel")
-  if (missing(longData) & yModel %in% c("Longitudinal","MVN", "LME"))
+    stop("The argument formula must be specified in LME ymodel")
+  if (missing(longData) & yModel %in% c("Longitudinal", "LME"))
     stop("The argument data should be specified and defined as a data.frame")
   if(yModel == "LME")
     print("LME : formula option")
 
-#  if (yModel == "LME" & class(formula) != "formula")
-#    stop("The argument fixed must be a formula")
-#
-#   if(yModel=="LME"){
-#     m <- match.call()[c(1, match(c("data", "subset", "na.action"),
-#                                  names(match.call()), 0))]
-#     m$formula <- terms(formula)
-#     m$na.action <- na.action
-#     m[[1]] <- as.name("model.frame")
-#     m <- eval(m, sys.parent())
-#     na.fixed <- attr(m, "na.action")
-#   }
+  #  if (yModel == "LME" & class(formula) != "formula")
+  #    stop("The argument fixed must be a formula")
+  #
+  #   if(yModel=="LME"){
+  #     m <- match.call()[c(1, match(c("data", "subset", "na.action"),
+  #                                  names(match.call()), 0))]
+  #     m$formula <- terms(formula)
+  #     m$na.action <- na.action
+  #     m[[1]] <- as.name("model.frame")
+  #     m <- eval(m, sys.parent())
+  #     na.fixed <- attr(m, "na.action")
+  #   }
 
   # open file to write output
   fileName<-paste(output,"_input.txt",sep="")
@@ -109,7 +109,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
     yModel="Bernoulli"
   } else {
     nOutcomes <- length(which(colnames(data)%in%outcome))
-  	dataMatrix<-data[,which(colnames(data)%in%outcome)]
+    dataMatrix<-data[,which(colnames(data)%in%outcome)]
   }
 
   if (sum(is.na(dataMatrix))>0) stop("ERROR: the outcome cannot have missing values. Use the profiles with missing outcome for predictions.")
@@ -390,7 +390,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   if(yModel=="LME"){
     write(nRandomEffects + 1, fileName,append=T,ncolumns=1)
     randomEffectsNames <- c("intercept",randomEffectsNames)
-      write(t(randomEffectsNames), fileName,append=T,ncolumns=1)
+    write(t(randomEffectsNames), fileName,append=T,ncolumns=1)
   }
   if (yModel=="Categorical") write(yLevels,fileName,append=T,ncolumns=1)
   if (xModel=="Discrete"||xModel=="Mixed"){
@@ -459,7 +459,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   }
 
   if(!is.null(longData)){
-  ##//RJ get trajectory lengths
+    ##//RJ get trajectory lengths
     IDlist <- longData$ID
     IDs <- unique(IDlist)
     tStop <- vector(length=nSubjects)
@@ -740,6 +740,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sampleGPmean,sep="")
   if (estim_ratio) inputString<-paste(inputString," --estim_ratio=" ,estim_ratio,sep="")
   if (!missing(seed)) inputString<-paste(inputString," --seed=",seed,sep="")
+  print(inputString)
 
   if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
 
@@ -762,7 +763,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
     varSelType <- varSelectType
   }
   # covariate matrix
-  xMat <- dataMatrix[,2:(nCovariates+1)]
+  xMat <- dataMatrix[,(nOutcomes+1):(nCovariates+nOutcomes)]
   # outcome and fixed effect matrix
   yMat <- NULL
   wMat <- NULL
@@ -788,13 +789,13 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   }
   if(nFixedEffects>0){
     wMat <- as.data.frame(matrix(0,dim(dataMatrix)[1],nFixedEffects))
-    wMat[1:(nFixedEffects-length(intersect(fixedEffectsNames,timevar)))]<-dataMatrix[,(2+nCovariates):(1+nCovariates+nFixedEffects-length(intersect(fixedEffectsNames,timevar)))]
+    wMat[1:(nFixedEffects-length(intersect(fixedEffectsNames,timevar)))]<-dataMatrix[,(1+nOutcomes+nCovariates):(nOutcomes+nCovariates+nFixedEffects-length(intersect(fixedEffectsNames,timevar)))]
     names(wMat)[1:(nFixedEffects-length(intersect(fixedEffectsNames,timevar)))]<-fixedEffectsNames
   }
   wMat_mix <-NULL
   if(nFixedEffects_mix>0 & (nFixedEffects_mix-length(intersect(fixedEffectsNames_clust,timevar))>0)){
     wMat_mix <- matrix(0,dim(dataMatrix)[1],nFixedEffects_mix)
-    wMat_mix[,1:(nFixedEffects_mix-length(intersect(fixedEffectsNames_clust,timevar)))]<-dataMatrix[,(2+nCovariates+nFixedEffects):(1+nCovariates+nFixedEffects+nFixedEffects_mix-length(intersect(fixedEffectsNames_clust,timevar)))]
+    wMat_mix[,1:(nFixedEffects_mix-length(intersect(fixedEffectsNames_clust,timevar)))]<-dataMatrix[,(1+nOutcomes+nCovariates+nFixedEffects):(nOutcomes+nCovariates+nFixedEffects+nFixedEffects_mix-length(intersect(fixedEffectsNames_clust,timevar)))]
   }
 
   # include response
@@ -825,50 +826,50 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   }
 
   liste<-list("directoryPath"=directoryPath,
-             "fileStem"=fileStem,
-             "inputFileName"=fileName,
-             "nSweeps"=nSweeps,
-             "nBurn"=nBurn,
-             "reportBurnIn"=reportBurnIn,
-             "nFilter"=nFilter,
-             "nProgress"=nProgress,
-             "nSubjects"=nSubjects,
-             "nPredictSubjects"=nPreds,
-             "fullPredictFile"=fullPredictFile,
-             "predictType"=predictType,
-             "alpha"=alpha,
-             "dPitmanYor"=dPitmanYor,
-             "covNames"=covNames,
-             "discreteCovs"=discreteTmp,
-             "continuousCovs"=contTmp,
-             "xModel"=xModel,
-             "includeResponse"=includeResponse,
-             "outcome"=outcome,
-             "whichLabelSwitch"=whichLabelSwitch,
-             "yModel"=yModel,
-             "varSelect"=varSelect,
-             "varSelectType"=varSelType,
-             "nCovariates"=nCovariates,
-             "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
-             "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
-             "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
-             "fixedEffectsNames"=fixedEffectsNames, "fixedEffectsNames_clust"=fixedEffectsNames_clust,
-             "nCategoriesY"=yLevels,
-             "nCategories"=xLevels,
-             "extraYVar"=extraYVar,
-             "includeCAR"=includeCAR,
-             "weibullFixedShape"=weibullFixedShape,
-             "useNormInvWishPrior"=useNIWP,
-             "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
-             "longMat"=longMat,"longMean"=longMean,"tMat"=tMat)
+              "fileStem"=fileStem,
+              "inputFileName"=fileName,
+              "nSweeps"=nSweeps,
+              "nBurn"=nBurn,
+              "reportBurnIn"=reportBurnIn,
+              "nFilter"=nFilter,
+              "nProgress"=nProgress,
+              "nSubjects"=nSubjects,
+              "nPredictSubjects"=nPreds,
+              "fullPredictFile"=fullPredictFile,
+              "predictType"=predictType,
+              "alpha"=alpha,
+              "dPitmanYor"=dPitmanYor,
+              "covNames"=covNames,
+              "discreteCovs"=discreteTmp,
+              "continuousCovs"=contTmp,
+              "xModel"=xModel,
+              "includeResponse"=includeResponse,
+              "outcome"=outcome,
+              "whichLabelSwitch"=whichLabelSwitch,
+              "yModel"=yModel,
+              "varSelect"=varSelect,
+              "varSelectType"=varSelType,
+              "nCovariates"=nCovariates,
+              "nDiscreteCovs"=ifelse(xModel=="Mixed",nDiscreteCovs,NA),
+              "nContinuousCovs"=ifelse(xModel=="Mixed",nContinuousCovs,NA),
+              "nFixedEffects"=nFixedEffects,"nFixedEffects_clust"=nFixedEffects_mix,
+              "fixedEffectsNames"=fixedEffectsNames, "fixedEffectsNames_clust"=fixedEffectsNames_clust,
+              "nCategoriesY"=yLevels,
+              "nCategories"=xLevels,
+              "extraYVar"=extraYVar,
+              "includeCAR"=includeCAR,
+              "weibullFixedShape"=weibullFixedShape,
+              "useNormInvWishPrior"=useNIWP,
+              "xMat"=xMat,"yMat"=yMat,"wMat"=wMat,
+              "longMat"=longMat,"longMean"=longMean,"tMat"=tMat,"nOutcomes"=nOutcomes)
 
   if(yModel == 'LME')
     liste<- c(liste, list("randomEffectsNames"=randomEffectsNames,"nRandomEffects"=nRandomEffects+1, "timevar"=timevar,"wMat_mix"=wMat_mix))
   if(yModel == 'Longitudinal')
     liste<- c(liste, list("kernel"=kernel, "sampleGPmean"= sampleGPmean,  "estim_ratio"=estim_ratio,
-              "nTimes_unique"=length(all_times) , "all_times"=all_times,"times_corr"=times_corr))
+                          "nTimes_unique"=length(all_times) , "all_times"=all_times,"times_corr"=times_corr))
   return(liste)
-  }
+}
 
 
 
@@ -978,7 +979,6 @@ calcOptimalClustering<-function(disSimObj,maxNClusters=NULL,useLS=F){
       firstLine<-ifelse(reportBurnIn,nBurn/nFilter+2,1)
       lastLine<-(nSweeps+ifelse(reportBurnIn,nBurn+1,0))/nFilter
       maxNClusters<-0
-
       for(sweep in firstLine:lastLine){
         if(sweep==firstLine){
           skipVal<-firstLine-1
@@ -1323,14 +1323,14 @@ calcAvgRiskAndProfile<-function(clusObj,includeFixedEffects=F,proportionalHazard
       # Calculate the average risk (over subjects) for each cluster
 
       for(c in 1:nClusters){
-      	currLambdaVector<-currTheta[currZ[optAlloc[[c]]],]
+        currLambdaVector<-currTheta[currZ[optAlloc[[c]]],]
         currLambda<-matrix(currLambdaVector,ncol=nCategoriesY)
         if(includeFixedEffects&&nFixedEffects>0){
           if (yModel=="Categorical"){
             for (i in 1:length(optAlloc[[c]])){
               for (k in 1:nCategoriesY) currLambda[i,k]<-currLambda[i,k]+
-                t(as.matrix(wMat[optAlloc[[c]][i],]))%*%
-                currBeta[,yMat[optAlloc[[c]][i]]+1]
+                  t(as.matrix(wMat[optAlloc[[c]][i],]))%*%
+                  currBeta[,yMat[optAlloc[[c]][i]]+1]
             }
           } else {
             currLambda<-currLambda+as.matrix(wMat[optAlloc[[c]],])%*%currBeta
@@ -1866,7 +1866,7 @@ plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,wh
       MVNmuLower<-apply(MVNmuArray,2,quantile,0.05)
       MVNmuUpper<-apply(MVNmuArray,2,quantile,0.95)
       MVNmuDF<-data.frame("MVNmu"=c(),"cluster"=c(),"meanMVNmu"=c(),
-                       "lowerMVNmu"=c(),"upperMVNmu"=c(),"fillColor"=c())
+                          "lowerMVNmu"=c(),"upperMVNmu"=c(),"fillColor"=c())
     }
 
   }else{
@@ -2383,9 +2383,9 @@ plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,wh
       params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,],kernel)
 
       GPDF2 <- data.frame("time"=tTimes,"mu"=params$mu+longMean,
-                                    "cluster"=rep(c,times=length(tTimes)),
-                                    "sigma"=1.645*sqrt(diag(params$GPSigma)),
-                                    "fillColor"=riskColor[c])
+                          "cluster"=rep(c,times=length(tTimes)),
+                          "sigma"=1.645*sqrt(diag(params$GPSigma)),
+                          "fillColor"=riskColor[c])
 
       observed_times_c<-c(min(times_c),max(times_c))
       if(extrapolation==F & length(which(tTimes<observed_times_c[1]|tTimes>observed_times_c[2] ))>0){
@@ -2445,9 +2445,9 @@ plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,wh
 
   if(yModel=='MVN'){
     png(paste(strsplit(outFile,"\\.")[[1]][1],'-MVN.png',sep=""),width=1200,height=800)
-  	plotLayout<-grid.layout(ncol = nOutcomes, nrow = 6)
-	grid.newpage()
-  	pushViewport(viewport(layout = plotLayout))
+    plotLayout<-grid.layout(ncol = nOutcomes, nrow = 6)
+    grid.newpage()
+    pushViewport(viewport(layout = plotLayout))
 
     for(j in 1:nOutcomes){
       # Plot the means
@@ -2556,13 +2556,13 @@ GP_cov <- function(times,L,kernelType){
   Mat <- matrix(0,nTimes,nTimes)
   for(i in 2:nTimes){
     for(j in 1:i){
-        if(kernelType=="SQexponential"){
-          a=-1.0/2.0/L[2]*(times[i]-times[j])*(times[i]-times[j])
-          Mat[i,j]=L[1]*exp(a)
-        }else{
-          a=L[1]+L[2]*(times[i]-L[4])*(times[j]-L[4])
-          Mat[i,j]=a*a #+ L[4];
-        }
+      if(kernelType=="SQexponential"){
+        a=-1.0/2.0/L[2]*(times[i]-times[j])*(times[i]-times[j])
+        Mat[i,j]=L[1]*exp(a)
+      }else{
+        a=L[1]+L[2]*(times[i]-L[4])*(times[j]-L[4])
+        Mat[i,j]=a*a #+ L[4];
+      }
     }
   }
   Mat=Mat+t(Mat);
@@ -2636,8 +2636,8 @@ calcPredictions<-function(riskProfObj,predictResponseFileName=NULL, doRaoBlackwe
 
   ##//RJ fullSweepPredictions=T for Longitudinal and MVN
   if(yModel=="Longitudinal"||yModel=="MVN"){
-  	if(fullSweepPredictions==F){
-  	  fullSweepPredictions=T
+    if(fullSweepPredictions==F){
+      fullSweepPredictions=T
       cat("Full sweep predictions used for Longitudinal or MVN outcome.\n")
     }
   }
@@ -2760,13 +2760,13 @@ calcPredictions<-function(riskProfObj,predictResponseFileName=NULL, doRaoBlackwe
     thetaFileName<-file.path(directoryPath,paste(fileStem,'_theta.txt',sep=''))
     thetaFile<-file(thetaFileName,open="r")
     if (yModel=="Longitudinal"){
-    	LFileName<-file.path(directoryPath,paste(fileStem,'_L.txt',sep=''))
-    	LFile<-file(LFileName,open="r")
+      LFileName<-file.path(directoryPath,paste(fileStem,'_L.txt',sep=''))
+      LFile<-file(LFileName,open="r")
     }else if(yModel=="MVN"){
-    	MVNmuFileName<-file.path(directoryPath,paste(fileStem,'_MVNmu.txt',sep=''))
-    	MVNmuFile<-file(MVNmuFileName,open="r")
-    	MVNSigmaFileName<-file.path(directoryPath,paste(fileStem,'_MVNSigma.txt',sep=''))
-    	MVNSigmaFile<-file(MVNSigmaFileName,open="r")
+      MVNmuFileName<-file.path(directoryPath,paste(fileStem,'_MVNmu.txt',sep=''))
+      MVNmuFile<-file(MVNmuFileName,open="r")
+      MVNSigmaFileName<-file.path(directoryPath,paste(fileStem,'_MVNSigma.txt',sep=''))
+      MVNSigmaFile<-file(MVNSigmaFileName,open="r")
     }
     nClustersFileName<-file.path(directoryPath,paste(fileStem,'_nClusters.txt',sep=''))
     nClustersFile<-file(nClustersFileName,open="r")
@@ -2814,8 +2814,8 @@ calcPredictions<-function(riskProfObj,predictResponseFileName=NULL, doRaoBlackwe
         for(c in 1:dim(params)[1]){
           currTheta[c,] <- params[c,]
           for(i in 1:nOutcomes){
-          	index <- i*(i+1)/2
-          	currVar[c,i] <- var[c,index]
+            index <- i*(i+1)/2
+            currVar[c,i] <- var[c,index]
           }
         }
       } else {
@@ -3724,24 +3724,24 @@ plotPredictions<-function(outfile="condDensity.pdf",runInfoObj,predictions,logOR
     print(plotObj)
   }else if(yModel=='MVN'){##//RJ
     plotLayout<-grid.layout(ncol = nOutcomes, nrow = 6)
-	grid.newpage()
-  	pushViewport(viewport(layout = plotLayout))
+    grid.newpage()
+    pushViewport(viewport(layout = plotLayout))
     for(j in 1:nOutcomes){
       # Plot the means
       muMat<-predictions$predictedYPerSweep[,,j]
       muLower<-apply(muMat,2,quantile,0.01)
       muUpper<-apply(muMat,2,quantile,0.99)
       muMat2<-matrix(unlist(apply(muMat,1,function(x)
-      	if(sum(x>min(muLower))==length(x)&&sum(x<max(muUpper))==length(x))x)),ncol=dim(muMat)[2],byrow=T)
- 	  muMeans<-apply(muMat,2,mean)
+        if(sum(x>min(muLower))==length(x)&&sum(x<max(muUpper))==length(x))x)),ncol=dim(muMat)[2],byrow=T)
+      muMeans<-apply(muMat,2,mean)
       muMean<-mean(muMeans)
       muLower<-apply(muMat,2,quantile,0.05)
       muUpper<-apply(muMat,2,quantile,0.95)
       plotDF<-data.frame("mu"=as.vector(muMat2),
-                            "Subject"=rep(1:nPredictSubjects,each=dim(muMat2)[1]),
-                            "lowerMu"=rep(muLower,each=dim(muMat2)[1]),
-                            "upperMu"=rep(muUpper,each=dim(muMat2)[1]),
-                            "meanMu"=rep(muMean,each=dim(muMat2)[1]))
+                         "Subject"=rep(1:nPredictSubjects,each=dim(muMat2)[1]),
+                         "lowerMu"=rep(muLower,each=dim(muMat2)[1]),
+                         "upperMu"=rep(muUpper,each=dim(muMat2)[1]),
+                         "meanMu"=rep(muMean,each=dim(muMat2)[1]))
       plotObj<-ggplot(plotDF)
       plotObj<-plotObj+geom_hline(aes(x=as.factor(Subject),y=mu,yintercept=meanMu))
       plotObj<-plotObj+geom_boxplot(aes(x=as.factor(Subject),y=mu,fill=as.factor(Subject)),outlier.size=0.5)
@@ -3767,10 +3767,10 @@ plotPredictions<-function(outfile="condDensity.pdf",runInfoObj,predictions,logOR
       sigmaLower<-apply(sigmaMat,2,quantile,0.05)
       sigmaUpper<-apply(sigmaMat,2,quantile,0.95)
       plotDF<-data.frame("sigma"=as.vector(sigmaMat),
-                            "Subject"=rep(1:nPredictSubjects,each=dim(sigmaMat)[1]),
-                            "lowerSigma"=rep(sigmaLower,each=dim(sigmaMat)[1]),
-                            "upperSigma"=rep(sigmaUpper,each=dim(sigmaMat)[1]),
-                            "meanSigma"=rep(sigmaMean,each=dim(sigmaMat)[1]))
+                         "Subject"=rep(1:nPredictSubjects,each=dim(sigmaMat)[1]),
+                         "lowerSigma"=rep(sigmaLower,each=dim(sigmaMat)[1]),
+                         "upperSigma"=rep(sigmaUpper,each=dim(sigmaMat)[1]),
+                         "meanSigma"=rep(sigmaMean,each=dim(sigmaMat)[1]))
 
       plotObj<-ggplot(plotDF)
       plotObj<-plotObj+geom_hline(aes(x=as.factor(Subject),y=sigma,yintercept=meanSigma))

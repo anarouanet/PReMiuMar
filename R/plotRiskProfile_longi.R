@@ -1,4 +1,4 @@
-plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,whichClusters=NULL,whichCovariates=NULL,
+plotRiskProfile_longi<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,whichClusters=NULL,whichCovariates=NULL,
                              useProfileStar=F,riskLim=NULL,bycol=FALSE, profile_X=NULL, timevar=NULL, double_plot = FALSE){
 
   riskProfClusObj=NULL
@@ -34,9 +34,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
   upperNu=NULL
   sampleGPmean=FALSE
 
-  #library("PReMiuM")
-  library("grid")
-  library("ggplot2")
   for (i in 1:length(riskProfObj)) assign(names(riskProfObj)[i],riskProfObj[[i]])
   for (i in 1:length(riskProfClusObj)) assign(names(riskProfClusObj)[i],riskProfClusObj[[i]])
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
@@ -957,8 +954,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 
     ##//AR data plot
     if(double_plot){
-      library(cowplot)
-      library(premiumPlots)
       longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
       png(longFile,width=1200,height=800)
       plotObj <- ggplot(GPDF) + theme_bw()
@@ -980,7 +975,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
         #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
         facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
-      p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum =0.1, useProfileStar=F)
+      p2 <- plotProfilesByCluster_longi(riskProfObj, rhoMinimum =0.1, useProfileStar=F)
       p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
       #p2 + theme(axis.text.x = element_blank())
 
@@ -1161,9 +1156,6 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 
     ##//AR data plot
     if(double_plot){
-      library(cowplot)
-      library(premiumPlots)
-
       longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.png',sep="")
       png(longFile,width=1200,height=800)
       plotObj <- ggplot(GPDF) + theme_bw()
@@ -1185,7 +1177,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
         #theme(axis.text.x=element_text(size=10),axis.text.y=element_text(size=10))+
         facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
-      p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
+      p2 <- plotProfilesByCluster_longi(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
 
       table(clusObj$clusObjRunInfoObj$xMat$FKH1)
 
@@ -1398,12 +1390,12 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     p1<- plotObj + facet_wrap(~cluster,ncol=1, strip.position="left")+theme(legend.position = "none")
     ##!! varSelect
     riskProfObj$riskProfClusObj$clusObjRunInfoObj$varSelect <- T
-    p2 <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
+    p2 <- plotProfilesByCluster_longi(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
 
     table(clusObj$clusObjRunInfoObj$xMat$FKH1)
 
 
-    p2bis <- plotProfilesByCluster_AR(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
+    p2bis <- plotProfilesByCluster_longi(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
     p2 <-p2 + theme(axis.text.x = element_text(angle = 90, size=17))
 
     plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
@@ -1411,11 +1403,9 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
 
     dev.off()
 
-
     longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
     png(longFile,width=1200,height=800)
-
-
+    #times<-(times-1)*5
     plotObj <- ggplot(profileDF)+theme_bw()
     for(i in 1:nSubjects){
       df <- (data.frame(x=times,y=yMat[i,],cluster=rep(clustering[i],nOutcomes)))
@@ -1432,7 +1422,7 @@ plotRiskProfile_AR<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL
     plotObj <- plotObj + theme(axis.text.x=element_text(size=20, color = "black"), axis.text.y=element_text(color = "black"))
 
     p1b<- plotObj + facet_wrap(~cluster,ncol=1, strip.position="left")+
-      theme(legend.position = "none")
+      theme(legend.position = "none", axis.text.y=element_text(size=20))
     plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
     print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
 

@@ -227,13 +227,14 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
       FEIndeces<-append(FEIndeces,tmpIndex)
     }
     fixedEffects<-data[,FEIndeces]
-
-    for(j in 1:length(which(!fixedEffectsNames%in%timevar))){
-      name <- fixedEffectsNames[which(!fixedEffectsNames%in%timevar)][j]
-      if(length(FEIndeces)==1){
-        longData_FE[[name]] <- rep(fixedEffects,times=nmes)
-      }else{
-        longData_FE[[name]] <- rep(fixedEffects[,j],times=nmes)
+    if(yModel=="LME"){
+      for(j in 1:length(which(!fixedEffectsNames%in%timevar))){
+        name <- fixedEffectsNames[which(!fixedEffectsNames%in%timevar)][j]
+        if(length(FEIndeces)==1){
+          longData_FE[[name]] <- rep(fixedEffects,times=nmes)
+        }else{
+          longData_FE[[name]] <- rep(fixedEffects[,j],times=nmes)
+        }
       }
     }
 
@@ -551,7 +552,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   #check entries for spatial CAR term
   if (includeCAR&file.exists(neighboursFile)==FALSE) stop("You must enter a valid file for neighbourhood structure.")
 
-  inputString<-paste("PReMiuMar --input=",fileName," --output=",output," --xModel=",xModel," --yModel=",yModel," --varSelect=",varSelectType," --whichLabelSwitch=",whichLabelSwitch," --predType=",predictType,sep="")
+  inputString<-paste("PReMiuMlongi --input=",fileName," --output=",output," --xModel=",xModel," --yModel=",yModel," --varSelect=",varSelectType," --whichLabelSwitch=",whichLabelSwitch," --predType=",predictType,sep="")
 
   # create hyperparameters file
   if (!missing(hyper)) {
@@ -740,9 +741,8 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
   if (sampleGPmean) inputString<-paste(inputString," --sampleGPmean=" ,sampleGPmean,sep="")
   if (estim_ratio) inputString<-paste(inputString," --estim_ratio=" ,estim_ratio,sep="")
   if (!missing(seed)) inputString<-paste(inputString," --seed=",seed,sep="")
-  print(inputString)
 
-  if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMar')
+  if (run) .Call('profRegr', inputString, PACKAGE = 'PReMiuMlongi')
 
   # define directory path and fileStem
   outputSplit <- strsplit(output,split="/")
@@ -898,7 +898,7 @@ dissimObj <-calcDissimilarityMatrix<-function(runInfoObj,onlyLS=FALSE){
 
   # Call the C++ to compute the dissimilarity matrix
   disSimList<-.Call('calcDisSimMat',fileName,nSweeps,recordedNBurn,nFilter,nSubjects,
-                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuMar')
+                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuMlongi')
 
   if (onlyLS){
     lsOptSweep<-disSimList$lsOptSweep
@@ -3181,7 +3181,7 @@ margModelPosterior<-function(runInfoObj,allocation){
   out<-.Call('pYGivenZW',beta,theta,zAlloc,hyperParams$sigmaBeta,
              hyperParams$sigmaTheta,hyperParams$dofTheta,hyperParams$dofBeta,nSubjects,
              yMat,betaW,nFixedEffects,nTableNames,constants,
-             maxNTableNames,PACKAGE = 'PReMiuMar')
+             maxNTableNames,PACKAGE = 'PReMiuMlongi')
   return(out)
 }
 
@@ -3198,14 +3198,14 @@ margModelPosterior<-function(runInfoObj,allocation){
     betaW<-as.matrix(wMat)%*%beta
     yPred<-.Call('GradpYGivenZW',beta,theta,zAlloc,nSubjects,
                  betaW,yMat,nFixedEffects,nTableNames,
-                 maxNTableNames,PACKAGE = 'PReMiuMar')
+                 maxNTableNames,PACKAGE = 'PReMiuMlongi')
     wPred<- as.matrix(wMat)*yPred
   } else {
     beta<-0
     betaW<-0
     yPred<-.Call('GradpYGivenZW',beta,theta,zAlloc,nSubjects,
                  betaW,yMat,nFixedEffects,nTableNames,
-                 maxNTableNames,PACKAGE = 'PReMiuMar')
+                 maxNTableNames,PACKAGE = 'PReMiuMlongi')
   }
   gr.theta<-rep(0,nClusters)
   for (k in 1:nClusters){
@@ -3333,7 +3333,7 @@ margModelPosterior<-function(runInfoObj,allocation){
   nPlus<-head(c(rev(cumsum(rev(clusterSizes[-1]))),0),-1)
 
   # computation of pX+pZ
-  pZpX<-.Call('pZpX',nClusters,nCategories,hyperParams$aPhi,clusterSizes,nCovariates, zAlloc, as.vector(as.matrix(xMat)), as.integer(nTableNames), alphaMPP, nPlus, PACKAGE = 'PReMiuMar')
+  pZpX<-.Call('pZpX',nClusters,nCategories,hyperParams$aPhi,clusterSizes,nCovariates, zAlloc, as.vector(as.matrix(xMat)), as.integer(nTableNames), alphaMPP, nPlus, PACKAGE = 'PReMiuMlongi')
 
   # computation of pY
   if (includeResponse==T){
@@ -3706,7 +3706,7 @@ plotPredictions<-function(outfile="condDensity.pdf",runInfoObj,predictions,logOR
   if(yModel=='Longitudinal'){##//RJ
     stdev <- c()
     for(i in 1:nPredictSubjects)
-      stdev <- c(stdev,apply(predictions$predictedYPerSweep[,i,],2,sd))
+      stdev <- c(stdev,apply(predictions$predictedYPerSweep[,i,],2,stats::sd))
     plotDF <- data.frame('time'=predictions$timepoints,'score'=as.vector(t(predictions$predictedY))+longMean,
                          'stdev'=1.645*(sqrt(as.vector(t(predictions$predictedYVar)))+stdev),
                          'Subject'=rep(1:nPredictSubjects,each=length(predictions$timepoints)))

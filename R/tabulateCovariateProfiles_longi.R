@@ -1,4 +1,4 @@
-tabulateCovariateProfiles_AR<-function (riskProfObj, whichCovariates = NULL, rhoMinimum = NULL,
+tabulateCovariateProfiles_longi<-function (riskProfObj, whichCovariates = NULL, rhoMinimum = NULL,
           useProfileStar = TRUE)
 {
 
@@ -17,11 +17,11 @@ tabulateCovariateProfiles_AR<-function (riskProfObj, whichCovariates = NULL, rho
     rhotab <- tabulateVarSelectRho(riskProfObj)
     names(rhotab)[1]<-"var"
     if (is.null(whichCovariates) & !is.null(rhoMinimum)) {
-      rhotab <- dplyr:::filter(rhotab, rhoMean >= rhoMinimum)
+      rhotab <- dplyr::filter(rhotab, rhoMean >= rhoMinimum)
       whichCovariates <- rhotab$var
     }
     if (length(whichCovariates) == 1) {
-      rhotab <- dplyr:::arrange(rhotab, rhoRank)
+      rhotab <- dplyr::arrange(rhotab, rhoRank)
       whichCovariates <- rhotab$var[1:whichCovariates]
     }
   }

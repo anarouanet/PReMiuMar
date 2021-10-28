@@ -1,8 +1,8 @@
-plotProfilesByCluster_AR<-function (riskProfObj, whichCovariates = NULL, rhoMinimum = NULL,
+plotProfilesByCluster_longi<-function (riskProfObj, whichCovariates = NULL, rhoMinimum = NULL,
                                     useProfileStar = TRUE, covariate_info = list(title = "Covariate\ncategory",
                                                                                  levels = NULL, labels = NULL, split = NULL))
 {
-  profileDF <- tabulateCovariateProfiles_AR(riskProfObj = riskProfObj,
+  profileDF <- tabulateCovariateProfiles_longi(riskProfObj = riskProfObj,
                                             whichCovariates = whichCovariates, rhoMinimum = rhoMinimum,
                                             useProfileStar = useProfileStar)
   if (!is.null(covariate_info$levels) & !is.null(covariate_info$labels)) {

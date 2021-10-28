@@ -191,7 +191,6 @@ runInfoObj<-profRegr(yModel=inputs$yModel,
 
 
 # example with MVN outcome and variable selection
-library('mcclust')
 data(inputs)
 data(trueLabels)
 runInfoObj<-profRegr(yModel=inputs$yModel,xModel=inputs$xModel,
@@ -200,10 +199,17 @@ runInfoObj<-profRegr(yModel=inputs$yModel,xModel=inputs$xModel,
     output="output",outcome=inputs$outcome,nClusInit=20)
 dissimObj <- calcDissimilarityMatrix(runInfoObj)
 clusObj <- calcOptimalClustering(dissimObj)
-print(paste("PEAR: ",arandi(clusObj$clustering,trueLabels)))
-rhos <- apply(summariseVarSelectRho(runInfoObj)$rho,2,median)
-for(i in 1:4) print(paste("p(Variable ",i," selected): ",rhos[i]))
+if(requireNamespace("mcclust", quietly = TRUE)){
+  message(paste("PEAR: ", mcclust::arandi(clusObj$clustering, trueLabels)))
+}else{
+  message("Load mcclust package to compute PEAR index using arandi function.")
 
+}
+
+rhos <- apply(summariseVarSelectRho(runInfoObj)$rho, 2, median)
+for(i in 1:4){
+  message(paste("p(Variable ",i," selected): ",rhos[i]))
+}
 }
 \keyword{profileRegression}
 

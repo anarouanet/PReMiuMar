@@ -22,7 +22,7 @@ mypheatDissMat <- function (dissimObj, true_clusters=NULL, order=NULL, main = NU
     col_annot <- c("#6B0077",   "#7665A4",  "#8DA3CA",  "#B7D5E4",  "#F1F1F1")
     #col_annot <- c("#D3A362",   "#8BF0AD",  "#9AFFFF",  "#FFE0FF",  "#FFEEB3")
 
-out <- pheatmap(SymMat, annotation_row = myannot_row,
+out <- pheatmap::pheatmap(SymMat, annotation_row = myannot_row,
              color = colorRampPalette(c( "white", "black"))(50),
              annotation_names_row=F,
              #clustering_callback = callback(hcl,SymMat),
@@ -38,7 +38,7 @@ out <- pheatmap(SymMat, annotation_row = myannot_row,
              ))
     }else{
 
-      pheatmap(SymMat,
+      pheatmap::pheatmap(SymMat,
                color = colorRampPalette(c( "white", "black"))(50),
                #annotation_col = myannot_col,
                show_rownames=F, show_colnames=F )

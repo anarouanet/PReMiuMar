@@ -1,4 +1,4 @@
-calcOptimalClustering_AR<-function(disSimObj,maxNClusters=NULL,useLS=F,nSweeps1){
+calcOptimalClustering_longi<-function(disSimObj,maxNClusters=NULL,useLS=F,nSweeps1){
 
   disSimRunInfoObj=NULL
   directoryPath=NULL
@@ -12,8 +12,6 @@ calcOptimalClustering_AR<-function(disSimObj,maxNClusters=NULL,useLS=F,nSweeps1)
   nSweeps=NULL
   onlyLS=NULL
 
-  library("PReMiuM")
-  library("cluster")
   for (i in 1:length(disSimObj)) assign(names(disSimObj)[i],disSimObj[[i]])
   for (i in 1:length(disSimRunInfoObj)) assign(names(disSimRunInfoObj)[i],disSimRunInfoObj[[i]])
 

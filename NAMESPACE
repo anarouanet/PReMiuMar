@@ -1,4 +1,4 @@
-useDynLib(PReMiuMar)
+useDynLib(PReMiuMlongi)
 exportPattern("^[[:alpha:]]+")
 
 importFrom("graphics", "axis", "mtext", "par", "plot", "plot.new", "plot.window", "rect", "text")
@@ -8,12 +8,14 @@ importFrom("utils", "head", "read.table", "tail", "write.table")
 
 importFrom(grid,grid.layout, grid.newpage, pushViewport, viewport)
 importFrom(gamlss.dist,rWEI2)
-
+importFrom(stringr, str_detect)
 import(mvtnorm)
 import(cluster)
 import(Rcpp)
 import(ggplot2)
 import(plotrix)
-
+import(dplyr)
+import(pheatmap)
+importFrom(stats, sd)
 
 

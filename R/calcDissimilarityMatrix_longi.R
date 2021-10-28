@@ -1,4 +1,4 @@
-calcDissimilarityMatrix_AR<-function(runInfoObj,onlyLS=FALSE,nSweeps1){
+calcDissimilarityMatrix_longi<-function(runInfoObj,onlyLS=FALSE,nSweeps1){
 
 
   directoryPath=NULL

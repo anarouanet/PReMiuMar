@@ -54,7 +54,7 @@ jobs:
           cat("::group::Install PReMiuMlongi dependencies\n")
           deps <- pkgdepends::new_pkg_deps("local::.")$resolve()
           deps2install <- deps$get_resolution()[["ref"]]
-          deps2install <- deps2install[-c(1, grep("premiumPlots", deps2install))]
+          deps2install <- deps2install[-grep("premiumPlots", deps2install)]
           pak::pkg_install(c(deps2install, "rcmdcheck", "sessioninfo"))
           cat("::endgroup::\n")
         shell: Rscript {0}

@@ -35,3 +35,4 @@ LinkingTo: Rcpp, RcppEigen (>= 0.3), BH (>= 1.54)
 Suggest: mcclust
 SystemRequirements: GNU make
 NeedsCompilation: yes
+Encoding: UTF-8

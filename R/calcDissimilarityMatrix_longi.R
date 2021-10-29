@@ -25,7 +25,7 @@ calcDissimilarityMatrix_longi<-function(runInfoObj,onlyLS=FALSE,nSweeps1){
 
   # Call the C++ to compute the dissimilarity matrix
   disSimList<-.Call('calcDisSimMat',fileName,nSweeps,recordedNBurn,nFilter,nSubjects,
-                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuMar')
+                    nPredictSubjects, onlyLS, PACKAGE = 'PReMiuMlongi')
   if (onlyLS){
     lsOptSweep<-disSimList$lsOptSweep
     disSimMatPred<-NULL

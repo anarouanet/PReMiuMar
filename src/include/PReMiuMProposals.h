@@ -2852,14 +2852,14 @@ void gibbsForLInActive(mcmcChain<pReMiuMParams>& chain,
 
   if(model.options().sampleGPmean()){ //AR model.options().sampleGPmean()
 
-    unsigned int nTimes_unique = model.dataset().nTimes_unique();
-    int threads = omp_get_max_threads();
-    vector<baseGeneratorType> rngArray(threads);
+     unsigned int nTimes_unique = model.dataset().nTimes_unique();
+    // int threads = omp_get_max_threads();
+    // vector<baseGeneratorType> rngArray(threads);
 
     // Seed by taking random numbers from the existing generator
-    boost::random::uniform_int_distribution<> seeder;
-    for (auto &rng : rngArray)
-      rng.seed(seeder(rndGenerator));
+    // boost::random::uniform_int_distribution<> seeder;
+    // for (auto &rng : rngArray)
+    //   rng.seed(seeder(rndGenerator));
 
 
     //#pragma omp parallel for

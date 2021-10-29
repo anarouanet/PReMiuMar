@@ -2,22 +2,26 @@
 \alias{setHyperparams}
 \title{Definition of characteristics of sample datasets for profile regression}
 \description{
-Hyperparameters for the priors can be specified here and passed as an argument to profRegr. 
+Hyperparameters for the priors can be specified here and passed as an argument to profRegr.
 
 The user can specify some or all hyperparameters.
 Those hyperparameters not specified will take their default values. Where the
 file is not provided, all hyperparameters will take their default values.
 }
 \usage{
-setHyperparams(shapeAlpha=NULL,rateAlpha=NULL,aPhi=NULL,mu0=NULL,Tau0=NULL,
-     R0=NULL,kappa0=NULL,nu0=NULL,muTheta=NULL,sigmaTheta=NULL,dofTheta=NULL,
-     muBeta=NULL,sigmaBeta=NULL,dofBeta=NULL,shapeTauEpsilon=NULL,
-     rateTauEpsilon=NULL,aRho=NULL,bRho=NULL,atomRho=NULL,shapeSigmaSqY=NULL,
-     scaleSigmaSqY=NULL,rSlice=NULL,truncationEps=NULL,shapeTauCAR=NULL,
-     rateTauCAR=NULL,shapeNu=NULL,scaleNu=NULL,initAlloc=NULL,muLSignal=NULL,
-     sigmaLSignal=NULL,muLLengthscale=NULL,sigmaLLengthscale=NULL,
-     muLNoise=NULL,sigmaLNoise=NULL,MVNmu0=NULL,MVNTau0=NULL,MVNR0=NULL,
-     MVNnu0=NULL,MVNkappa0=NULL)
+setHyperparams(shapeAlpha = NULL, rateAlpha = NULL, aPhi = NULL, mu0
+                    = NULL, Tau0 = NULL, R0 = NULL, kappa0 = NULL, nu0 =
+                    NULL, muTheta = NULL, sigmaTheta = NULL, dofTheta =
+                    NULL, muBeta = NULL, sigmaBeta = NULL, dofBeta = NULL,
+                    shapeTauEpsilon = NULL, rateTauEpsilon = NULL, aRho =
+                    NULL, bRho = NULL, atomRho = NULL, shapeSigmaSqY =
+                    NULL, scaleSigmaSqY = NULL, rSlice = NULL,
+                    truncationEps = NULL, shapeTauCAR = NULL, rateTauCAR =
+                    NULL, shapeNu = NULL, scaleNu = NULL, initAlloc =
+                    NULL, initL = NULL, muLSignal = 0, sigmaLSignal = 0,
+                    muLLengthscale = 0, sigmaLLengthscale = 0, muLNoise =
+                    0, sigmaLNoise = 0, MVNmu0 = NULL, MVNTau0 = NULL,
+                    MVNR0 = NULL, MVNkappa0 = NULL, MVNnu0 = NULL)
 }
 \arguments{
 
@@ -49,6 +53,7 @@ setHyperparams(shapeAlpha=NULL,rateAlpha=NULL,aPhi=NULL,mu0=NULL,Tau0=NULL,
 \item{shapeNu}{Shape parameter of Gamma prior for the shape parameter of the Weibull for survival response (only used in the Survival response model, default = 2.5)}
 \item{scaleNu}{Scale parameter of Gamma prior for the shape parameter of the Weibull for survival response  (only used in the Survival response model, default = 1)}
 \item{initAlloc}{Vector of the initial allocation of the individuals to clusters. This is NULL by default, which implies a random start. Useful for starting the MCMC from a specific partition. Note that if this overwrites the option nClusInit in the function profRegr: nClusInit is set equal to the maximum value in initAlloc. }
+\item{initL}{Default to NULL.}
 \item{muLSignal}{Signal-variance mean for Gaussian processes to model longitudinal outcomes.}
 \item{sigmaLSignal}{Signal-variance variance for Gaussian processes to model longitudinal outcomes.}
 \item{muLLengthscale}{Lengthscale mean for Gaussian processes to model longitudinal outcomes.}
@@ -82,9 +87,9 @@ Silvia Liverani, David I. Hastie, Lamiae Azizi, Michail Papathomas, Sylvia Richa
 hyp <- setHyperparams(shapeAlpha=3,rateAlpha=2,mu0=c(30,13),R0=3.2*diag(2))
 
 inputs <- generateSampleDataFile(clusSummaryPoissonNormal())
-runInfoObj<-profRegr(yModel=inputs$yModel, 
+runInfoObj<-profRegr(yModel=inputs$yModel,
     xModel=inputs$xModel, nSweeps=2, nClusInit=15,
-    nBurn=2, data=inputs$inputData, output="output", 
+    nBurn=2, data=inputs$inputData, output="output",
     covNames = inputs$covNames, outcomeT = inputs$outcomeT,
     fixedEffectsNames = inputs$fixedEffectNames,
     hyper=hyp)

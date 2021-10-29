@@ -875,7 +875,7 @@ profRegr<-function(formula=NULL,covNames, fixedEffectsNames=NULL, fixedEffectsNa
 
 # Function to take the output from the C++ run and return an average dissimilarity
 # matrix
-dissimObj <-calcDissimilarityMatrix<-function(runInfoObj,onlyLS=FALSE){
+calcDissimilarityMatrix<-function(runInfoObj,onlyLS=FALSE){
 
   directoryPath=NULL
   fileStem=NULL
@@ -2380,7 +2380,7 @@ plotRiskProfile<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=NULL,wh
     for(c in whichClusters){
       times_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) times[tMat[x,1]:tMat[x,2]]))
       yData_c <- unlist(lapply(1:nSubjects,function(x)if(clustering[x]==c) yData[tMat[x,1]:tMat[x,2]]))
-      params <- GPfun(t0=times_c,ts=tTimes,y=yData_c,Lp=LMeans[c,],kernel)
+      params <- GP_post(t0=times_c,ts=tTimes,y=yData_c,L=LMeans[c,],kernel)
 
       GPDF2 <- data.frame("time"=tTimes,"mu"=params$mu+longMean,
                           "cluster"=rep(c,times=length(tTimes)),
@@ -2577,24 +2577,24 @@ GP_cov <- function(times,L,kernelType){
   return(Mat)
 }
 
-GP_cov_star <- function(X1,X2,Lp,kernelType){
+GP_cov_star <- function(X1,X2,L,kernelType){
   Mat <- matrix(rep(0,length(X1)*length(X2)),nrow=length(X1))
   for(i in 1:nrow(Mat))
     for(j in 1:ncol(Mat))
       if(kernelType=="SQexponential"){
-        Mat[i,j] <- Lp[1]*exp(-0.5*(X1[i]-X2[j])^2/Lp[2])
+        Mat[i,j] <- L[1]*exp(-0.5*(X1[i]-X2[j])^2/L[2])
       }else{
-        a <- Lp[1]+Lp[2]*(X1[i]-Lp[4])*(X2[j]-Lp[4])
+        a <- L[1]+L[2]*(X1[i]-L[4])*(X2[j]-L[4])
         Mat[i,j] <- a**2
       }
 
   return(Mat)
 }
 
-GPfun <- function(t0,ts,y,Lp,kernelType){
-  Kstar <- GP_cov(ts,exp(Lp),kernelType)
-  Ks0 <- GP_cov_star(ts,t0,exp(Lp),kernelType)
-  K0 <- GP_cov(t0,exp(Lp),kernelType)
+GP_post <- function(t0,ts,y,L,kernelType){
+  Kstar <- GP_cov(ts,exp(L),kernelType)
+  Ks0 <- GP_cov_star(ts,t0,exp(L),kernelType)
+  K0 <- GP_cov(t0,exp(L),kernelType)
   mat <- Ks0 %*% solve(K0)
   GPSigma <- Kstar - mat %*% t(Ks0)
   mu <- 0 + mat %*% (y - 0)
@@ -2799,7 +2799,7 @@ calcPredictions<-function(riskProfObj,predictResponseFileName=NULL, doRaoBlackwe
           times_c <- unlist(lapply(1:nSubjects,function(x)if(tmpCurrZ[x]==c) longMat$time[tMat[x,1]:tMat[x,2]]))
           if(length(times_c>0)){
             yData_c <- unlist(lapply(1:nSubjects,function(x)if(tmpCurrZ[x]==c) longMat$outcome[tMat[x,1]:tMat[x,2]]))
-            GPparams <- GPfun(t0=times_c,ts=timepoints,y=yData_c,Lp=params[c,],kernel)
+            GPparams <- GP_post(t0=times_c,ts=timepoints,y=yData_c,L=params[c,],kernel)
             currTheta[c,] <- GPparams$mu
             currVar[c,] <- diag(GPparams$GPSigma)
           }

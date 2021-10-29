@@ -1,4 +1,4 @@
-Plot_XY_graph <- function (clusObj, order=NULL, main = NULL, xlab = NULL, ylab = NULL, nameX = "X variables", nameY = "Y")
+Plot_XY_graph <- function (clusObj, nameX = "X variables", nameY = "Y")
 {
   nSbj          <- clusObj$clusObjRunInfoObj$nSubjects
   clusters_orig <- clusObj$clustering

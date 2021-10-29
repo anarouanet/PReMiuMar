@@ -1,4 +1,4 @@
-calcAvgRiskAndProfile_longi<-function(clusObj,includeFixedEffects=F,proportionalHazards=F,nSweeps1){
+calcAvgRiskAndProfile_longi<-function(clusObj,includeFixedEffects=F,proportionalHazards=F,nSweeps){
 
   clusObjRunInfoObj=NULL
   directoryPath=NULL
@@ -33,7 +33,7 @@ calcAvgRiskAndProfile_longi<-function(clusObj,includeFixedEffects=F,proportional
   for (i in 1:length(clusObj)) assign(names(clusObj)[i],clusObj[[i]])
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
 
-  assign(names(clusObjRunInfoObj)[4],min(clusObjRunInfoObj[[4]],nSweeps1))
+  assign(names(clusObjRunInfoObj)[4],min(clusObjRunInfoObj[[4]],nSweeps))
   # Construct the number of clusters file name
   nClustersFileName<-file.path(directoryPath,paste(fileStem,'_nClusters.txt',sep=''))
   nClustersFile<-file(nClustersFileName,open="r")

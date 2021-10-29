@@ -1,4 +1,4 @@
-mypheatDissMat <- function (dissimObj, true_clusters=NULL, order=NULL, main = NULL, xlab = NULL, ylab = NULL)
+mypheatDissMat <- function (dissimObj, true_clusters=NULL)
 {
   nSbj <- dissimObj$disSimRunInfoObj$nSubjects
   col.labels <- c("0", "0.5", "1")

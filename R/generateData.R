@@ -742,40 +742,40 @@ clusSummaryLongitudinalDiscrete<-function(ng=2, N=200){##//RJ summary generation
   return(liste)
 }
 
-clusSummaryLongitudinalDiscrete_Quadratic_kernel<-function(){##//RJ summary generation function Longitudinal
-  list(
-    'outcomeType'='Longitudinal',
-    'covariateType'='Discrete',
-    'kernelType'="Quadratic",
-    'nCovariates'=5,
-    'timeGaps'=F,
-    'randomTimes'=F,
-    'timepoints'=c(0,2,4,6,8,10,12),
-    'nCategories'=c(3,3,3,3,3),
-    'nFixedEffects'=0,
-    'fixedEffectsCoeffs'=c(),
-    'sigmaSqY'=1,
-    'missingDataProb'=0,
-    'nClusters'=5,
-    'clusterSizes'=c(30,30),##//RJ
-    'includeCAR'=FALSE,
-    'TauCAR'=100,
-    'clusterData'=list(list('theta'=list('mu'=rep(0,7),
-                                         'L'=c(0.05,-3,-4,1.04)),
-                            'covariateProbs'=list(c(0.8,0.1,0.1),
-                                                  c(0.8,0.1,0.1),
-                                                  c(0.8,0.1,0.1),
-                                                  c(0.8,0.1,0.1),
-                                                  c(0.8,0.1,0.1))),
-                       list('theta'=list('mu'=rep(0,7),
-                                         'L'=c(0.5,-2,-4,2.07)),
-                            'covariateProbs'=list(c(0.1,0.8,0.1),
-                                                  c(0.1,0.8,0.1),
-                                                  c(0.1,0.8,0.1),
-                                                  c(0.1,0.8,0.1),
-                                                  c(0.1,0.1,0.8)))
-    ))
-}
+# clusSummaryLongitudinalDiscrete_Quadratic_kernel<-function(){##//RJ summary generation function Longitudinal
+#   list(
+#     'outcomeType'='Longitudinal',
+#     'covariateType'='Discrete',
+#     'kernelType'="Quadratic",
+#     'nCovariates'=5,
+#     'timeGaps'=F,
+#     'randomTimes'=F,
+#     'timepoints'=c(0,2,4,6,8,10,12),
+#     'nCategories'=c(3,3,3,3,3),
+#     'nFixedEffects'=0,
+#     'fixedEffectsCoeffs'=c(),
+#     'sigmaSqY'=1,
+#     'missingDataProb'=0,
+#     'nClusters'=5,
+#     'clusterSizes'=c(30,30),##//RJ
+#     'includeCAR'=FALSE,
+#     'TauCAR'=100,
+#     'clusterData'=list(list('theta'=list('mu'=rep(0,7),
+#                                          'L'=c(0.05,-3,-4,1.04)),
+#                             'covariateProbs'=list(c(0.8,0.1,0.1),
+#                                                   c(0.8,0.1,0.1),
+#                                                   c(0.8,0.1,0.1),
+#                                                   c(0.8,0.1,0.1),
+#                                                   c(0.8,0.1,0.1))),
+#                        list('theta'=list('mu'=rep(0,7),
+#                                          'L'=c(0.5,-2,-4,2.07)),
+#                             'covariateProbs'=list(c(0.1,0.8,0.1),
+#                                                   c(0.1,0.8,0.1),
+#                                                   c(0.1,0.8,0.1),
+#                                                   c(0.1,0.8,0.1),
+#                                                   c(0.1,0.1,0.8)))
+#     ))
+# }
 
 clusSummaryNormalDiscrete<-function(){
 	list(

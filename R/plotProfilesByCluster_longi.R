@@ -56,7 +56,7 @@ plotProfilesByCluster_longi<-function (riskProfObj, whichCovariates = NULL, rhoM
     ggplot2::geom_bar(position = "fill", stat = "identity") +
     ggplot2::geom_point(ggplot2::aes(y = emp_propn, group = category), col = "black", fill = "white", alpha = 1, shape = 18) +
     #ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90,hjust = 1, vjust = 0.5)) +
-    ggplot2::labs(x = "Transcription factor", y = "Cluster-specific proportion"#, title = "Covariate profiles",
+    ggplot2::labs(x = "Covariates", y = "Cluster-specific proportion"#, title = "Covariate profiles",
                   #subtitle = "Black pips: empirical proportions in each covariate category.\n\n
                   #Dark fill: category more prevalent within cluster than overall."
     ) +

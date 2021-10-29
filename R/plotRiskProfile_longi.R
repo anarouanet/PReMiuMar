@@ -38,7 +38,7 @@ plotRiskProfile_longi<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=N
   for (i in 1:length(riskProfClusObj)) assign(names(riskProfClusObj)[i],riskProfClusObj[[i]])
   for (i in 1:length(clusObjRunInfoObj)) assign(names(clusObjRunInfoObj)[i],clusObjRunInfoObj[[i]])
 
-  #assign(names(clusObjRunInfoObj)[4],min(nSweeps1,clusObjRunInfoObj[[4]]))
+  #assign(names(clusObjRunInfoObj)[4],min(nSweeps,clusObjRunInfoObj[[4]]))
 
   if(!is.null(profile_X)){
     if(length(which(!names(profile_X)%in%c(fixedEffectsNames,fixedEffectsNames_clust)))>0)
@@ -1179,7 +1179,7 @@ plotRiskProfile_longi<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=N
       #theme(axis.title.x=element_text(size=20), axis.title.y=element_text(size=20))
       p2 <- plotProfilesByCluster_longi(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
 
-      table(clusObj$clusObjRunInfoObj$xMat$FKH1)
+      #table(clusObj$clusObjRunInfoObj$xMat$FKH1)
 
 
       p2bis <- plotProfilesByCluster(riskProfObj, rhoMinimum = 0.1, useProfileStar=F)
@@ -1191,15 +1191,16 @@ plotRiskProfile_longi<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=N
 
       dev.off()
 
-      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
-      pdf(longFile, width=12, height=10 )
-      p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
-      p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
-      p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
-      timescale<-function(x){x*5}
-      p1 + scale_x_continuous(labels=timescale)
-      print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
-      dev.off()
+      # longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories.pdf',sep="")
+      # pdf(longFile, width=12, height=10 )
+      # p2 <- p2 +theme(legend.text=element_text(size=15),legend.title=element_text(size=20))
+      # p1 <- p1 + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+      # p1 <- p1 + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+      # timescale<-function(x){x*5}
+      # p1 + scale_x_continuous(labels=timescale)
+      # plot_p2 <- plot_grid(p1,p2, align= 'h', axis='b', rel_widths = c(1,2))
+      # print(plot_p2,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      # dev.off()
 
 
       longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.png',sep="")
@@ -1238,15 +1239,15 @@ plotRiskProfile_longi<-function(riskProfObj,outFile,showRelativeRisk=F,orderBy=N
 
       dev.off()
 
-      longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
-      pdf(longFile, width=12, height=10 )
-      p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
-      p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
-      timescale<-function(x){x*5}
-      p1b <- p1b + scale_x_continuous(labels=timescale)
-      plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
-      print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
-      dev.off()
+      # longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all_trajectories-data.pdf',sep="")
+      # pdf(longFile, width=12, height=10 )
+      # p1b <- p1b + geom_vline(xintercept=c(0,13.33,26.67,40),linetype="dashed")
+      # p1b <- p1b + geom_vline(xintercept=c(0.7,4.7,7.3,9.3,10.7,12.7),linetype="dashed",col="gray")
+      # timescale<-function(x){x*5}
+      # p1b <- p1b + scale_x_continuous(labels=timescale)
+      # plot_p1b <- plot_grid(p1b,p2, align= 'h', axis='b', rel_widths = c(1,2))
+      # print(plot_p1b,vp=viewport(layout.pos.row=1,layout.pos.col=1))
+      # dev.off()
 
       longFile <- paste(strsplit(outFile,"\\.")[[1]][1],'-all.png',sep="")
       png(longFile,width=1200,height=800)

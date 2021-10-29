@@ -47,7 +47,6 @@
 #include<Eigen/Core>
 #include<Eigen/Cholesky>
 #include<Eigen/LU>
-#include <omp.h>
 
 
 // Custom includes

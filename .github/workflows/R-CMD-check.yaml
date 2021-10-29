@@ -39,9 +39,25 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v1
-        with:
-          extra-packages: rcmdcheck
+      - name: Install R dependencies
+        run: |
+          cat("::group::Install pak\n")
+          options(pak.no_extra_messages = TRUE)
+          install.packages("pak", repos = "https://r-lib.github.io/p/pak/stable/")
+          cat("::endgroup::\n")
+          cat("::group::Install premiumPlots\n")
+          pak::pkg_install("simisc/premiumPlots")
+          cat("::endgroup::\n")
+          cat("::group::Install pkgdepends\n")
+          pak::pkg_install("pkgdepends")
+          cat("::endgroup::\n")
+          cat("::group::Install PReMiuMlongi dependencies\n")
+          deps <- pkgdepends::new_pkg_deps("local::.")$resolve()
+          deps2install <- deps$get_resolution()[["ref"]]
+          deps2install <- deps2install[-c(1, grep("premiumPlots", deps2install))]
+          pak::pkg_install(c(deps2install, "rcmdcheck", "sessioninfo"))
+          cat("::endgroup::\n")
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v1
 

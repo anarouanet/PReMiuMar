@@ -3011,7 +3011,7 @@ double logPYiGivenZiWiLongitudinal_bis(const MatrixXd& Sigma_inv_ord, const doub
           }
         }
         counter = counter + tStop[i] - tStart[i] + 1;
-      }else if(params.z(i) == c & ii==i){
+      }else if((params.z(i) == c) & (ii==i)){
         ind_permut=counter; //index (in times and y) of first visit of subject to permut in M0
       }
     }
@@ -3244,7 +3244,7 @@ double logPYiGivenZiWiLongitudinal_meanGP(const pReMiuMParams& params, const pRe
         - 0.5*ni*params.L(c,l);//*abs(params.L(c,l)); //log(exp(params.L(c,2)*ni)) ;
 
       dmvnorm += out ;
-      if(dmvnorm==0 & ii <dataset.nSubjects()){
+      if((dmvnorm==0) & (ii <dataset.nSubjects())){
         cout <<  " i "<< ii  << " c "<< c <<" dmvnorm "<<dmvnorm<< " ni "<< ni << " prod "<<yi.transpose()*Vi_inv*yi
              << " L0 "<< params.L(c,0) << " L1 "<< params.L(c,1) << " L2 "<< params.L(c,2)
              << " yi "<<yi<<endl;

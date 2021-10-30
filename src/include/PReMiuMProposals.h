@@ -3641,7 +3641,7 @@ void metropolisHastingsForL(mcmcChain<pReMiuMParams>& chain,
           }
 
 
-          if(l==2 & 1>2){ //estimation ratio with beta distribution
+          if((l==2) & (1>2)){ //estimation ratio with beta distribution
             currentParams.L(c,2,currentParams.L(c,0)+ log(currentParams.ratio(c)));
             currentCondLogPost = logCondPostL(currentParams,model,c,0); // p(Y^k|L_k,f_k,k) 0 to remove L prior
 
@@ -4563,7 +4563,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                 //cout << " i "<< i << " "<< c << " clusMarg "<< clusterMarginal[c] <<endl ;
               }
 
-              if(Ana==2&abs(temp- clusterMarginal[c])>pow (1.0, -5.0)){
+              if((Ana==2) & (abs(temp- clusterMarginal[c])>pow (1.0, -5.0))){
                 fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                 fout << i << " c "<< c << " clusterMarginal " << clusterMarginal[c]<< " temp" << temp << endl<< endl;
               }
@@ -4611,7 +4611,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                     denominator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i); // likelihood without i
                   }
 
-                  if(Ana==2&abs(temp- denominator[c])>pow (1.0, -5.0)){
+                  if((Ana==2) & (abs(temp- denominator[c])>pow (1.0, -5.0))){
                     fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                     fout << i << " c "<< c << " denominator " << denominator[c]<< " temp" << temp << endl<<endl;
                   }
@@ -4632,7 +4632,7 @@ void gibbsForZ(mcmcChain<pReMiuMParams>& chain,
                     numerator[c] = logPYiGivenZiWiLongitudinal_bis(Sigma_inv_c_ord[c],det_M0[c],currentParams,dataset,nFixedEffects,c,sizek[c],i);// likelihood with i
                   }
 
-                  if(Ana==2&abs(temp- numerator[c])>pow(1.0, -5.0)){
+                  if((Ana==2) & (abs(temp- numerator[c])>pow(1.0, -5.0))){
                     fout << i << " c "<< c << " det_M0[c]" << det_M0[c]<< endl;
                     fout << i << " c "<< c << " numerator " << numerator[c]<< " temp" << temp << " sizeS0 "<< Sigma_inv_c_ord[c].rows()<< " sizek "<< sizek[c] << endl;
                   }

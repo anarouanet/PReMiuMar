@@ -1,5 +1,4 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+# Workflow derived from https://github.com/tidyverse/ggplot2/main/.github/workflows
 on:
   push:
     branches: [main, master]
@@ -7,6 +6,10 @@ on:
     branches: [main, master]
 
 name: R-CMD-check
+
+# Increment this version when we want to clear cache
+env:
+  cache-version: v1
 
 jobs:
   R-CMD-check:
@@ -27,6 +30,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+
 
     steps:
       - uses: actions/checkout@v2
@@ -39,25 +44,64 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Install R dependencies
+      - name: Get R and OS version
+        id: get-version
         run: |
-          cat("::group::Install pak\n")
-          options(pak.no_extra_messages = TRUE)
-          install.packages("pak", repos = "https://r-lib.github.io/p/pak/stable/")
-          cat("::endgroup::\n")
-          cat("::group::Install premiumPlots\n")
-          pak::pkg_install("simisc/premiumPlots")
-          cat("::endgroup::\n")
-          cat("::group::Install pkgdepends\n")
-          pak::pkg_install("pkgdepends")
-          cat("::endgroup::\n")
-          cat("::group::Install PReMiuMlongi dependencies\n")
-          deps <- pkgdepends::new_pkg_deps("local::.")$resolve()
-          deps2install <- deps$get_resolution()[["ref"]]
-          deps2install <- deps2install[-c(1, grep("premiumPlots", deps2install))]
-          pak::pkg_install(c(deps2install, "mcclust", "rcmdcheck", "sessioninfo"))
+          cat("::set-output name=os-version::", sessionInfo()$running, "\n", sep = "")
+          cat("::set-output name=r-version::", R.Version()$version.string, "\n", sep = "")
           cat("::endgroup::\n")
         shell: Rscript {0}
+
+      - name: remotes query dependencies
+        run: |
+          install.packages("remotes")
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Cache R packages
+        if: runner.os != 'Windows'
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ env.cache-version }}-${{ runner.os }}-r-${{ matrix.config.r }}-${{ hashFiles('depends.Rds') }}
+          restore-keys: ${{ env.cache-version }}-${{ runner.os }}-r-${{ matrix.config.r }}-
+
+      - name: Install system dependencies on Linux
+        if: runner.os == 'Linux'
+        run: |
+          while read -r cmd
+          do
+            eval sudo $cmd
+          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+
+      - name: Install system dependencies on macOS
+        if: runner.os == 'macOS'
+        run: |
+          # Use only binary packages
+          echo 'options(pkgType = "binary")' >> ~/.Rprofile
+
+      - name: Install R dependencies
+        run: |
+          remotes::install_cran(c("mcclust", "rcmdcheck", "sessioninfo"))
+          remotes::install_github("simisc/premiumPlots")
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
+      - name: R session info
+        run: |
+          cat("::group::R session info\n")
+          options(width = 100)
+          pkgs <- installed.packages()[, "Package"]
+          sessioninfo::session_info(pkgs, include_base = TRUE)
+          cat("::endgroup::\n")
+        shell: Rscript {0}
+
+      - name: Don't use tar 1.30 from Rtools35 to store the cache
+        shell: bash
+        run: |
+          if command -v /c/Rtools/bin/tar && /c/Rtools/bin/tar --version | grep -q 'tar (GNU tar) 1.30'
+            then echo 'C:/Program Files/Git/usr/bin' >> $GITHUB_PATH
+          fi
 
       - uses: r-lib/actions/check-r-package@v1
 
